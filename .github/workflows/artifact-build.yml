@@ -3,6 +3,11 @@ name: Publish
 on:
   release:
     types: [published]
+  push:
+    tags: [ 'v*.*.*' ]
+
+env:
+  VERSION: ${{ github.ref_name }}
 
 jobs:
   release:
@@ -24,6 +29,8 @@ jobs:
             target: osx-x64
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Extract clean version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV    
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -39,7 +46,7 @@ jobs:
           release_name="App-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish ChatGPTExport/ChatGPTExport.csproj --runtime "${{ matrix.target }}" --configuration Release --self-contained true -o "$release_name"
+          dotnet publish ChatGPTExport/ChatGPTExport.csproj --runtime "${{ matrix.target }}" --configuration Release --self-contained true -o "$release_name" -p:Version=$VERSION -p:AssemblyVersion=$VERSION.0 -p:FileVersion=$VERSION.0
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
