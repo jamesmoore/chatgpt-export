@@ -1,3 +1,6 @@
+ARG VERSION
+LABEL version=$VERSION
+
 FROM mcr.microsoft.com/dotnet/sdk:latest AS build-env
 WORKDIR /app
 
