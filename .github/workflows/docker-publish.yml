@@ -27,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Show ref type
+        run: echo $GITHUB_REF_TYPE
       - name: Set version fallback
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
