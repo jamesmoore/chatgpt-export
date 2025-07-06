@@ -36,6 +36,7 @@ jobs:
           fi
 
   build:
+    needs: setversion
     runs-on: ubuntu-latest
 
     steps:
