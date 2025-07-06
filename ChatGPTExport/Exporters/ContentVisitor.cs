@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
@@ -114,8 +115,23 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentCode content, ContentVisitorContext context)
         {
-            var code = $"```{content.language}{LineBreak}{content.text}{LineBreak}```";
-            return new MarkdownContentResult([code]);
+            if (string.IsNullOrWhiteSpace(content.text))
+            {
+                return new MarkdownContentResult();
+            }
+
+            var searchRegex = new Regex("""^search\("(.*)"\)$""");
+            var matches = searchRegex.Match(content.text);
+            if (content.language == "unknown" && matches.Success)
+            {
+                var code = matches.Groups[1].Value;
+                return new MarkdownContentResult($"> 🔍 **Web search:** {code}.");
+            }
+            else
+            {
+                var code = $"```{content.language}{LineBreak}{content.text}{LineBreak}```";
+                return new MarkdownContentResult(code);
+            }
         }
 
         public MarkdownContentResult Visit(ContentThoughts content, ContentVisitorContext context)
@@ -132,19 +148,19 @@ namespace ChatGPTExport.Exporters
         public MarkdownContentResult Visit(ContentExecutionOutput content, ContentVisitorContext context)
         {
             var code = $"```{LineBreak}{content.text}{LineBreak}```";
-            return new MarkdownContentResult([code]);
+            return new MarkdownContentResult(code);
         }
 
         public MarkdownContentResult Visit(ContentReasoningRecap content, ContentVisitorContext context)
         {
-            return new MarkdownContentResult([content.content]);
+            return new MarkdownContentResult(content.content);
         }
 
         public MarkdownContentResult Visit(ContentBase content, ContentVisitorContext context)
         {
             string name = content.GetType().Name;
             Console.WriteLine("\t" + name);
-            return new MarkdownContentResult([$"Unhandled content type: {content}"]);
+            return new MarkdownContentResult($"Unhandled content type: {content}");
         }
 
         private IEnumerable<string> SeparatePromptIfPresent(string p)
