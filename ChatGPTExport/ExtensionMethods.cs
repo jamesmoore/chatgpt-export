@@ -1,4 +1,5 @@
 ﻿using System.IO.Abstractions;
+using System.Text.Json;
 
 namespace ChatGPTExport
 {
@@ -39,6 +40,34 @@ namespace ChatGPTExport
 
             // Truncate to long — DateTimeOffset doesn't support sub-millisecond precision
             return DateTimeOffset.FromUnixTimeMilliseconds((long)millis);
+        }
+
+        public static bool IsValidJson(this string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
+            input = input.Trim();
+
+            if (!(input.StartsWith("{") && input.EndsWith("}")) &&
+                !(input.StartsWith("[") && input.EndsWith("]")))
+            {
+                return false;
+            }
+
+            try
+            {
+                using var doc = JsonDocument.Parse(input);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+            catch
+            {
+                return false; // optionally handle or log other exceptions
+            }
         }
     }
 }

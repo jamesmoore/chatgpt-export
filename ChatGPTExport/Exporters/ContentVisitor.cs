@@ -7,7 +7,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class ContentVisitor(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory) : IContentVisitor<MarkdownContentResult>
+    internal partial class ContentVisitor(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -120,12 +120,17 @@ namespace ChatGPTExport.Exporters
                 return new MarkdownContentResult();
             }
 
-            var searchRegex = new Regex("""^search\("(.*)"\)$""");
+            var searchRegex = SearchRegex();
             var matches = searchRegex.Match(content.text);
             if (content.language == "unknown" && matches.Success)
             {
                 var code = matches.Groups[1].Value;
                 return new MarkdownContentResult($"> 🔍 **Web search:** {code}.");
+            }
+            else if (content.language == "unknown" && content.text.IsValidJson())
+            {
+                var code = $"```json{LineBreak}{content.text}{LineBreak}```";
+                return new MarkdownContentResult(code);
             }
             else
             {
@@ -204,5 +209,8 @@ namespace ChatGPTExport.Exporters
 
             public bool HasPrompt() => string.IsNullOrWhiteSpace(prompt) == false && string.IsNullOrWhiteSpace(size) == false;
         }
+
+        [GeneratedRegex("""^search\("(.*)"\)$""")]
+        private static partial Regex SearchRegex();
     }
 }
