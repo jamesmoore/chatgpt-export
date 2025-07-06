@@ -23,7 +23,6 @@ env:
 jobs:
 
   build:
-    needs: setversion
     runs-on: ubuntu-latest
 
     steps:
