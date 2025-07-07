@@ -1,5 +1,6 @@
 ﻿using System.IO.Abstractions;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
@@ -9,6 +10,7 @@ namespace ChatGPTExport.Exporters
         private readonly JsonSerializerOptions options = new()
         {
             WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
         public void Export(Conversation conversation, string filename)

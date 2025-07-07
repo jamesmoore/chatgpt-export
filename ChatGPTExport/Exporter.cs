@@ -34,22 +34,22 @@ namespace ChatGPTExport
 
                 var conversations = JsonSerializer.Deserialize<Conversations>(text);
 
-#if DEBUG
                 // for round trip validation of the json schema
-                fileSystem.File.WriteAllText(
-                    fileSystem.Path.Join(source.FullName, "conversations2.json"),
-                    JsonSerializer.Serialize(conversations, new JsonSerializerOptions()
+                var json2 = JsonSerializer.Serialize(conversations, new JsonSerializerOptions()
+                {
+                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+                });
+
+                var differences = JsonComparer.CompareJson(text, json2);
+
+                if (differences.Count != 0)
+                {
+                    Console.WriteLine("Found json schema discrepancies.");
+                    foreach (var diff in differences)
                     {
-                        WriteIndented = true,
-                    }).Replace("\\u0027", "'").
-                    Replace("\\u0022", "\\\"").
-                    Replace("\\u003E", ">").
-                    Replace("\\u002B", "+").
-                    Replace("\\u003C", "<").
-                    Replace("\\u0026", "&").
-                    Replace("\\u0060", "`")
-                    );
-# endif
+                        Console.WriteLine(diff);
+                    }
+                }
 
                 var exporters = new List<IExporter>()
                 {
