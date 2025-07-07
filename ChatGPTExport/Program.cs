@@ -5,19 +5,22 @@ using ChatGPTExport;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-var sourceDirectoryOption = new Option<DirectoryInfo>("--source", "-s")
+var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
 {
-    Description = "The source directory containing the unzipped ChatGTP exported files. Must have conversations.json.",
+    Description = "The source directory containing the unzipped ChatGTP exported files.\nMust contain a conversations.json.\nYou can specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.",
     Required = true,
 }.AcceptExistingOnly();
 sourceDirectoryOption.Validators.Add(result =>
 {
     try
     {
-        var directoryInfo = result.GetValue(sourceDirectoryOption);
-        if (directoryInfo.GetFiles("conversations.json").Length == 0)
+        var directoryInfos = result.GetValue(sourceDirectoryOption);
+        foreach (var directoryInfo in directoryInfos)
         {
-            result.AddError($"Source directory does not have a conversations.json file.");
+            if (directoryInfo.GetFiles("conversations.json").Length == 0)
+            {
+                result.AddError($"Source directory does not have a conversations.json file.");
+            }
         }
     }
     catch { }
@@ -35,6 +38,7 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     destinationDirectoryOption,
 };
 
+
 rootCommand.SetAction(parseResult =>
 {
     foreach (ParseError parseError in parseResult.Errors)
@@ -42,10 +46,14 @@ rootCommand.SetAction(parseResult =>
         Console.Error.WriteLine(parseError.Message);
     }
 
+    var directoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
     var fileSystem = new System.IO.Abstractions.FileSystem();
-    var source = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(sourceDirectoryOption));
-    var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
-    new Exporter(source, fileSystem).Process(destination);
+    foreach (var directoryInfo in directoryInfos)
+    {
+        var source = fileSystem.DirectoryInfo.Wrap(directoryInfo);
+        var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
+        new Exporter(source, fileSystem).Process(destination);
+    }
     return 0;
 });
 
