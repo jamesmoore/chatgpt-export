@@ -49,6 +49,11 @@ namespace ChatGPTExport.Exporters
                             Console.Error.WriteLine("\tUnable to find asset " + obj.asset_pointer);
                             markdownContent.Add($"> ⚠️ **Warning:** Could not find asset: {obj.asset_pointer}.");
                         }
+
+                        if(context.MessageMetadata.image_gen_title != null)
+                        {
+                            markdownContent.Add($"*{context.MessageMetadata.image_gen_title}*  ");
+                        }
                         markdownContent.Add($"**Size:** {obj.size_bytes} **Dims:** {obj.width}x{obj.height}  ");
                     }
                 }

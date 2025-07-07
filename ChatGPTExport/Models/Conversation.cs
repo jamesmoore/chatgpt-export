@@ -276,7 +276,7 @@ namespace ChatGPTExport.Models
 
         public T Accept<T>(IContentVisitor<T> visitor)
         {
-            return this.content.Accept(visitor, new ContentVisitorContext(this.author.role, GetCreateTime(), GetUpdateTime()));
+            return this.content.Accept(visitor, new ContentVisitorContext(this.author.role, GetCreateTime(), GetUpdateTime(), metadata));
         }
 
         public DateTimeOffset? GetCreateTime() => create_time.HasValue ? create_time.Value.ToDateTimeOffset() : null;
