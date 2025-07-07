@@ -1,7 +1,11 @@
-﻿namespace ChatGPTExport.Exporters
+﻿using ChatGPTExport.Models;
+
+namespace ChatGPTExport.Exporters
 {
     public record ContentVisitorContext(
         string Role, 
         DateTimeOffset? CreatedDate,
-        DateTimeOffset? UpdatedDate);
+        DateTimeOffset? UpdatedDate,
+        Message.MessageMetadata MessageMetadata
+        );
 }
