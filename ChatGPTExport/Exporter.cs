@@ -1,5 +1,6 @@
 ﻿using System.IO.Abstractions;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
 using ChatGPTExport.Validators;
@@ -12,13 +13,16 @@ namespace ChatGPTExport
         {
             if (source.Exists)
             {
-                var text = fileSystem.File.ReadAllText(source.FullName);
+                var conversationsJson = fileSystem.File.ReadAllText(source.FullName);
 
-                VerifyContentTypes(text);
+                VerifyContentTypes(conversationsJson);
 
-                var conversations = JsonSerializer.Deserialize<Conversations>(text);
-
-                VerifyJsonSerialization(text, conversations);
+                var conversations = JsonSerializer.Deserialize<Conversations>(conversationsJson);
+                if (conversations == null)
+                {
+                    throw new ApplicationException($"Conversations file {source.FullName} could not be deserialized");
+                }
+                VerifyJsonSerialization(conversationsJson, conversations);
 
                 var exporters = new List<IExporter>()
                 {
@@ -53,7 +57,6 @@ namespace ChatGPTExport
             }
         }
 
-
         private static void VerifyContentTypes(string text)
         {
             var validator = new ContentTypeValidator();
@@ -73,15 +76,22 @@ namespace ChatGPTExport
             }
         }
 
-        private static void VerifyJsonSerialization(string text, Conversations conversations)
+        private static readonly JsonSerializerOptions options = new()
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+
+        /// <summary>
+        /// Reserialize the deserialized json and compare it to the original, to check everything matches.
+        /// </summary>
+        /// <param name="originalJson"></param>
+        /// <param name="conversations"></param>
+        private static void VerifyJsonSerialization(string originalJson, Conversations conversations)
         {
             // for round trip validation of the json schema
-            var reserialized = JsonSerializer.Serialize(conversations, new JsonSerializerOptions()
-            {
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-            });
+            var reserialized = JsonSerializer.Serialize(conversations, options);
 
-            var differences = JsonComparer.CompareJson(text, reserialized);
+            var differences = JsonComparer.CompareJson(originalJson, reserialized);
 
             if (differences.Count != 0)
             {
