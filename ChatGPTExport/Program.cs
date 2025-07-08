@@ -5,6 +5,8 @@ using ChatGPTExport;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+const string searchPattern = "conversations.json";
+
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
 {
     Description = "The source directory containing the unzipped ChatGTP exported files.\nMust contain a conversations.json.\nYou can specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.",
@@ -17,7 +19,7 @@ sourceDirectoryOption.Validators.Add(result =>
         var directoryInfos = result.GetValue(sourceDirectoryOption);
         foreach (var directoryInfo in directoryInfos)
         {
-            if (directoryInfo.GetFiles("conversations.json").Length == 0)
+            if (directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories).Length == 0)
             {
                 result.AddError($"Source directory does not have a conversations.json file.");
             }
@@ -46,13 +48,18 @@ rootCommand.SetAction(parseResult =>
         Console.Error.WriteLine(parseError.Message);
     }
 
-    var directoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
+    var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
     var fileSystem = new System.IO.Abstractions.FileSystem();
-    foreach (var directoryInfo in directoryInfos)
+    foreach (var sourceInfo in sourceDirectoryInfos)
     {
-        var source = fileSystem.DirectoryInfo.Wrap(directoryInfo);
+        var source = fileSystem.DirectoryInfo.Wrap(sourceInfo);
         var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
-        new Exporter(source, fileSystem).Process(destination);
+
+        var conversationFiles = source.GetFiles(searchPattern, SearchOption.AllDirectories);
+        foreach (var conversationFile in conversationFiles)
+        {
+            new Exporter(conversationFile, fileSystem).Process(destination);
+        }
     }
     return 0;
 });

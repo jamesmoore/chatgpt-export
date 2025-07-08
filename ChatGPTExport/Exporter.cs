@@ -6,55 +6,24 @@ using ChatGPTExport.Validators;
 
 namespace ChatGPTExport
 {
-    public class Exporter(IDirectoryInfo source, IFileSystem fileSystem)
+    public class Exporter(IFileInfo source, IFileSystem fileSystem)
     {
         public void Process(IDirectoryInfo destination)
         {
-            const string jsonPath = "conversations.json";
-            var conversationsJsonPath = fileSystem.Path.Join(source.FullName, jsonPath);
-            if (fileSystem.File.Exists(conversationsJsonPath))
+            if (source.Exists)
             {
-                var text = fileSystem.File.ReadAllText(conversationsJsonPath);
+                var text = fileSystem.File.ReadAllText(source.FullName);
 
-                var validator = new ContentTypeValidator();
-                var unhandled = validator.GetUnhandledContentTypes(text);
-
-                if(unhandled.Any())
-                {
-                    Console.Error.WriteLine("Warning - the the following conversations have unsupported content types:");
-                    foreach (var unhandledContent in unhandled)
-                    {
-                        Console.WriteLine(unhandledContent.Title);
-                        foreach(var contentType in unhandledContent.UnhandledContentTypes)
-                        {
-                            Console.WriteLine("\t" + contentType);
-                        }
-                    }
-                }
+                VerifyContentTypes(text);
 
                 var conversations = JsonSerializer.Deserialize<Conversations>(text);
 
-                // for round trip validation of the json schema
-                var json2 = JsonSerializer.Serialize(conversations, new JsonSerializerOptions()
-                {
-                    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-                });
-
-                var differences = JsonComparer.CompareJson(text, json2);
-
-                if (differences.Count != 0)
-                {
-                    Console.WriteLine("Found json schema discrepancies.");
-                    foreach (var diff in differences)
-                    {
-                        Console.WriteLine(diff);
-                    }
-                }
+                VerifyJsonSerialization(text, conversations);
 
                 var exporters = new List<IExporter>()
                 {
                     new JsonExporter(fileSystem, destination),
-                    new MarkdownExporter(fileSystem, source, destination),
+                    new MarkdownExporter(fileSystem, source.Directory, destination),
                 };
 
                 foreach (var conversation in conversations)
@@ -80,7 +49,47 @@ namespace ChatGPTExport
             }
             else
             {
-                throw new ApplicationException($"{jsonPath} not found");
+                throw new ApplicationException($"{source.FullName} not found");
+            }
+        }
+
+
+        private static void VerifyContentTypes(string text)
+        {
+            var validator = new ContentTypeValidator();
+            var unhandled = validator.GetUnhandledContentTypes(text);
+
+            if (unhandled.Any())
+            {
+                Console.Error.WriteLine("Warning - the the following conversations have unsupported content types:");
+                foreach (var unhandledContent in unhandled)
+                {
+                    Console.WriteLine(unhandledContent.Title);
+                    foreach (var contentType in unhandledContent.UnhandledContentTypes)
+                    {
+                        Console.WriteLine("\t" + contentType);
+                    }
+                }
+            }
+        }
+
+        private static void VerifyJsonSerialization(string text, Conversations conversations)
+        {
+            // for round trip validation of the json schema
+            var reserialized = JsonSerializer.Serialize(conversations, new JsonSerializerOptions()
+            {
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            });
+
+            var differences = JsonComparer.CompareJson(text, reserialized);
+
+            if (differences.Count != 0)
+            {
+                Console.WriteLine("Found json schema discrepancies.");
+                foreach (var diff in differences)
+                {
+                    Console.WriteLine(diff);
+                }
             }
         }
 
