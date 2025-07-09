@@ -34,6 +34,19 @@ Options:
 
 ```
 
+## Running with docker
+
+Change the volume paths according to your filesystem. Keep the source as read-only:
+
+```sh
+docker run --rm \
+  -v /mnt/storage/docker/chatgpt-export:/source:ro \
+  -v /mnt/storage/docker/chatgpt-export-export:/destination \
+  ghcr.io/jamesmoore/chatgpt-export:latest \
+  -s /source \
+  -d /destination
+```
+
 ## How it works
 The source folder (unzipped export) must contain a file named conversations.json, which holds all your conversations in JSON format.
 
