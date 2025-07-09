@@ -147,131 +147,154 @@ namespace ChatGPTExport.Models
 
             [JsonExtensionData]
             public Dictionary<string, JsonElement> ExtraData { get; set; }
-        }
+            public class Attachment
+            {
+                public string id { get; set; }
+                public int? size { get; set; }
+                public string name { get; set; }
+                public string mime_type { get; set; }
+                public int? width { get; set; }
+                public int? height { get; set; }
+                public string mimeType { get; set; }
+                public object fileSizeTokens { get; set; }
 
-        public class Attachment
-        {
-            public string id { get; set; }
-            public int size { get; set; }
-            public string name { get; set; }
-            public string mime_type { get; set; }
-            public int? width { get; set; }
-            public int? height { get; set; }
-        }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
+            }
 
-        public class FinishDetails
-        {
-            public string type { get; set; }
-            public int[] stop_tokens { get; set; }
-            public string reason { get; set; }
-        }
+            public class FinishDetails
+            {
+                public string type { get; set; }
+                public int[] stop_tokens { get; set; }
+                public string reason { get; set; }
 
-        public class Content_References
-        {
-            public string matched_text { get; set; }
-            public int start_idx { get; set; }
-            public int end_idx { get; set; }
-            public string[] safe_urls { get; set; }
-            public object[] refs { get; set; }
-            public string alt { get; set; }
-            public object prompt_text { get; set; }
-            public string type { get; set; }
-            public bool? invalid { get; set; }
-            public string attributable_index { get; set; }
-            public object attributions { get; set; }
-            public object attributions_debug { get; set; }
-            public Item[] items { get; set; }
-            public Fallback_Items[] fallback_items { get; set; }
-            public string status { get; set; }
-            public object error { get; set; }
-            public string style { get; set; }
-            public Source[] sources { get; set; }
-            public bool? has_images { get; set; }
-            public object[] images { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
+            }
 
-            public string display_title { get; set; }
-            public string page_title { get; set; }
-            public string url { get; set; }
-            public string leaf_description { get; set; }
-            public string snippet { get; set; }
-            public string[] breadcrumbs { get; set; }
-            [JsonExtensionData]
-            public Dictionary<string, JsonElement> ExtraData { get; set; }
-        }
+            public class Content_References
+            {
+                public string matched_text { get; set; }
+                public int start_idx { get; set; }
+                public int end_idx { get; set; }
+                public string[] safe_urls { get; set; }
+                public object[] refs { get; set; }
+                public string alt { get; set; }
+                public object prompt_text { get; set; }
+                public string type { get; set; }
+                public bool? invalid { get; set; }
+                public string attributable_index { get; set; }
+                public object attributions { get; set; }
+                public object attributions_debug { get; set; }
+                public Item[] items { get; set; }
+                public Fallback_Items[] fallback_items { get; set; }
+                public string status { get; set; }
+                public object error { get; set; }
+                public string style { get; set; }
+                public Source[] sources { get; set; }
+                public bool? has_images { get; set; }
+                public object[] images { get; set; }
 
-        public class Item
-        {
-            public string title { get; set; }
-            public string url { get; set; }
-            public decimal? pub_date { get; set; }
-            public string snippet { get; set; }
-            public string[] attribution_segments { get; set; }
-            public Supporting_Websites[] supporting_websites { get; set; }
-            public Ref[] refs { get; set; }
-            public object hue { get; set; }
-            public object attributions { get; set; }
-            public string attribution { get; set; }
-        }
+                public string display_title { get; set; }
+                public string page_title { get; set; }
+                public string url { get; set; }
+                public string leaf_description { get; set; }
+                public string snippet { get; set; }
+                public string[] breadcrumbs { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
 
-        public class Supporting_Websites
-        {
-            public string title { get; set; }
-            public string url { get; set; }
-            public decimal? pub_date { get; set; }
-            public string snippet { get; set; }
-            public string attribution { get; set; }
-        }
+                public class Item
+                {
+                    public string title { get; set; }
+                    public string url { get; set; }
+                    public decimal? pub_date { get; set; }
+                    public string snippet { get; set; }
+                    public string[] attribution_segments { get; set; }
+                    public Supporting_Websites[] supporting_websites { get; set; }
+                    public Ref[] refs { get; set; }
+                    public object hue { get; set; }
+                    public object attributions { get; set; }
+                    public string attribution { get; set; }
+                    public string thumbnail_url { get; set; }
+                    [JsonExtensionData]
+                    public Dictionary<string, JsonElement> ExtraData { get; set; }
+                    public class Supporting_Websites
+                    {
+                        public string title { get; set; }
+                        public string url { get; set; }
+                        public decimal? pub_date { get; set; }
+                        public string snippet { get; set; }
+                        public string attribution { get; set; }
+                        [JsonExtensionData]
+                        public Dictionary<string, JsonElement> ExtraData { get; set; }
+                    }
+                }
+                public class Fallback_Items
+                {
+                    public string title { get; set; }
+                    public string url { get; set; }
+                    public decimal? pub_date { get; set; }
+                    public string snippet { get; set; }
+                    public object attribution_segments { get; set; }
+                    public object[] supporting_websites { get; set; }
+                    public Ref[] refs { get; set; }
+                    public object hue { get; set; }
+                    public object attributions { get; set; }
+                    [JsonExtensionData]
+                    public Dictionary<string, JsonElement> ExtraData { get; set; }
+                }
 
-        public class Ref
-        {
-            public int turn_index { get; set; }
-            public string ref_type { get; set; }
-            public int ref_index { get; set; }
-        }
+                public class Source
+                {
+                    public string title { get; set; }
+                    public string url { get; set; }
+                    public string attribution { get; set; }
+                    [JsonExtensionData]
+                    public Dictionary<string, JsonElement> ExtraData { get; set; }
+                }
+            }
 
-        public class Fallback_Items
-        {
-            public string title { get; set; }
-            public string url { get; set; }
-            public decimal? pub_date { get; set; }
-            public string snippet { get; set; }
-            public object attribution_segments { get; set; }
-            public object[] supporting_websites { get; set; }
-            public Ref[] refs { get; set; }
-            public object hue { get; set; }
-            public object attributions { get; set; }
-        }
+            public class Ref
+            {
+                public int turn_index { get; set; }
+                public string ref_type { get; set; }
+                public int ref_index { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
+            }
 
-        public class Source
-        {
-            public string title { get; set; }
-            public string url { get; set; }
-            public string attribution { get; set; }
-        }
+            public class Search_Result_Groups
+            {
+                public string type { get; set; }
+                public string domain { get; set; }
+                public Entry[] entries { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
 
-        public class Search_Result_Groups
-        {
-            public string type { get; set; }
-            public string domain { get; set; }
-            public Entry[] entries { get; set; }
-        }
-
-        public class Entry
-        {
-            public string type { get; set; }
-            public string url { get; set; }
-            public string title { get; set; }
-            public string snippet { get; set; }
-            public Ref_Id ref_id { get; set; }
-            public decimal? pub_date { get; set; }
-            public string attribution { get; set; }
-        }
-
-        public class Ref_Id
-        {
-            public int turn_index { get; set; }
-            public string ref_type { get; set; }
-            public int ref_index { get; set; }
+                public class Entry
+                {
+                    public string type { get; set; }
+                    public string url { get; set; }
+                    public string title { get; set; }
+                    public string snippet { get; set; }
+                    public Ref_Id ref_id { get; set; }
+                    public decimal? pub_date { get; set; }
+                    public string attribution { get; set; }
+                    public object content_type { get; set; }
+                    public object attributions { get; set; }
+                    [JsonExtensionData]
+                    public Dictionary<string, JsonElement> ExtraData { get; set; }
+                    public class Ref_Id
+                    {
+                        public int turn_index { get; set; }
+                        public string ref_type { get; set; }
+                        public int ref_index { get; set; }
+                        [JsonExtensionData]
+                        public Dictionary<string, JsonElement> ExtraData { get; set; }
+                    }
+                }
+            }
         }
 
         public T Accept<T>(IContentVisitor<T> visitor)
@@ -282,6 +305,9 @@ namespace ChatGPTExport.Models
         public DateTimeOffset? GetCreateTime() => create_time.HasValue ? create_time.Value.ToDateTimeOffset() : null;
 
         public DateTimeOffset? GetUpdateTime() => update_time.HasValue ? update_time.Value.ToDateTimeOffset() : null;
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; set; }
     }
 
     public class Author
@@ -289,6 +315,8 @@ namespace ChatGPTExport.Models
         public string role { get; set; }
         public string name { get; set; }
         public AuthorMetadata metadata { get; set; }
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; set; }
 
         public class AuthorMetadata
         {
@@ -298,6 +326,8 @@ namespace ChatGPTExport.Models
             public string? sonicberry_model_id { get; set; }
 
             public string? source { get; set; }
+            [JsonExtensionData]
+            public Dictionary<string, JsonElement> ExtraData { get; set; }
         }
     }
 
