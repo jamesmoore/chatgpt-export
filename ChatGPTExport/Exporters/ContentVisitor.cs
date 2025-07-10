@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Diagnostics;
 using System.IO.Abstractions;
+using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ChatGPTExport.Models;
@@ -14,7 +15,29 @@ namespace ChatGPTExport.Exporters
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
             var parts = content.parts.Where(TextContentFilter).SelectMany(SeparatePromptIfPresent).ToList();
+
+            if (context.MessageMetadata.safe_urls != null && context.MessageMetadata.safe_urls.Any())
+            {
+                parts.Add("");
+                parts.Add("References:");
+                var urls = context.MessageMetadata.safe_urls.Select(p => "* " + FormatUrl(p));
+                parts.AddRange(urls);
+            }
+
             return new MarkdownContentResult(parts);
+        }
+
+        private static string FormatUrl(string p)
+        {
+            if (Uri.TryCreate(p, UriKind.Absolute, out var url))
+            {
+                return $"[{WebUtility.UrlDecode(url.AbsoluteUri)}]({url.AbsoluteUri})".Replace("?utm_source=chatgpt.com","")
+                    ;
+            }
+            else
+            {
+                return p;
+            }
         }
 
         private static bool TextContentFilter(string p)
