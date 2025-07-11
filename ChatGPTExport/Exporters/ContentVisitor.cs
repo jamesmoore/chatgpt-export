@@ -20,7 +20,7 @@ namespace ChatGPTExport.Exporters
             {
                 parts.Add("");
                 parts.Add("References:");
-                var urls = context.MessageMetadata.safe_urls.Select(p => "* " + FormatUrl(p));
+                var urls = context.MessageMetadata.safe_urls.Distinct().Select(p => "* " + FormatUrl(p));
                 parts.AddRange(urls);
             }
 
