@@ -6,40 +6,50 @@ namespace ChatGPTExport
 {
     public class Exporter(IFileSystem fileSystem)
     {
-        public void Process(IFileInfo source, Conversations conversations, IDirectoryInfo destination)
+        public void Process(IEnumerable<(IFileInfo source, Conversation conversation)> conversations, IDirectoryInfo destination)
         {
-            if (source.Exists)
+            if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
+            {
+                throw new ApplicationException("Unable to export multiple conversations at once");
+            }
+
+            var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
+
+            foreach (var (source, conversation) in conversations)
             {
                 var exporters = new List<IExporter>()
-                {
-                    new JsonExporter(fileSystem, destination),
-                    new MarkdownExporter(fileSystem, source.Directory, destination),
-                };
+                    {
+                        new JsonExporter(fileSystem, destination),
+                        new MarkdownExporter(fileSystem, source.Directory, destination),
+                    };
 
-                foreach (var conversation in conversations)
+                Console.WriteLine($"{conversation.title}\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+                foreach (var exporter in exporters)
                 {
-                    Console.WriteLine(conversation.title + "\tMessages: " + conversation.mapping.Count + "\tLeaves: " + conversation.mapping.Count(p => p.Value.IsLeaf()));
+                    Console.WriteLine($"\t{exporter.GetType().Name}");
 
                     if (conversation.HasMultipleBranches())
                     {
-                        foreach (var exporter in exporters)
-                        {
-                            var filename = GetFilename(conversation, "complete", exporter.GetExtension());
-                            exporter.Export(conversation, filename);
-                        }
+                        var completeFilename = GetFilename(conversation, "complete", exporter.GetExtension());
+                        fileContentsMap[completeFilename] = exporter.Export(conversation);
                     }
 
                     var latest = conversation.GetLastestConversation();
-                    foreach (var exporter in exporters)
-                    {
-                        var filename = GetFilename(latest, "", exporter.GetExtension());
-                        exporter.Export(latest, filename);
-                    }
+                    var filename = GetFilename(latest, "", exporter.GetExtension());
+                    fileContentsMap[filename] = exporter.Export(latest);
                 }
             }
-            else
+
+            foreach (var kv in fileContentsMap)
             {
-                throw new ApplicationException($"{source.FullName} not found");
+                var destinationFilename = fileSystem.Path.Join(destination.FullName, kv.Key);
+                var contents = string.Join(Environment.NewLine, kv.Value);
+                if (fileSystem.File.Exists(destinationFilename) && fileSystem.File.ReadAllText(destinationFilename) != contents)
+                {
+                    fileSystem.File.WriteAllText(destinationFilename, contents);
+                    fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, conversations.Last().conversation.GetCreateTime().DateTime);
+                    fileSystem.File.SetLastWriteTimeUtc(destinationFilename, conversations.Last().conversation.GetUpdateTime().DateTime);
+                }
             }
         }
 
