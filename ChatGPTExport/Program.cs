@@ -64,6 +64,7 @@ rootCommand.SetAction(parseResult =>
     {
         try
         {
+            Console.WriteLine($"Loading conversation " + p.FullName);
             return conversationsFactory.GetConversations(p);
         }
         catch (Exception ex)
@@ -73,16 +74,35 @@ rootCommand.SetAction(parseResult =>
         }
     }
 
-    var conversationsList = conversationFiles.Select(p => new
-    {
-        FileInfo = p,
-        Conversations = GetConversations(p)
-    }
-    ).Where(p => p.Conversations != null).OrderBy(p => p.Conversations.GetUpdateTime()).ToList();
+    var conversationsWithMetadata = conversationFiles
+        .Select(file => new
+        {
+            FileInfo = file,
+            Conversations = GetConversations(file)
+        })
+        .Where(x => x.Conversations != null)
+        .Select(x => new
+        {
+            x.FileInfo,
+            x.Conversations,
+            UpdateTime = x.Conversations.GetUpdateTime()
+        })
+        .OrderBy(x => x.UpdateTime)
+        .ToList();
 
-    foreach (var conversations in conversationsList)
+    var groupedByConversationId = conversationsWithMetadata
+        .SelectMany(entry => entry.Conversations, (entry, conversation) => new
+        {
+            entry.FileInfo,
+            Conversation = conversation
+        })
+        .GroupBy(x => x.Conversation.conversation_id)
+        .ToList();
+
+    foreach (var group in groupedByConversationId)
     {
-        exporter.Process(conversations.FileInfo, conversations.Conversations, destination);
+        var conversations = group.Select(x => (x.FileInfo, x.Conversation)).ToList();
+        exporter.Process(conversations, destination);
     }
     return 0;
 });
