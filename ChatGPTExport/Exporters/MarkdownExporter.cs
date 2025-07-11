@@ -7,7 +7,7 @@ namespace ChatGPTExport.Exporters
     {
         private readonly string LineBreak = Environment.NewLine;
 
-        public void Export(Conversation conversation, string filename)
+        public IEnumerable<string> Export(Conversation conversation)
         {
             var messages = conversation.mapping.Select(p => p.Value).
                 Where(p => p.message != null).
@@ -38,11 +38,7 @@ namespace ChatGPTExport.Exporters
                 }
             }
 
-            var outputPath = fileSystem.Path.Join(destinationDirectory.FullName, filename);
-            fileSystem.File.WriteAllText(outputPath, string.Join(LineBreak, strings));
-
-            fileSystem.File.SetCreationTimeUtcIfPossible(outputPath, conversation.GetCreateTime().DateTime);
-            fileSystem.File.SetLastWriteTimeUtc(outputPath, conversation.GetUpdateTime().DateTime);
+            return strings;
         }
 
         public string GetExtension() => ".md";

@@ -13,13 +13,10 @@ namespace ChatGPTExport.Exporters
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        public void Export(Conversation conversation, string filename)
+        public IEnumerable<string> Export(Conversation conversation)
         {
-            string outputPath = fileSystem.Path.Join(directoryInfo.FullName, filename);
-            fileSystem.File.WriteAllText(outputPath, JsonSerializer.Serialize(conversation, options));
-
-            fileSystem.File.SetCreationTimeUtcIfPossible(outputPath, conversation.GetCreateTime().DateTime);
-            fileSystem.File.SetLastWriteTimeUtc(outputPath, conversation.GetUpdateTime().DateTime);
+            string outputPath = fileSystem.Path.Join(directoryInfo.FullName);
+            return [JsonSerializer.Serialize(conversation, options)];
         }
 
         public string GetExtension() => ".json";

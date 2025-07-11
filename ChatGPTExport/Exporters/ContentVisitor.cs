@@ -126,17 +126,19 @@ namespace ChatGPTExport.Exporters
             return null;
         }
 
-
-
         private string? FindAssetInDestinationDirectory(string searchPattern)
         {
             // it may already exist in the destination directory from a previous export 
             var destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern, System.IO.SearchOption.AllDirectories);
-            if (destinationMatches.Any())
+            if (destinationMatches.Length != 0)
             {
-                var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, fileSystem.FileInfo.New(destinationMatches.First()));
-                var withoutPath = fileSystem.Path.GetFileName(relativePath);
-                return $"![{withoutPath}]({relativePath})  ";
+                var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
+                var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
+                if(fileSystem.Path.DirectorySeparatorChar != '/')
+                {
+                    relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
+                }
+                return $"![{targetFile.Name}](./{relativePath})  ";
             }
             return null;
         }

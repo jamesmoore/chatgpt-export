@@ -4,7 +4,7 @@ namespace ChatGPTExport.Exporters
 {
     internal interface IExporter
     {
-        void Export(Conversation conversation, string filename);
+        IEnumerable<string> Export(Conversation conversation);
         string GetExtension();
     }
 }
