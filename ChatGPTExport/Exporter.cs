@@ -44,7 +44,8 @@ namespace ChatGPTExport
             {
                 var destinationFilename = fileSystem.Path.Join(destination.FullName, kv.Key);
                 var contents = string.Join(Environment.NewLine, kv.Value);
-                if (fileSystem.File.Exists(destinationFilename) && fileSystem.File.ReadAllText(destinationFilename) != contents)
+                var destinationExists = fileSystem.File.Exists(destinationFilename);
+                if (destinationExists == false || destinationExists && fileSystem.File.ReadAllText(destinationFilename) != contents)
                 {
                     fileSystem.File.WriteAllText(destinationFilename, contents);
                     fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, conversations.Last().conversation.GetCreateTime().DateTime);
