@@ -15,6 +15,9 @@ namespace ChatGPTExport
 
             var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
+            var titles = string.Join(Environment.NewLine, conversations.Select(p => p.conversation.title).Distinct().ToArray());
+            Console.WriteLine(titles);
+
             foreach (var (source, conversation) in conversations)
             {
                 var exporters = new List<IExporter>()
@@ -23,10 +26,10 @@ namespace ChatGPTExport
                         new MarkdownExporter(fileSystem, source.Directory, destination),
                     };
 
-                Console.WriteLine($"{conversation.title}\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+                Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
                 foreach (var exporter in exporters)
                 {
-                    Console.WriteLine($"\t{exporter.GetType().Name}");
+                    Console.Write($"\t\t{exporter.GetType().Name}");
 
                     if (conversation.HasMultipleBranches())
                     {
@@ -37,6 +40,8 @@ namespace ChatGPTExport
                     var latest = conversation.GetLastestConversation();
                     var filename = GetFilename(latest, "", exporter.GetExtension());
                     fileContentsMap[filename] = exporter.Export(latest);
+
+                    Console.WriteLine($"...Done");
                 }
             }
 
