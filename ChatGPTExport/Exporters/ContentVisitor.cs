@@ -113,7 +113,11 @@ namespace ChatGPTExport.Exporters
             {
                 var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, fileSystem.FileInfo.New(destinationMatches.First()));
                 var withoutPath = fileSystem.Path.GetFileName(relativePath);
-                return $"![{withoutPath}]({relativePath})  ";
+                if(fileSystem.Path.DirectorySeparatorChar != '/')
+                {
+                    relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
+                }
+                return $"![{withoutPath}](./{relativePath})  ";
             }
             return null;
         }
