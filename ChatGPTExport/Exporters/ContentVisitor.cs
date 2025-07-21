@@ -20,16 +20,16 @@ namespace ChatGPTExport.Exporters
             {
                 var textPart = parts[0];
 
+                var sourcesFootnote = content_references.Where(p => p.type == "sources_footnote").FirstOrDefault();
+
                 var reversed = content_references.OrderByDescending(p => p.start_idx).ToList();
 
-                if (reversed.Any(p => p.type == "sources_footnote")) {
+                if (sourcesFootnote != null) {
                     var footnote = reversed.First();
-                    Debug.Assert(footnote.type == "sources_footnote");
+                    Debug.Assert(footnote == sourcesFootnote);
                 }
 
                 var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items).ToList();
-
-                int itemsReferenced = groupedWebpagesItems.Count;
 
                 var reindexedElements = textPart.GetRenderedElementIndexes();
 
@@ -59,11 +59,6 @@ namespace ChatGPTExport.Exporters
                             parts[0] = parts[0].Substring(0, start_idx) + refHighlight + parts[0].Substring(end_idx);
                             break;
                         case "sources_footnote":
-                            var v = 
-                                contentReference.sources.Any() ? 
-                                    "[^sources]" : 
-                                    string.Empty;
-                            parts[0] += v;
                             break;
                         default:
                             Console.WriteLine(contentReference.type);
@@ -76,6 +71,21 @@ namespace ChatGPTExport.Exporters
                 foreach (var item in groupedWebpagesItems)
                 {
                     parts.Add($"[^{i++}]: [{item.title}]({item.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                }
+
+                if (sourcesFootnote != null)
+                {
+                    var existingUrls = groupedWebpagesItems.Select(p => p.url).ToArray();
+                    var newSources = sourcesFootnote.sources.Where(p => existingUrls.Contains(p.url) == false).ToList();
+                    if (newSources.Any())
+                    {
+                        parts.Add(string.Empty);
+                        parts.Add("### Sources");
+                        foreach (var source in newSources)
+                        {
+                            parts.Add($"* [{source.title}]({source.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                        }
+                    }
                 }
             }
 
