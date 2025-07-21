@@ -55,6 +55,11 @@ namespace ChatGPTExport
                     fileSystem.File.WriteAllText(destinationFilename, contents);
                     fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, conversations.Last().conversation.GetCreateTime().DateTime);
                     fileSystem.File.SetLastWriteTimeUtc(destinationFilename, conversations.Last().conversation.GetUpdateTime().DateTime);
+                    Console.WriteLine($"{kv.Key}...Saved");
+                }
+                else
+                {
+                    Console.WriteLine($"{kv.Key}...No change");
                 }
             }
         }
@@ -62,7 +67,7 @@ namespace ChatGPTExport
         private string GetFilename(Conversation conversation, string modifier, string extension)
         {
             var createtime = conversation.GetCreateTime();
-            var value = createtime.ToString("yyyy-MM-ddTHH-mm-ss") + " - " + conversation.title + (string.IsNullOrWhiteSpace(modifier) ? "" : " - " + modifier);
+            var value = $"{createtime:yyyy-MM-ddTHH-mm-ss} - {conversation.title}{(string.IsNullOrWhiteSpace(modifier) ? "" : $" - {modifier}")}";
             value = new string(value.Where(p => fileSystem.Path.GetInvalidFileNameChars().Contains(p) == false).ToArray());
             return value + extension;
         }

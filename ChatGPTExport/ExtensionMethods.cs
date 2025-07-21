@@ -1,9 +1,10 @@
-﻿using System.IO.Abstractions;
+﻿using System.Globalization;
+using System.IO.Abstractions;
 using System.Text.Json;
 
 namespace ChatGPTExport
 {
-    internal static class ExtensionMethods
+    public static class ExtensionMethods
     {
         public static string GetRelativePathTo(this IFileSystem fileSystem, IDirectoryInfo baseDir, IFileInfo targetFile)
         {
@@ -67,6 +68,67 @@ namespace ChatGPTExport
             catch
             {
                 return false; // optionally handle or log other exceptions
+            }
+        }
+
+        public static IList<int> GetRenderedElementIndexes(this string input)
+        {
+
+            var realList = new List<int>();
+            var textElements = StringInfo.GetTextElementEnumerator(input);
+            int count = 0;
+            while (textElements.MoveNext())
+            {
+                string element = textElements.GetTextElement();
+                realList.Add(count);
+                count += element.GetRealElementWidth();
+            }
+
+            return realList;
+        }
+
+        public static int GetRealElementWidth(this string element)
+        {
+            const char VariationSelector16 = '\uFE0F';
+            if (element.Contains(VariationSelector16)) //  eg "⚠️" or 🗂️ or 🧛‍♂️
+            {
+                if (element.Length > 2)
+                {
+                    return 2;
+                }
+                else
+                {
+                    return element.Length - 1;
+                }
+            }
+            else if (element.Length == 2 && char.IsSurrogatePair(element, 0))
+            {
+                return 2; // external system treats this emoji as 2 units
+            }
+            else if (element.Length > 1)
+            {
+                // Count surrogate pairs as 1 unit
+                int unitCount = 0;
+                for (int i = 0; i < element.Length; i++)
+                {
+                    if (char.IsHighSurrogate(element[i]) &&
+                        i + 1 < element.Length &&
+                        char.IsLowSurrogate(element[i + 1]))
+                    {
+                        unitCount++;
+                        i++; // skip low surrogate
+                    }
+                    else
+                    {
+                        unitCount++;
+                    }
+                }
+
+                return unitCount;
+            }
+            else
+            {
+                return element.Length;
             }
         }
     }
