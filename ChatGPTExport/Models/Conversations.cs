@@ -201,6 +201,8 @@ namespace ChatGPTExport.Models
                 public string leaf_description { get; set; }
                 public string snippet { get; set; }
                 public string[] breadcrumbs { get; set; }
+                public string title { get; set; }
+                public string thumbnail_url { get; set; }
                 [JsonExtensionData]
                 public Dictionary<string, JsonElement> ExtraData { get; set; }
 

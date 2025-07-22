@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using System.Diagnostics;
 using System.IO.Abstractions;
-using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ChatGPTExport.Models;
@@ -16,28 +15,81 @@ namespace ChatGPTExport.Exporters
         {
             var parts = content.parts.Where(TextContentFilter).SelectMany(SeparatePromptIfPresent).ToList();
 
-            if (context.MessageMetadata.safe_urls != null && context.MessageMetadata.safe_urls.Any())
+            var content_references = context.MessageMetadata.content_references;
+            if (content_references != null && content_references.Length != 0)
             {
-                parts.Add("");
-                parts.Add("References:");
-                var urls = context.MessageMetadata.safe_urls.Distinct().Select(p => "* " + FormatUrl(p));
-                parts.AddRange(urls);
+                var textPart = parts[0];
+
+                var sourcesFootnote = content_references.Where(p => p.type == "sources_footnote").FirstOrDefault();
+
+                var reversed = content_references.OrderByDescending(p => p.start_idx).ToList();
+
+                if (sourcesFootnote != null) {
+                    var footnote = reversed.First();
+                    Debug.Assert(footnote == sourcesFootnote);
+                }
+
+                var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items).ToList();
+
+                var reindexedElements = textPart.GetRenderedElementIndexes();
+
+                foreach (var contentReference in reversed)
+                {
+                    int start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
+                    int end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
+                    switch (contentReference.type)
+                    {
+                        case "attribution":
+                            break;
+                        case "hidden":
+                        case "grouped_webpages_model_predicted_fallback":
+                        case "image_v2":
+                        case "tldr":
+                        case "products":
+                        case "nav_list":
+                            var refHighlight2 = "";
+                            parts[0] = parts[0].Substring(0, start_idx) + refHighlight2 + parts[0].Substring(end_idx);
+                            break;
+                        case "video":
+                            var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
+                            parts[0] = parts[0].Substring(0, start_idx) + videolink + parts[0].Substring(end_idx);
+                            break;
+                        case "grouped_webpages":
+                            var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
+                            parts[0] = parts[0].Substring(0, start_idx) + refHighlight + parts[0].Substring(end_idx);
+                            break;
+                        case "sources_footnote":
+                            break;
+                        default:
+                            Console.WriteLine(contentReference.type);
+                            break;
+                    }
+                }
+
+                parts.Add(string.Empty);
+                int i = 1;
+                foreach (var item in groupedWebpagesItems)
+                {
+                    parts.Add($"[^{i++}]: [{item.title}]({item.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                }
+
+                if (sourcesFootnote != null)
+                {
+                    var existingUrls = groupedWebpagesItems.Select(p => p.url).ToArray();
+                    var newSources = sourcesFootnote.sources.Where(p => existingUrls.Contains(p.url) == false).ToList();
+                    if (newSources.Any())
+                    {
+                        parts.Add(string.Empty);
+                        parts.Add("### Sources");
+                        foreach (var source in newSources)
+                        {
+                            parts.Add($"* [{source.title}]({source.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                        }
+                    }
+                }
             }
 
             return new MarkdownContentResult(parts);
-        }
-
-        private static string FormatUrl(string p)
-        {
-            if (Uri.TryCreate(p, UriKind.Absolute, out var url))
-            {
-                return $"[{WebUtility.UrlDecode(url.AbsoluteUri)}]({url.AbsoluteUri})".Replace("?utm_source=chatgpt.com","")
-                    ;
-            }
-            else
-            {
-                return p;
-            }
         }
 
         private static bool TextContentFilter(string p)
@@ -73,7 +125,7 @@ namespace ChatGPTExport.Exporters
                             markdownContent.Add($"> ⚠️ **Warning:** Could not find asset: {obj.asset_pointer}.");
                         }
 
-                        if(context.MessageMetadata.image_gen_title != null)
+                        if (context.MessageMetadata.image_gen_title != null)
                         {
                             markdownContent.Add($"*{context.MessageMetadata.image_gen_title}*  ");
                         }
@@ -134,7 +186,7 @@ namespace ChatGPTExport.Exporters
             {
                 var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
                 var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
-                if(fileSystem.Path.DirectorySeparatorChar != '/')
+                if (fileSystem.Path.DirectorySeparatorChar != '/')
                 {
                     relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
                 }
