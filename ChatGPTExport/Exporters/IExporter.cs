@@ -1,10 +1,11 @@
-﻿using ChatGPTExport.Models;
+﻿using System.IO.Abstractions;
+using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal interface IExporter
+    public interface IExporter
     {
-        IEnumerable<string> Export(Conversation conversation);
+        IEnumerable<string> Export(IDirectoryInfo sourceDirectory, Conversation conversation);
         string GetExtension();
     }
 }

@@ -6,15 +6,19 @@ ChatGPT does not offer a clean, built-in way to save or print conversations for 
 
 This tool enables you to extract and reformat your conversations from the official ChatGPT export ZIP file. You can export your data via [ChatGPT settings](https://chatgpt.com/#settings/DataControls).
 
-### Process
+## Features
+* Reprocess ChatGPT exports into smaller viewable markdown files, and optionally json files.
+* Process multiple exports in one sweep, detecting the latest version of each conversation.
+* Include uploaded and generated image assets in the markdown.
+* Transform web references into markdown footnotes.
+
+## Process
 
 1. Export your data from the ChatGPT settings page.
 2. Download the ZIP file from the email you receive.
 3. **Important:** Verify that the ZIP file is valid. Some ChatGPT exports may be truncated or corrupted.
 4. Unpack the ZIP file to a new folder.
 5. Run this tool using that folder as the source, and specify another folder as the destination.
-
-## Usage
 
 ```
 ChatGPTExport.exe --help
@@ -29,8 +33,11 @@ Options:
   --version                     Show version information
   -s, --source (REQUIRED)       The source directory containing the unzipped ChatGTP exported files.
                                 Must contain a conversations.json.
-                                You can specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.
+                                You can specify multiple source directories (eg, -s dir1 -s dir2), and they will be
+                                processed in sequence.
   -d, --destination (REQUIRED)  The the destination directory where markdown files and assets are to be created.
+  -j, --json                    Export to json files. [default: False]
+  -m, --markdown                Export to markdown files. [default: True]
 
 ```
 
@@ -48,7 +55,7 @@ docker run --rm \
 ```
 
 ## How it works
-The source folder (unzipped export) must contain a file named conversations.json, which holds all your conversations in JSON format.
+The source folder must contain a file named conversations.json, which holds all your conversations in JSON format. The conversations.json can be in a subfolder, and you can have multiple subfolders (eg, one for each export if you have created many).
 
 Each conversation is converted into a standalone Markdown file in the destination folder. For each conversation, the following files may be created:
 
