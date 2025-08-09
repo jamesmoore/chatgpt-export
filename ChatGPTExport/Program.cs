@@ -3,6 +3,7 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.IO.Abstractions;
 using ChatGPTExport;
+using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -36,12 +37,27 @@ var destinationDirectoryOption = new Option<DirectoryInfo>("--destination", "-d"
     Required = true,
 }.AcceptExistingOnly();
 
+var jsonOption = new Option<bool>("--json", "-j")
+{
+    Description = "Export to json files.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
+var markdownOption = new Option<bool>("--markdown", "-m")
+{
+    Description = "Export to markdown files.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => true,
+};
+
 var rootCommand = new RootCommand("ChatGPT export reformatter")
 {
     sourceDirectoryOption,
     destinationDirectoryOption,
+    jsonOption,
+    markdownOption,
 };
-
 
 rootCommand.SetAction(parseResult =>
 {
@@ -58,7 +74,16 @@ rootCommand.SetAction(parseResult =>
     var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
 
     var conversationsFactory = new ConversationsParser(fileSystem);
-    var exporter = new Exporter(fileSystem);
+    var exporters = new List<IExporter>();
+    if (parseResult.GetRequiredValue(jsonOption))
+    {
+        exporters.Add(new JsonExporter(fileSystem, destination));
+    }
+    if (parseResult.GetRequiredValue(markdownOption))
+    {
+        exporters.Add(new MarkdownExporter(fileSystem, destination));
+    }
+    var exporter = new Exporter(fileSystem, exporters);
 
     Conversations GetConversations(IFileInfo p)
     {
@@ -74,35 +99,24 @@ rootCommand.SetAction(parseResult =>
         }
     }
 
-    var conversationsWithMetadata = conversationFiles
+    var directoryConversationsMap = conversationFiles
         .Select(file => new
         {
-            FileInfo = file,
+            file.Directory,
             Conversations = GetConversations(file)
         })
         .Where(x => x.Conversations != null)
-        .Select(x => new
-        {
-            x.FileInfo,
-            x.Conversations,
-            UpdateTime = x.Conversations.GetUpdateTime()
-        })
-        .OrderBy(x => x.UpdateTime)
+        .OrderBy(x => x.Conversations.GetUpdateTime())
         .ToList();
 
-    var groupedByConversationId = conversationsWithMetadata
-        .SelectMany(entry => entry.Conversations, (entry, conversation) => new
-        {
-            entry.FileInfo,
-            Conversation = conversation
-        })
+    var groupedByConversationId = directoryConversationsMap
+        .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.Directory, Conversation))
         .GroupBy(x => x.Conversation.conversation_id)
-        .ToList();
+        .OrderBy(p => p.Key).ToList();
 
     foreach (var group in groupedByConversationId)
     {
-        var conversations = group.Select(x => (x.FileInfo, x.Conversation)).ToList();
-        exporter.Process(conversations, destination);
+        exporter.Process(group, destination);
     }
     return 0;
 });

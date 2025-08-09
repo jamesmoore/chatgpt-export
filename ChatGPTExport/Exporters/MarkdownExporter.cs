@@ -3,11 +3,11 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class MarkdownExporter(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory) : IExporter
+    internal class MarkdownExporter(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
-        public IEnumerable<string> Export(Conversation conversation)
+        public IEnumerable<string> Export(IDirectoryInfo sourceDirectory, Conversation conversation)
         {
             var messages = conversation.mapping.Select(p => p.Value).
                 Where(p => p.message != null).

@@ -5,7 +5,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class JsonExporter(IFileSystem fileSystem, IDirectoryInfo directoryInfo) : IExporter
+    internal class JsonExporter(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IExporter
     {
         private readonly JsonSerializerOptions options = new()
         {
@@ -13,9 +13,9 @@ namespace ChatGPTExport.Exporters
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        public IEnumerable<string> Export(Conversation conversation)
+        public IEnumerable<string> Export(IDirectoryInfo sourceDirectory, Conversation conversation)
         {
-            string outputPath = fileSystem.Path.Join(directoryInfo.FullName);
+            string outputPath = fileSystem.Path.Join(destinationDirectory.FullName);
             return [JsonSerializer.Serialize(conversation, options)];
         }
 
