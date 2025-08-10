@@ -58,7 +58,9 @@ jobs:
           -o "$release_name" \
           -p:Version=$VERSION \
           -p:AssemblyVersion=$VERSION.0 \
-          -p:FileVersion=$VERSION.0
+          -p:FileVersion=$VERSION.0 \
+          -p:PublishSingleFile=true \
+          -p:UseAppHost=true
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
