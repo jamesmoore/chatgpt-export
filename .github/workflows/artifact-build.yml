@@ -16,17 +16,23 @@ jobs:
       contents: write
     strategy:
       matrix:
-        kind: ['linux', 'windows', 'macOS']
+        kind: ['linux', 'linux-musl', 'windows', 'macOS', 'macOS-arm']
         include:
           - kind: linux
             os: ubuntu-latest
             target: linux-x64
+          - kind: linux-musl
+            os: ubuntu-latest
+            target: linux-musl-x64            
           - kind: windows
             os: windows-latest
             target: win-x64
           - kind: macOS
             os: macos-latest
             target: osx-x64
+          - kind: macOS-arm
+            os: macos-latest
+            target: osx-arm64            
     runs-on: ${{ matrix.os }}
     steps:
       - name: Extract clean version
