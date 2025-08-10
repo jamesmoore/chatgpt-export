@@ -11,9 +11,10 @@ This tool enables you to extract and reformat your conversations from the offici
 * Process multiple exports in one sweep, detecting the latest version of each conversation.
 * Include uploaded and generated image assets in the markdown.
 * Transform web references into markdown footnotes.
+* Runs with Docker, Windows, Linux and MacOS.
+* No usage limits or monetization.
 
 ## Process
-
 1. Export your data from the ChatGPT settings page.
 2. Download the ZIP file from the email you receive.
 3. **Important:** Verify that the ZIP file is valid. Some ChatGPT exports may be truncated or corrupted.
@@ -31,10 +32,11 @@ Usage:
 Options:
   -?, -h, --help                Show help and usage information
   --version                     Show version information
-  -s, --source (REQUIRED)       The source directory containing the unzipped ChatGTP exported files.
-                                Must contain a conversations.json.
-                                You can specify multiple source directories (eg, -s dir1 -s dir2), and they will be
-                                processed in sequence.
+  -s, --source (REQUIRED)       The source directory/directories containing the unzipped ChatGTP exported files.
+                                Must contain at least one conversations.json, in the folder or one of its subfolders.
+                                You can specify a parent directory containing multiple exports.
+                                You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will
+                                be processed in sequence.
   -d, --destination (REQUIRED)  The the destination directory where markdown files and assets are to be created.
   -j, --json                    Export to json files. [default: False]
   -m, --markdown                Export to markdown files. [default: True]
