@@ -48,10 +48,17 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="App-$tag-${{ matrix.target }}"
+          release_name="ChatGPTExport-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish ChatGPTExport/ChatGPTExport.csproj --runtime "${{ matrix.target }}" --configuration Release --self-contained true -o "$release_name" -p:Version=$VERSION -p:AssemblyVersion=$VERSION.0 -p:FileVersion=$VERSION.0
+          dotnet publish ChatGPTExport/ChatGPTExport.csproj \
+          --runtime "${{ matrix.target }}" \
+          --configuration Release \
+          --self-contained true \
+          -o "$release_name" \
+          -p:Version=$VERSION \
+          -p:AssemblyVersion=$VERSION.0 \
+          -p:FileVersion=$VERSION.0
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
@@ -69,6 +76,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: "App*"
+          files: "ChatGPTExport-*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
