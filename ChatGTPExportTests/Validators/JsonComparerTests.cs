@@ -157,6 +157,7 @@ namespace ChatGTPExportTests.Validators
 
             var diff = JsonComparer.CompareJson(json, json2);
             Assert.NotEmpty(diff);
+            Assert.Contains("Array length differs", diff[0]);
         }
     }
 }
