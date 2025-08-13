@@ -13,7 +13,7 @@ const string searchPattern = "conversations.json";
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
 {
     Description = """
-    The source directory/directories containing the unzipped ChatGTP exported files.
+    The source directory/directories containing the unzipped ChatGPT exported files.
     Must contain at least one conversations.json, in the folder or one of its subfolders.
     You can specify a parent directory containing multiple exports.
     You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.
