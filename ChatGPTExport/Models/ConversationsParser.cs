@@ -29,7 +29,7 @@ namespace ChatGPTExport.Models
 
             if (unhandled.Any())
             {
-                Console.Error.WriteLine("Warning - the the following conversations have unsupported content types:");
+                Console.Error.WriteLine("Warning - the following conversations have unsupported content types:");
                 foreach (var unhandledContent in unhandled)
                 {
                     Console.WriteLine(unhandledContent.Title);
