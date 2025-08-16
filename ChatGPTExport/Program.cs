@@ -8,6 +8,13 @@ using ChatGPTExport.Models;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+Console.CancelKeyPress += (sender, args) =>
+{
+    args.Cancel = true;
+    Console.Write("\x1b]9;4;0;\x07");
+    Environment.Exit(0);
+};
+
 const string searchPattern = "conversations.json";
 
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
@@ -71,6 +78,8 @@ rootCommand.SetAction(parseResult =>
         Console.Error.WriteLine(parseError.Message);
     }
 
+    Console.Write("\x1b]9;4;3\x07"); // https://learn.microsoft.com/en-us/windows/terminal/tutorials/progress-bar-sequences
+
     var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
     var fileSystem = new FileSystem();
     var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
@@ -119,8 +128,12 @@ rootCommand.SetAction(parseResult =>
         .GroupBy(x => x.Conversation.conversation_id)
         .OrderBy(p => p.Key).ToList();
 
+    var count = groupedByConversationId.Count;
+    var position = 0;
     foreach (var group in groupedByConversationId)
     {
+        var percent = (int)(position++ * 100.0 / count);
+        Console.Write($"\x1b]9;4;1;{percent}\x07");
         exporter.Process(group, destination);
     }
     return 0;
