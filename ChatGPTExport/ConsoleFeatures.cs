@@ -2,7 +2,31 @@
 {
     internal static class ConsoleFeatures
     {
-        public static bool EnableOscTabProgress() => IsInteractiveTty() && SupportsOscTabProgress();
+        public static void StartIndeterminate()
+        {
+            if (enableOscTabProgress)
+            {
+                Console.Write("\x1b]9;4;3\x07"); // https://learn.microsoft.com/en-us/windows/terminal/tutorials/progress-bar-sequences
+            }
+        }
+
+        public static void SetProgress(int percent)
+        {
+            if (enableOscTabProgress)
+            {
+                Console.Write($"\x1b]9;4;1;{percent}\x07");
+            }
+        }
+
+        public static void ClearState()
+        {
+            if (enableOscTabProgress)
+            {
+                Console.Write("\x1b]9;4;0;\x07");
+            }
+        }
+
+        private static bool enableOscTabProgress = IsInteractiveTty() && SupportsOscTabProgress();
 
         private static bool IsInteractiveTty() =>
             !Console.IsOutputRedirected; // avoid dumping control bytes into logs/pipes

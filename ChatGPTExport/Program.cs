@@ -6,14 +6,12 @@ using ChatGPTExport;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
 
-var supportsOSCProgress = ConsoleFeatures.EnableOscTabProgress();
-
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 Console.CancelKeyPress += (sender, args) =>
 {
     args.Cancel = true;
-    TerminateProgram();
+    ConsoleFeatures.ClearState();
     Environment.Exit(0);
 };
 
@@ -82,10 +80,7 @@ rootCommand.SetAction(parseResult =>
             Console.Error.WriteLine(parseError.Message);
         }
 
-        if (supportsOSCProgress)
-        {
-            Console.Write("\x1b]9;4;3\x07"); // https://learn.microsoft.com/en-us/windows/terminal/tutorials/progress-bar-sequences
-        }
+        ConsoleFeatures.StartIndeterminate();
 
         var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
         var fileSystem = new FileSystem();
@@ -139,11 +134,8 @@ rootCommand.SetAction(parseResult =>
         var position = 0;
         foreach (var group in groupedByConversationId)
         {
-            if (supportsOSCProgress)
-            {
-                var percent = (int)(position++ * 100.0 / count);
-                Console.Write($"\x1b]9;4;1;{percent}\x07");
-            }
+            var percent = (int)(position++ * 100.0 / count);
+            ConsoleFeatures.SetProgress(percent);
             exporter.Process(group, destination);
         }
     }
@@ -153,7 +145,7 @@ rootCommand.SetAction(parseResult =>
     }
     finally
     {
-        TerminateProgram();
+        ConsoleFeatures.ClearState();
     }
     return 0;
 
@@ -161,11 +153,3 @@ rootCommand.SetAction(parseResult =>
 
 var parseResult = rootCommand.Parse(args);
 return parseResult.Invoke();
-
-void TerminateProgram()
-{
-    if (supportsOSCProgress)
-    {
-        Console.Write("\x1b]9;4;0;\x07");
-    }
-}
