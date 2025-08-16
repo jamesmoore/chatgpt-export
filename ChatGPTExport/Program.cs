@@ -8,6 +8,13 @@ using ChatGPTExport.Models;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
+Console.CancelKeyPress += (sender, args) =>
+{
+    args.Cancel = true;
+    ConsoleFeatures.ClearState();
+    Environment.Exit(0);
+};
+
 const string searchPattern = "conversations.json";
 
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
@@ -66,64 +73,82 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
 
 rootCommand.SetAction(parseResult =>
 {
-    foreach (ParseError parseError in parseResult.Errors)
+    try
     {
-        Console.Error.WriteLine(parseError.Message);
-    }
-
-    var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
-    var fileSystem = new FileSystem();
-    var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
-    var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
-
-    var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
-
-    var conversationsFactory = new ConversationsParser(fileSystem);
-    var exporters = new List<IExporter>();
-    if (parseResult.GetRequiredValue(jsonOption))
-    {
-        exporters.Add(new JsonExporter(fileSystem, destination));
-    }
-    if (parseResult.GetRequiredValue(markdownOption))
-    {
-        exporters.Add(new MarkdownExporter(fileSystem, destination));
-    }
-    var exporter = new Exporter(fileSystem, exporters);
-
-    Conversations GetConversations(IFileInfo p)
-    {
-        try
+        foreach (ParseError parseError in parseResult.Errors)
         {
-            Console.WriteLine($"Loading conversation " + p.FullName);
-            return conversationsFactory.GetConversations(p);
+            Console.Error.WriteLine(parseError.Message);
         }
-        catch (Exception ex)
+
+        ConsoleFeatures.StartIndeterminate();
+
+        var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
+        var fileSystem = new FileSystem();
+        var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
+        var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
+
+        var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
+
+        var conversationsFactory = new ConversationsParser(fileSystem);
+        var exporters = new List<IExporter>();
+        if (parseResult.GetRequiredValue(jsonOption))
         {
-            Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
-            return null;
+            exporters.Add(new JsonExporter(fileSystem, destination));
+        }
+        if (parseResult.GetRequiredValue(markdownOption))
+        {
+            exporters.Add(new MarkdownExporter(fileSystem, destination));
+        }
+        var exporter = new Exporter(fileSystem, exporters);
+
+        Conversations GetConversations(IFileInfo p)
+        {
+            try
+            {
+                Console.WriteLine($"Loading conversation " + p.FullName);
+                return conversationsFactory.GetConversations(p);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
+                return null;
+            }
+        }
+
+        var directoryConversationsMap = conversationFiles
+            .Select(file => new
+            {
+                file.Directory,
+                Conversations = GetConversations(file)
+            })
+            .Where(x => x.Conversations != null)
+            .OrderBy(x => x.Conversations.GetUpdateTime())
+            .ToList();
+
+        var groupedByConversationId = directoryConversationsMap
+            .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.Directory, Conversation))
+            .GroupBy(x => x.Conversation.conversation_id)
+            .OrderBy(p => p.Key).ToList();
+
+        var count = groupedByConversationId.Count;
+        var position = 0;
+        foreach (var group in groupedByConversationId)
+        {
+            var percent = (int)(position++ * 100.0 / count);
+            ConsoleFeatures.SetProgress(percent);
+            exporter.Process(group, destination);
         }
     }
-
-    var directoryConversationsMap = conversationFiles
-        .Select(file => new
-        {
-            file.Directory,
-            Conversations = GetConversations(file)
-        })
-        .Where(x => x.Conversations != null)
-        .OrderBy(x => x.Conversations.GetUpdateTime())
-        .ToList();
-
-    var groupedByConversationId = directoryConversationsMap
-        .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.Directory, Conversation))
-        .GroupBy(x => x.Conversation.conversation_id)
-        .OrderBy(p => p.Key).ToList();
-
-    foreach (var group in groupedByConversationId)
+    catch (Exception ex)
     {
-        exporter.Process(group, destination);
+        Console.Error.WriteLine(ex.Message);
+    }
+    finally
+    {
+        ConsoleFeatures.ClearState();
     }
     return 0;
+
 });
 
 var parseResult = rootCommand.Parse(args);
