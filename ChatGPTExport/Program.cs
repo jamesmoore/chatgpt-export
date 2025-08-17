@@ -85,9 +85,6 @@ rootCommand.SetAction(parseResult =>
         var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
         var fileSystem = new FileSystem();
 
-        var sensitive = fileSystem.IsFileSystemCaseSensitive();
-        Console.WriteLine($"Filesystem case sensitive: {(sensitive ? "Y" : "N")}");
-
         var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
         var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
 
