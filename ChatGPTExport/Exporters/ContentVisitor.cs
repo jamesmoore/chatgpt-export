@@ -45,13 +45,13 @@ namespace ChatGPTExport.Exporters
                         case "grouped_webpages_model_predicted_fallback":
                         case "image_v2":
                         case "tldr":
-                        case "products":
-                            var products = "";
-                            parts[0] = parts[0].Substring(0, start_idx) + products + parts[0].Substring(end_idx);
-                            break;
                         case "nav_list":
                             var refHighlight2 = "";
                             parts[0] = parts[0].Substring(0, start_idx) + refHighlight2 + parts[0].Substring(end_idx);
+                            break;
+                        case "products":
+                            var products = contentReference.alt;
+                            parts[0] = parts[0].Substring(0, start_idx) + products + parts[0].Substring(end_idx);
                             break;
                         case "video":
                             var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
