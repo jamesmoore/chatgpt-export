@@ -46,6 +46,9 @@ namespace ChatGPTExport.Exporters
                         case "image_v2":
                         case "tldr":
                         case "products":
+                            var products = "";
+                            parts[0] = parts[0].Substring(0, start_idx) + products + parts[0].Substring(end_idx);
+                            break;
                         case "nav_list":
                             var refHighlight2 = "";
                             parts[0] = parts[0].Substring(0, start_idx) + refHighlight2 + parts[0].Substring(end_idx);
@@ -60,8 +63,12 @@ namespace ChatGPTExport.Exporters
                             break;
                         case "sources_footnote":
                             break;
+                        case "product_entity":
+                            var productsEntity = contentReference.alt;
+                            parts[0] = parts[0].Substring(0, start_idx) + productsEntity + parts[0].Substring(end_idx);
+                            break;
                         default:
-                            Console.WriteLine(contentReference.type);
+                            Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
                             break;
                     }
                 }
