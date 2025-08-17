@@ -1,5 +1,7 @@
 # ChatGPT Export²
 
+<img width="1024" height="183" alt="ChatGPT Export Export" src="https://github.com/user-attachments/assets/3cf24bdf-df3e-48c8-97aa-c10e8d72bff0" />
+
 ## About
 
 ChatGPT does not offer a clean, built-in way to save or print conversations for offline or archival use. While some browser extensions exist, they may pose security risks.
