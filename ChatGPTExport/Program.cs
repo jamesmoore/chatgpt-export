@@ -84,8 +84,23 @@ rootCommand.SetAction(parseResult =>
 
         var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
         var fileSystem = new FileSystem();
+
+        var sensitive = fileSystem.IsFileSystemCaseSensitive();
+        Console.WriteLine($"Filesystem case sensitive: {(sensitive ? "Y" : "N")}");
+
         var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
         var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
+
+        // check that destination is not the same as the source, or one of the source subdirectories
+        foreach(var source in sources)
+        {
+            var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
+            if(isSameOrSubdirectory)
+            {
+                Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
+                return 1;
+            }
+        }
 
         var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
 
