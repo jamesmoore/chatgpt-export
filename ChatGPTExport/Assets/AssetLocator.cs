@@ -5,7 +5,7 @@ namespace ChatGPTExport.Assets
 {
     public class AssetLocator(IFileSystem fileSystem, IDirectoryInfo directoryInfo, IDirectoryInfo destinationDirectory)
     {
-        private List<string>? cachedList = null;
+        private List<string>? cachedSourceList = null;
 
         public string? GetMarkdownImage(string searchPattern, string role, DateTimeOffset? createdDate, DateTimeOffset? updatedDate)
         {
@@ -15,8 +15,8 @@ namespace ChatGPTExport.Assets
 
         private IEnumerable<string> GetFiles(string searchPattern)
         {
-            cachedList ??= fileSystem.Directory.GetFiles(directoryInfo.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
-            var match = cachedList.Where(p => p.Contains(searchPattern));
+            cachedSourceList ??= fileSystem.Directory.GetFiles(directoryInfo.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
+            var match = cachedSourceList.Where(p => p.Contains(searchPattern));
             return match;
         }
 
