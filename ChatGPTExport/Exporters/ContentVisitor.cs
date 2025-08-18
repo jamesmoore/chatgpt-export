@@ -24,7 +24,8 @@ namespace ChatGPTExport.Exporters
 
                 var reversed = content_references.OrderByDescending(p => p.start_idx).ToList();
 
-                if (sourcesFootnote != null) {
+                if (sourcesFootnote != null)
+                {
                     var footnote = reversed.First();
                     Debug.Assert(footnote == sourcesFootnote);
                 }
@@ -35,33 +36,41 @@ namespace ChatGPTExport.Exporters
 
                 foreach (var contentReference in reversed)
                 {
-                    int start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
-                    int end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
+                    var start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
+                    var end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
+                    var firstSpan = parts[0].AsSpan().Slice(0, start_idx);
+                    var lastSpan = parts[0].AsSpan().Slice(end_idx);
                     switch (contentReference.type)
                     {
                         case "attribution":
+                        case "sources_footnote":
                             break;
                         case "hidden":
                         case "grouped_webpages_model_predicted_fallback":
                         case "image_v2":
                         case "tldr":
-                        case "products":
                         case "nav_list":
-                            var refHighlight2 = "";
-                            parts[0] = parts[0].Substring(0, start_idx) + refHighlight2 + parts[0].Substring(end_idx);
+                            var hidden = "";
+                            parts[0] = string.Concat(firstSpan, hidden, lastSpan);
+                            break;
+                        case "products":
+                            var products = contentReference.alt;
+                            parts[0] = string.Concat(firstSpan, products, lastSpan);
+                            break;
+                        case "product_entity":
+                            var productsEntity = contentReference.alt;
+                            parts[0] = string.Concat(firstSpan, productsEntity, lastSpan);
                             break;
                         case "video":
                             var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
-                            parts[0] = parts[0].Substring(0, start_idx) + videolink + parts[0].Substring(end_idx);
+                            parts[0] = string.Concat(firstSpan, videolink, lastSpan);
                             break;
                         case "grouped_webpages":
                             var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
-                            parts[0] = parts[0].Substring(0, start_idx) + refHighlight + parts[0].Substring(end_idx);
-                            break;
-                        case "sources_footnote":
+                            parts[0] = string.Concat(firstSpan, refHighlight, lastSpan);
                             break;
                         default:
-                            Console.WriteLine(contentReference.type);
+                            Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
                             break;
                     }
                 }
