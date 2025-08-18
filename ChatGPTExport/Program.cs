@@ -128,10 +128,12 @@ rootCommand.SetAction(parseResult =>
             }
         }
 
+        var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
+
         var directoryConversationsMap = conversationFiles
             .Select(file => new
             {
-                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination),
+                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator),
                 Conversations = GetConversations(file)
             })
             .Where(x => x.Conversations != null)

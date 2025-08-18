@@ -3,28 +3,25 @@ using System.IO.Abstractions;
 
 namespace ChatGPTExport.Assets
 {
-    public class AssetLocator(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory)
+    public class AssetLocator(
+        IFileSystem fileSystem, 
+        IDirectoryInfo sourceDirectory, 
+        IDirectoryInfo destinationDirectory,
+        ExistingAssetLocator existingAssetLocator
+        )
     {
         private List<string>? cachedSourceList = null;
-        private List<string>? cachedDestinationList = null;
 
         public string? GetMarkdownImage(string searchPattern, string role, DateTimeOffset? createdDate, DateTimeOffset? updatedDate)
         {
             return FindAssetInSourceDirectory(searchPattern, role, createdDate, updatedDate) ??
-                FindAssetInDestinationDirectory(searchPattern);
+                existingAssetLocator.FindAssetInDestinationDirectory(searchPattern);
         }
 
         private IEnumerable<string> GetCachedSourceFiles(string searchPattern)
         {
             cachedSourceList ??= fileSystem.Directory.GetFiles(sourceDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
             var match = cachedSourceList.Where(p => p.Contains(searchPattern));
-            return match;
-        }
-
-        private IEnumerable<string> GetCachedDestinationFiles(string searchPattern)
-        {
-            cachedDestinationList ??= fileSystem.Directory.GetFiles(destinationDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
-            var match = cachedDestinationList.Where(p => p.Contains(searchPattern));
             return match;
         }
 
@@ -48,6 +45,7 @@ namespace ChatGPTExport.Assets
                 if (fileSystem.File.Exists(fullAssetPath) == false)
                 {
                     fileSystem.File.Copy(file, fullAssetPath, true);
+                    existingAssetLocator.Add(fullAssetPath);
 
                     if (createdDate.HasValue)
                     {
@@ -63,28 +61,6 @@ namespace ChatGPTExport.Assets
                 return $"![{withoutPath}](./{assetsPath}/{withoutPath})  ";
             }
 
-            return null;
-        }
-
-        private string? FindAssetInDestinationDirectory(string searchPattern)
-        {
-            // it may already exist in the destination directory from a previous export 
-            var destinationMatches = GetCachedDestinationFiles(searchPattern).ToList();
-            if (destinationMatches.Count == 0)
-            {
-                destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern + "*.*", System.IO.SearchOption.AllDirectories).ToList();
-            }
-
-            if (destinationMatches.Count != 0)
-            {
-                var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
-                var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
-                if (fileSystem.Path.DirectorySeparatorChar != '/')
-                {
-                    relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
-                }
-                return $"![{targetFile.Name}](./{relativePath})  ";
-            }
             return null;
         }
     }
