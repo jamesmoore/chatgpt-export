@@ -1,4 +1,5 @@
 ﻿using System.IO.Abstractions;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
 
@@ -6,7 +7,7 @@ namespace ChatGPTExport
 {
     public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters)
     {
-        public void Process(IEnumerable<(IDirectoryInfo sourceDirectory, Conversation conversation)> conversations, IDirectoryInfo destination)
+        public void Process(IEnumerable<(AssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
         {
             if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
             {
@@ -18,7 +19,7 @@ namespace ChatGPTExport
             var titles = string.Join(Environment.NewLine, conversations.Select(p => p.conversation.title).Distinct().ToArray());
             Console.WriteLine(titles);
 
-            foreach (var (sourceDirectory, conversation) in conversations)
+            foreach (var (assetLocator, conversation) in conversations)
             {
                 Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
                 foreach (var exporter in exporters)
@@ -28,12 +29,12 @@ namespace ChatGPTExport
                     if (conversation.HasMultipleBranches())
                     {
                         var completeFilename = GetFilename(conversation, "complete", exporter.GetExtension());
-                        fileContentsMap[completeFilename] = exporter.Export(sourceDirectory, conversation);
+                        fileContentsMap[completeFilename] = exporter.Export(assetLocator, conversation);
                     }
 
                     var latest = conversation.GetLastestConversation();
                     var filename = GetFilename(latest, "", exporter.GetExtension());
-                    fileContentsMap[filename] = exporter.Export(sourceDirectory, latest);
+                    fileContentsMap[filename] = exporter.Export(assetLocator, latest);
 
                     Console.WriteLine($"...Done");
                 }

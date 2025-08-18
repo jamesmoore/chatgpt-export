@@ -1,11 +1,11 @@
-﻿using System.IO.Abstractions;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class JsonExporter(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IExporter
+    internal class JsonExporter : IExporter
     {
         private readonly JsonSerializerOptions options = new()
         {
@@ -13,9 +13,8 @@ namespace ChatGPTExport.Exporters
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        public IEnumerable<string> Export(IDirectoryInfo sourceDirectory, Conversation conversation)
+        public IEnumerable<string> Export(AssetLocator cachedFileSystemWrapper, Conversation conversation)
         {
-            string outputPath = fileSystem.Path.Join(destinationDirectory.FullName);
             return [JsonSerializer.Serialize(conversation, options)];
         }
 

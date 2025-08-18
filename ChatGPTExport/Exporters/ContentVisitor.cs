@@ -1,13 +1,13 @@
 ﻿using System.Data;
 using System.Diagnostics;
-using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class ContentVisitor(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory) : IContentVisitor<MarkdownContentResult>
+    internal partial class ContentVisitor(AssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -38,8 +38,9 @@ namespace ChatGPTExport.Exporters
                 {
                     var start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
                     var end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
-                    var firstSpan = parts[0].AsSpan().Slice(0, start_idx);
-                    var lastSpan = parts[0].AsSpan().Slice(end_idx);
+                    var firstPartSpan = parts[0].AsSpan();
+                    var firstSpan = firstPartSpan[..start_idx];
+                    var lastSpan = firstPartSpan[end_idx..];
                     switch (contentReference.type)
                     {
                         case "attribution":
@@ -110,19 +111,16 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentMultimodalText content, ContentVisitorContext context)
         {
-            var typedContent = content;
             var markdownContent = new List<string>();
-            foreach (var part in typedContent.parts)
+            foreach (var part in content.parts)
             {
                 if (part.IsObject)
                 {
                     var obj = part.ObjectValue;
                     if (obj.content_type == "image_asset_pointer" && string.IsNullOrWhiteSpace(obj.asset_pointer) == false)
                     {
-                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty) + "*.*";
-                        var markdownImage =
-                            FindAssetInSourceDirectory(searchPattern, context.Role, context.CreatedDate, context.UpdatedDate) ??
-                            FindAssetInDestinationDirectory(searchPattern);
+                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var markdownImage = assetLocator.GetMarkdownImage(searchPattern, context.Role, context.CreatedDate, context.UpdatedDate);
 
                         if (string.IsNullOrWhiteSpace(markdownImage) == false)
                         {
@@ -147,61 +145,6 @@ namespace ChatGPTExport.Exporters
                 }
             }
             return new MarkdownContentResult(markdownContent);
-        }
-
-        private string? FindAssetInSourceDirectory(string searchPattern, string role, DateTimeOffset? createdDate, DateTimeOffset? updatedDate)
-        {
-            var files = fileSystem.Directory.GetFiles(sourceDirectory.FullName, searchPattern, System.IO.SearchOption.AllDirectories);
-            Debug.Assert(files.Length <= 1); // There shouldn't be more than one file.
-            var file = files.FirstOrDefault();
-            if (file != null)
-            {
-                var withoutPath = fileSystem.Path.GetFileName(file);
-                var assetsPath = $"{role}-assets";
-                var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
-                if (fileSystem.Directory.Exists(assetsDir) == false)
-                {
-                    fileSystem.Directory.CreateDirectory(assetsDir);
-                }
-
-                var fullAssetPath = fileSystem.Path.Combine(assetsDir, withoutPath);
-
-                if (fileSystem.File.Exists(fullAssetPath) == false)
-                {
-                    fileSystem.File.Copy(file, fullAssetPath, true);
-
-                    if (createdDate.HasValue)
-                    {
-                        fileSystem.File.SetCreationTimeUtcIfPossible(fullAssetPath, createdDate.Value.DateTime);
-                    }
-
-                    if (updatedDate.HasValue)
-                    {
-                        fileSystem.File.SetLastWriteTimeUtc(fullAssetPath, updatedDate.Value.DateTime);
-                    }
-                }
-
-                return $"![{withoutPath}](./{assetsPath}/{withoutPath})  ";
-            }
-
-            return null;
-        }
-
-        private string? FindAssetInDestinationDirectory(string searchPattern)
-        {
-            // it may already exist in the destination directory from a previous export 
-            var destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern, System.IO.SearchOption.AllDirectories);
-            if (destinationMatches.Length != 0)
-            {
-                var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
-                var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
-                if (fileSystem.Path.DirectorySeparatorChar != '/')
-                {
-                    relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
-                }
-                return $"![{targetFile.Name}](./{relativePath})  ";
-            }
-            return null;
         }
 
         public MarkdownContentResult Visit(ContentCode content, ContentVisitorContext context)
