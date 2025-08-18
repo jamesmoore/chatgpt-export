@@ -3,26 +3,34 @@ using System.IO.Abstractions;
 
 namespace ChatGPTExport.Assets
 {
-    public class AssetLocator(IFileSystem fileSystem, IDirectoryInfo directoryInfo, IDirectoryInfo destinationDirectory)
+    public class AssetLocator(IFileSystem fileSystem, IDirectoryInfo sourceDirectory, IDirectoryInfo destinationDirectory)
     {
         private List<string>? cachedSourceList = null;
+        private List<string>? cachedDestinationList = null;
 
         public string? GetMarkdownImage(string searchPattern, string role, DateTimeOffset? createdDate, DateTimeOffset? updatedDate)
         {
             return FindAssetInSourceDirectory(searchPattern, role, createdDate, updatedDate) ??
-                FindAssetInDestinationDirectory(searchPattern + "*.*");
+                FindAssetInDestinationDirectory(searchPattern);
         }
 
-        private IEnumerable<string> GetFiles(string searchPattern)
+        private IEnumerable<string> GetCachedSourceFiles(string searchPattern)
         {
-            cachedSourceList ??= fileSystem.Directory.GetFiles(directoryInfo.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
+            cachedSourceList ??= fileSystem.Directory.GetFiles(sourceDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
             var match = cachedSourceList.Where(p => p.Contains(searchPattern));
+            return match;
+        }
+
+        private IEnumerable<string> GetCachedDestinationFiles(string searchPattern)
+        {
+            cachedDestinationList ??= fileSystem.Directory.GetFiles(destinationDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
+            var match = cachedDestinationList.Where(p => p.Contains(searchPattern));
             return match;
         }
 
         private string? FindAssetInSourceDirectory(string searchPattern, string role, DateTimeOffset? createdDate, DateTimeOffset? updatedDate)
         {
-            var files = GetFiles(searchPattern).ToList();
+            var files = GetCachedSourceFiles(searchPattern).ToList();
             Debug.Assert(files.Count <= 1); // There shouldn't be more than one file.
             var file = files.FirstOrDefault();
             if (file != null)
@@ -61,8 +69,13 @@ namespace ChatGPTExport.Assets
         private string? FindAssetInDestinationDirectory(string searchPattern)
         {
             // it may already exist in the destination directory from a previous export 
-            var destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern, System.IO.SearchOption.AllDirectories);
-            if (destinationMatches.Length != 0)
+            var destinationMatches = GetCachedDestinationFiles(searchPattern).ToList();
+            if (destinationMatches.Count == 0)
+            {
+                destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern + "*.*", System.IO.SearchOption.AllDirectories).ToList();
+            }
+
+            if (destinationMatches.Count != 0)
             {
                 var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
                 var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
