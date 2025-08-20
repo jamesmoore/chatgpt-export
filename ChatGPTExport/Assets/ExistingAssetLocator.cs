@@ -4,23 +4,23 @@ namespace ChatGPTExport.Assets
 {
     public class ExistingAssetLocator(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IAssetLocator
     {
-        private List<string>? cachedDestinationList = null;
+        private List<string>? cache = null;
+
         private IEnumerable<string> GetCachedDestinationFiles(string searchPattern)
         {
-            EnsureCacheExists();
-            var match = cachedDestinationList.Where(p => p.Contains(searchPattern));
+            var match = GetCache().Where(p => p.Contains(searchPattern));
             return match;
         }
 
-        private void EnsureCacheExists()
+        private List<string> GetCache()
         {
-            cachedDestinationList ??= fileSystem.Directory.GetFiles(destinationDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
+            cache ??= fileSystem.Directory.GetFiles(destinationDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
+            return cache;
         }
 
         public void Add(string newFile)
         {
-            EnsureCacheExists();
-            cachedDestinationList?.Add(newFile);
+            GetCache().Add(newFile);
         }
 
         public string? GetMarkdownImage(AssetRequest assetRequest)
