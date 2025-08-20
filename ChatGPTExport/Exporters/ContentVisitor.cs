@@ -7,7 +7,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class ContentVisitor(AssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
+    internal partial class ContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -120,7 +120,12 @@ namespace ChatGPTExport.Exporters
                     if (obj.content_type == "image_asset_pointer" && string.IsNullOrWhiteSpace(obj.asset_pointer) == false)
                     {
                         var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
-                        var markdownImage = assetLocator.GetMarkdownImage(searchPattern, context.Role, context.CreatedDate, context.UpdatedDate);
+                        var markdownImage = assetLocator.GetMarkdownImage(new AssetRequest(
+                            searchPattern,
+                            context.Role,
+                            context.CreatedDate,
+                            context.UpdatedDate)
+                            );
 
                         if (string.IsNullOrWhiteSpace(markdownImage) == false)
                         {

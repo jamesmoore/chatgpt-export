@@ -5,7 +5,7 @@ namespace ChatGPTExport.Exporters
 {
     public interface IExporter
     {
-        IEnumerable<string> Export(AssetLocator cachedFileSystemWrapper, Conversation conversation);
+        IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation);
         string GetExtension();
     }
 }

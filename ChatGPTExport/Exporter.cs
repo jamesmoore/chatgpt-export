@@ -7,7 +7,7 @@ namespace ChatGPTExport
 {
     public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters)
     {
-        public void Process(IEnumerable<(AssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
+        public void Process(IEnumerable<(IAssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
         {
             if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
             {

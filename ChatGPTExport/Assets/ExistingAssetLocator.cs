@@ -2,7 +2,7 @@
 
 namespace ChatGPTExport.Assets
 {
-    public class ExistingAssetLocator(IFileSystem fileSystem, IDirectoryInfo destinationDirectory)
+    public class ExistingAssetLocator(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IAssetLocator
     {
         private List<string>? cachedDestinationList = null;
         private IEnumerable<string> GetCachedDestinationFiles(string searchPattern)
@@ -23,13 +23,13 @@ namespace ChatGPTExport.Assets
             cachedDestinationList?.Add(newFile);
         }
 
-        public string? FindAssetInDestinationDirectory(string searchPattern)
+        public string? GetMarkdownImage(AssetRequest assetRequest)
         {
             // it may already exist in the destination directory from a previous export 
-            var destinationMatches = GetCachedDestinationFiles(searchPattern).ToList();
+            var destinationMatches = GetCachedDestinationFiles(assetRequest.SearchPattern).ToList();
             if (destinationMatches.Count == 0)
             {
-                destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, searchPattern + "*.*", System.IO.SearchOption.AllDirectories).ToList();
+                destinationMatches = fileSystem.Directory.GetFiles(destinationDirectory.FullName, assetRequest.SearchPattern + "*.*", System.IO.SearchOption.AllDirectories).ToList();
             }
 
             if (destinationMatches.Count != 0)

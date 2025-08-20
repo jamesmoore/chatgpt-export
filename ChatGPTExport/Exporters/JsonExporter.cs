@@ -13,7 +13,7 @@ namespace ChatGPTExport.Exporters
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
 
-        public IEnumerable<string> Export(AssetLocator cachedFileSystemWrapper, Conversation conversation)
+        public IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation)
         {
             return [JsonSerializer.Serialize(conversation, options)];
         }

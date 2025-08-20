@@ -133,7 +133,7 @@ rootCommand.SetAction(parseResult =>
         var directoryConversationsMap = conversationFiles
             .Select(file => new
             {
-                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator),
+                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator) as IAssetLocator,
                 Conversations = GetConversations(file)
             })
             .Where(x => x.Conversations != null)

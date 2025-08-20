@@ -7,7 +7,7 @@ namespace ChatGPTExport.Exporters
     {
         private readonly string LineBreak = Environment.NewLine;
 
-        public IEnumerable<string> Export(AssetLocator assetLocator, Conversation conversation)
+        public IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation)
         {
             var messages = conversation.mapping.Select(p => p.Value).
                 Where(p => p.message != null).
