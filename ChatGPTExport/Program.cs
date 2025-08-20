@@ -114,7 +114,7 @@ rootCommand.SetAction(parseResult =>
         }
         var exporter = new Exporter(fileSystem, exporters);
 
-        Conversations GetConversations(IFileInfo p)
+        Conversations? GetConversations(IFileInfo p)
         {
             try
             {
