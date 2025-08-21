@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ChatGPTExport/ChatGPTExport.csproj" />
+  <Project Path="ChatGTPExportTests/ChatGTPExportTests.csproj" />
+</Solution>
