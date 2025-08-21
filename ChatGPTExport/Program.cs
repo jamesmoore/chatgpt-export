@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using ChatGPTExport;
 using ChatGPTExport.Exporters;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -89,10 +90,10 @@ rootCommand.SetAction(parseResult =>
         var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
 
         // check that destination is not the same as the source, or one of the source subdirectories
-        foreach(var source in sources)
+        foreach (var source in sources)
         {
             var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
-            if(isSameOrSubdirectory)
+            if (isSameOrSubdirectory)
             {
                 Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
                 return 1;
@@ -105,15 +106,15 @@ rootCommand.SetAction(parseResult =>
         var exporters = new List<IExporter>();
         if (parseResult.GetRequiredValue(jsonOption))
         {
-            exporters.Add(new JsonExporter(fileSystem, destination));
+            exporters.Add(new JsonExporter());
         }
         if (parseResult.GetRequiredValue(markdownOption))
         {
-            exporters.Add(new MarkdownExporter(fileSystem, destination));
+            exporters.Add(new MarkdownExporter());
         }
         var exporter = new Exporter(fileSystem, exporters);
 
-        Conversations GetConversations(IFileInfo p)
+        Conversations? GetConversations(IFileInfo p)
         {
             try
             {
@@ -127,10 +128,12 @@ rootCommand.SetAction(parseResult =>
             }
         }
 
+        var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
+
         var directoryConversationsMap = conversationFiles
             .Select(file => new
             {
-                file.Directory,
+                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator) as IAssetLocator,
                 Conversations = GetConversations(file)
             })
             .Where(x => x.Conversations != null)
@@ -138,7 +141,7 @@ rootCommand.SetAction(parseResult =>
             .ToList();
 
         var groupedByConversationId = directoryConversationsMap
-            .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.Directory, Conversation))
+            .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.AssetLocator, Conversation))
             .GroupBy(x => x.Conversation.conversation_id)
             .OrderBy(p => p.Key).ToList();
 

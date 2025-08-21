@@ -1,13 +1,13 @@
-﻿using System.IO.Abstractions;
+﻿using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class MarkdownExporter(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IExporter
+    internal class MarkdownExporter : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
-        public IEnumerable<string> Export(IDirectoryInfo sourceDirectory, Conversation conversation)
+        public IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation)
         {
             var messages = conversation.mapping.Select(p => p.Value).
                 Where(p => p.message != null).
@@ -16,7 +16,7 @@ namespace ChatGPTExport.Exporters
 
             var strings = new List<string>();
 
-            var visitor = new ContentVisitor(fileSystem, sourceDirectory, destinationDirectory);
+            var visitor = new ContentVisitor(assetLocator);
 
             foreach (var message in messages)
             {
