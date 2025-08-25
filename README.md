@@ -34,7 +34,7 @@ Usage:
 Options:
   -?, -h, --help                Show help and usage information
   --version                     Show version information
-  -s, --source (REQUIRED)       The source directory/directories containing the unzipped ChatGTP exported files.
+  -s, --source (REQUIRED)       The source directory/directories containing the unzipped ChatGPT exported files.
                                 Must contain at least one conversations.json, in the folder or one of its subfolders.
                                 You can specify a parent directory containing multiple exports.
                                 You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will
@@ -42,6 +42,7 @@ Options:
   -d, --destination (REQUIRED)  The the destination directory where markdown files and assets are to be created.
   -j, --json                    Export to json files. [default: False]
   -m, --markdown                Export to markdown files. [default: True]
+  --validate                    Validate the json against the known and expected schema. [default: False]
 
 ```
 

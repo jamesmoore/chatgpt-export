@@ -15,6 +15,10 @@ namespace ChatGTPExportTests.Exporters
         [InlineData("👩‍👧", 3)] // U+1F469 U+200D U+1F467
         [InlineData("👍🏽", 2)] // U+1F44D U+1F3FD
         [InlineData("🇬🇧", 2)] // U+1F1EC U+1F1E7
+        [InlineData("🤦🏼‍♂️", 2)] // U+1F926 U+200D U+2642 U+FE0F
+        [InlineData("👩‍👩‍👦‍👦", 7)] // U+1F468 U+200D U+1F469 U+200D U+1F467 U+200D U+1F466
+        [InlineData("👩🏾‍❤️‍💋‍👩🏽", 2)] // U+1F469 U+1F3FE U+200D U+2764 U+FE0F U+200D U+1F48B U+200D U+1F469 U+1F3FD
+
         public void GetRealElementWidthTest(string input, int expected)
         {
             var length = input.GetRealElementWidth();
