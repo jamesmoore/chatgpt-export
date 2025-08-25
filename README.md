@@ -42,6 +42,7 @@ Options:
   -d, --destination (REQUIRED)  The the destination directory where markdown files and assets are to be created.
   -j, --json                    Export to json files. [default: False]
   -m, --markdown                Export to markdown files. [default: True]
+  -h, --html                    Export to html files. [default: False]
   --validate                    Validate the json against the known and expected schema. [default: False]
 
 ```
