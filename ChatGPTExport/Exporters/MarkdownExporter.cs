@@ -16,7 +16,7 @@ namespace ChatGPTExport.Exporters
 
             var strings = new List<string>();
 
-            var visitor = new ContentVisitor(assetLocator);
+            var visitor = new MarkdownContentVisitor(assetLocator);
 
             foreach (var message in messages)
             {

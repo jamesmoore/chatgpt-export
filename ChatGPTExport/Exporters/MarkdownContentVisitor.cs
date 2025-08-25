@@ -7,7 +7,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class ContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
+    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
 
