@@ -64,6 +64,13 @@ var markdownOption = new Option<bool>("--markdown", "-m")
     DefaultValueFactory = (ArgumentResult ar) => true,
 };
 
+var htmlOption = new Option<bool>("--html", "-h")
+{
+    Description = "Export to html files.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
 var validateOption = new Option<bool>("--validate")
 {
     Description = "Validate the json against the known and expected schema.",
@@ -77,6 +84,7 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     destinationDirectoryOption,
     jsonOption,
     markdownOption,
+    htmlOption,
     validateOption,
 };
 
@@ -121,6 +129,11 @@ rootCommand.SetAction(parseResult =>
         {
             exporters.Add(new MarkdownExporter());
         }
+        if (parseResult.GetRequiredValue(htmlOption))
+        {
+            exporters.Add(new HtmlExporter(new MarkdownExporter()));
+        }
+        
         var exporter = new Exporter(fileSystem, exporters);
 
         Conversations? GetConversations(IFileInfo p)
