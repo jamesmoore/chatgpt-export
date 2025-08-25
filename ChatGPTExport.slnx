@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="ChatGPTExport/ChatGPTExport.csproj" />
   <Project Path="ChatGTPExportTests/ChatGTPExportTests.csproj" />
 </Solution>

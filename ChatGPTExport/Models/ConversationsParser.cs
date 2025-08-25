@@ -5,24 +5,32 @@ using ChatGPTExport.Validators;
 
 namespace ChatGPTExport.Models
 {
-    internal class ConversationsParser(IFileSystem fileSystem)
+    internal class ConversationsParser(IFileSystem fileSystem, bool validate)
     {
         public Conversations GetConversations(IFileInfo sourceFile)
         {
             var conversationsJson = fileSystem.File.ReadAllText(sourceFile.FullName);
-
-            VerifyContentTypes(conversationsJson);
 
             var conversations = JsonSerializer.Deserialize<Conversations>(conversationsJson);
             if (conversations == null)
             {
                 throw new ApplicationException($"Conversations file {sourceFile.FullName} could not be deserialized");
             }
-            VerifyJsonSerialization(conversationsJson, conversations);
+
+            if (validate)
+            {
+                var validateContentTypeResult = ValidateContentTypes(conversationsJson);
+                var validateResult = ValidateJsonSerialization(conversationsJson, conversations);
+
+                if (validateContentTypeResult == false || validateResult == false)
+                {
+                    throw new ApplicationException("Validation errors found");
+                }
+            }
             return conversations;
         }
 
-        private static void VerifyContentTypes(string text)
+        private static bool ValidateContentTypes(string text)
         {
             var validator = new ContentTypeValidator();
             var unhandled = validator.GetUnhandledContentTypes(text);
@@ -38,7 +46,9 @@ namespace ChatGPTExport.Models
                         Console.WriteLine("\t" + contentType);
                     }
                 }
+                return false;
             }
+            return true;
         }
 
         private static readonly JsonSerializerOptions options = new()
@@ -51,7 +61,7 @@ namespace ChatGPTExport.Models
         /// </summary>
         /// <param name="originalJson"></param>
         /// <param name="conversations"></param>
-        private static void VerifyJsonSerialization(string originalJson, Conversations conversations)
+        private static bool ValidateJsonSerialization(string originalJson, Conversations conversations)
         {
             // for round trip validation of the json schema
             var reserialized = JsonSerializer.Serialize(conversations, options);
@@ -65,7 +75,9 @@ namespace ChatGPTExport.Models
                 {
                     Console.WriteLine(diff);
                 }
+                return false;
             }
+            return true;
         }
     }
 }

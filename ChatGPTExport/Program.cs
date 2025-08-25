@@ -64,12 +64,20 @@ var markdownOption = new Option<bool>("--markdown", "-m")
     DefaultValueFactory = (ArgumentResult ar) => true,
 };
 
+var validateOption = new Option<bool>("--validate")
+{
+    Description = "Validate the json against the known and expected schema.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
 var rootCommand = new RootCommand("ChatGPT export reformatter")
 {
     sourceDirectoryOption,
     destinationDirectoryOption,
     jsonOption,
     markdownOption,
+    validateOption,
 };
 
 rootCommand.SetAction(parseResult =>
@@ -88,6 +96,7 @@ rootCommand.SetAction(parseResult =>
 
         var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
         var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
+        var validate = parseResult.GetRequiredValue(validateOption);
 
         // check that destination is not the same as the source, or one of the source subdirectories
         foreach (var source in sources)
@@ -102,7 +111,7 @@ rootCommand.SetAction(parseResult =>
 
         var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
 
-        var conversationsFactory = new ConversationsParser(fileSystem);
+        var conversationsFactory = new ConversationsParser(fileSystem, validate);
         var exporters = new List<IExporter>();
         if (parseResult.GetRequiredValue(jsonOption))
         {
@@ -124,6 +133,7 @@ rootCommand.SetAction(parseResult =>
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
+                if (validate) throw;
                 return null;
             }
         }
