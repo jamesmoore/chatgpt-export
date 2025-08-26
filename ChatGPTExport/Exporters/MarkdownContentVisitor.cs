@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.ComponentModel.Design;
+using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -7,13 +8,14 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class ContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
+    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
+        private CanvasCreateModel? canvasContext = null;
 
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
-            var parts = content.parts.Where(TextContentFilter).SelectMany(SeparatePromptIfPresent).ToList();
+            var parts = content.parts.Where(TextContentFilter).SelectMany(p => SeparatePromptIfPresent(p, context)).ToList();
 
             var content_references = context.MessageMetadata.content_references;
             if (content_references != null && content_references.Length != 0)
@@ -207,18 +209,15 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult($"Unhandled content type: {content}");
         }
 
-        private IEnumerable<string> SeparatePromptIfPresent(string p)
+        private IEnumerable<string> SeparatePromptIfPresent(string text, ContentVisitorContext context)
         {
-            if (p.Contains("prompt") == false || p.Contains("size") == false)
-            {
-                yield return p;
-            }
-            else
+            // image prompt
+            if (text.Contains("prompt") && text.Contains("size"))
             {
                 PromptFormat pf = null;
                 try
                 {
-                    var deserializedPromptFormat = JsonSerializer.Deserialize<PromptFormat>(p);
+                    var deserializedPromptFormat = JsonSerializer.Deserialize<PromptFormat>(text);
                     if (deserializedPromptFormat != null && deserializedPromptFormat.HasPrompt())
                     {
                         pf = deserializedPromptFormat;
@@ -236,8 +235,48 @@ namespace ChatGPTExport.Exporters
                 }
                 else
                 {
-                    yield return p;
+                    yield return text;
                 }
+            }
+            // canvas create/update
+            else if (context.Recipient.StartsWith("canmore"))
+            {
+                if (context.Recipient == "canmore.create_textdoc")
+                {
+
+                    var createCanvas = JsonSerializer.Deserialize<CanvasCreateModel>(text);
+                    canvasContext = createCanvas;
+                }
+                else if (context.Recipient == "canmore.update_textdoc")
+                {
+                    var updateCanvas = JsonSerializer.Deserialize<CanvasUpdateModel>(text + "]}"); // for some reason the json isn't complete.
+                    Debug.Assert(canvasContext != null);
+                    canvasContext ??= new CanvasCreateModel() { type = "document " }; // default to document if no canvas exists
+                    
+                    foreach (var update in updateCanvas.updates)
+                    {
+                        canvasContext.content = update.replacement;
+                    }
+                }
+
+                if (canvasContext.type == "document")
+                {
+                    yield return canvasContext.content;
+                }
+                else if (canvasContext.type.StartsWith("code"))
+                {
+                    yield return "```" + canvasContext.type.Replace("code/", "");
+                    yield return canvasContext.content;
+                    yield return "```";
+                }
+                else
+                {
+                    yield return text;
+                }
+            }
+            else
+            {
+                yield return text;
             }
         }
 
