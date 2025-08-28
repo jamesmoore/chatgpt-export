@@ -7,13 +7,14 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class ContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
+    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
+        private CanvasCreateModel? canvasContext = null;
 
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
-            var parts = content.parts.Where(TextContentFilter).SelectMany(SeparatePromptIfPresent).ToList();
+            var parts = content.parts.Where(TextContentFilter).SelectMany(p => DecodeText(p, context)).ToList();
 
             var content_references = context.MessageMetadata.content_references;
             if (content_references != null && content_references.Length != 0)
@@ -168,14 +169,19 @@ namespace ChatGPTExport.Exporters
             }
             else if (content.language == "unknown" && content.text.IsValidJson())
             {
-                var code = $"```json{LineBreak}{content.text}{LineBreak}```";
+                var code = ToCodeBlock(content.text, "json");
                 return new MarkdownContentResult(code);
             }
             else
             {
-                var code = $"```{content.language}{LineBreak}{content.text}{LineBreak}```";
+                var code = ToCodeBlock(content.text, content.language);
                 return new MarkdownContentResult(code);
             }
+        }
+
+        private string ToCodeBlock(string code, string? language = null)
+        {
+            return $"```{language}{LineBreak}{code}{LineBreak}```";
         }
 
         public MarkdownContentResult Visit(ContentThoughts content, ContentVisitorContext context)
@@ -191,7 +197,7 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentExecutionOutput content, ContentVisitorContext context)
         {
-            var code = $"```{LineBreak}{content.text}{LineBreak}```";
+            var code = ToCodeBlock(content.text);
             return new MarkdownContentResult(code);
         }
 
@@ -207,18 +213,15 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult($"Unhandled content type: {content}");
         }
 
-        private IEnumerable<string> SeparatePromptIfPresent(string p)
+        private IEnumerable<string> DecodeText(string text, ContentVisitorContext context)
         {
-            if (p.Contains("prompt") == false || p.Contains("size") == false)
+            // image prompt
+            if (text.Contains("prompt") && text.Contains("size"))
             {
-                yield return p;
-            }
-            else
-            {
-                PromptFormat pf = null;
+                PromptFormat? pf = null;
                 try
                 {
-                    var deserializedPromptFormat = JsonSerializer.Deserialize<PromptFormat>(p);
+                    var deserializedPromptFormat = JsonSerializer.Deserialize<PromptFormat>(text);
                     if (deserializedPromptFormat != null && deserializedPromptFormat.HasPrompt())
                     {
                         pf = deserializedPromptFormat;
@@ -236,15 +239,53 @@ namespace ChatGPTExport.Exporters
                 }
                 else
                 {
-                    yield return p;
+                    yield return text;
                 }
+            }
+            // canvas create/update
+            else if (context.Recipient.StartsWith("canmore"))
+            {
+                if (context.Recipient == "canmore.create_textdoc")
+                {
+                    var createCanvas = JsonSerializer.Deserialize<CanvasCreateModel>(text);
+                    canvasContext = createCanvas;
+                }
+                else if (context.Recipient == "canmore.update_textdoc")
+                {
+                    var updateCanvas = JsonSerializer.Deserialize<CanvasUpdateModel>(text + "]}"); // for some reason the json isn't complete.
+                    Debug.Assert(canvasContext != null);
+                    canvasContext ??= new CanvasCreateModel() { type = "document " }; // default to document if no canvas exists
+
+                    foreach (var update in updateCanvas.updates)
+                    {
+                        canvasContext.content = update.replacement;
+                    }
+                }
+
+                if (canvasContext.type == "document")
+                {
+                    yield return canvasContext.content;
+                }
+                else if (canvasContext.type.StartsWith("code"))
+                {
+                    var language = canvasContext.type.Replace("code/", "");
+                    yield return ToCodeBlock(canvasContext.content, language);
+                }
+                else
+                {
+                    yield return text;
+                }
+            }
+            else
+            {
+                yield return text;
             }
         }
 
         private class PromptFormat
         {
-            public string prompt { get; set; }
-            public string size { get; set; }
+            public string? prompt { get; set; }
+            public string? size { get; set; }
 
             public bool HasPrompt() => string.IsNullOrWhiteSpace(prompt) == false && string.IsNullOrWhiteSpace(size) == false;
         }
