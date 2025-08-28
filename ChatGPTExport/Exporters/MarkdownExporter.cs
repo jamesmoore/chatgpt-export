@@ -22,13 +22,13 @@ namespace ChatGPTExport.Exporters
             {
                 try
                 {
-                    var (itemContent, suffix) = message.Accept(visitor);
+                    var (messageContent, suffix) = message.Accept(visitor);
 
-                    if (itemContent.Any())
+                    if (messageContent.Any())
                     {
                         var authorname = string.IsNullOrWhiteSpace(message.author.name) ? "" : $" ({message.author.name})";
                         strings.Add($"**{message.author.role}{authorname}{suffix}**:  "); // double space for line break
-                        strings.AddRange(itemContent);
+                        strings.Add(string.Join(LineBreak, messageContent));
                         strings.Add(LineBreak);
                     }
                 }
