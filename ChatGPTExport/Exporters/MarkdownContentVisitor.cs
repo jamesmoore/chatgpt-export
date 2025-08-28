@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.Design;
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -15,7 +14,7 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
-            var parts = content.parts.Where(TextContentFilter).SelectMany(p => SeparatePromptIfPresent(p, context)).ToList();
+            var parts = content.parts.Where(TextContentFilter).SelectMany(p => DecodeText(p, context)).ToList();
 
             var content_references = context.MessageMetadata.content_references;
             if (content_references != null && content_references.Length != 0)
@@ -209,12 +208,12 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult($"Unhandled content type: {content}");
         }
 
-        private IEnumerable<string> SeparatePromptIfPresent(string text, ContentVisitorContext context)
+        private IEnumerable<string> DecodeText(string text, ContentVisitorContext context)
         {
             // image prompt
             if (text.Contains("prompt") && text.Contains("size"))
             {
-                PromptFormat pf = null;
+                PromptFormat? pf = null;
                 try
                 {
                     var deserializedPromptFormat = JsonSerializer.Deserialize<PromptFormat>(text);
