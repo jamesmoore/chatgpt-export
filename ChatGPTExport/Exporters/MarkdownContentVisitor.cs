@@ -169,14 +169,19 @@ namespace ChatGPTExport.Exporters
             }
             else if (content.language == "unknown" && content.text.IsValidJson())
             {
-                var code = $"```json{LineBreak}{content.text}{LineBreak}```";
+                var code = ToCodeBlock(content.text, "json");
                 return new MarkdownContentResult(code);
             }
             else
             {
-                var code = $"```{content.language}{LineBreak}{content.text}{LineBreak}```";
+                var code = ToCodeBlock(content.text, content.language);
                 return new MarkdownContentResult(code);
             }
+        }
+
+        private string ToCodeBlock(string code, string? language = null)
+        {
+            return $"```{language}{LineBreak}{code}{LineBreak}```";
         }
 
         public MarkdownContentResult Visit(ContentThoughts content, ContentVisitorContext context)
@@ -192,7 +197,7 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentExecutionOutput content, ContentVisitorContext context)
         {
-            var code = $"```{LineBreak}{content.text}{LineBreak}```";
+            var code = ToCodeBlock(content.text);
             return new MarkdownContentResult(code);
         }
 
@@ -242,7 +247,6 @@ namespace ChatGPTExport.Exporters
             {
                 if (context.Recipient == "canmore.create_textdoc")
                 {
-
                     var createCanvas = JsonSerializer.Deserialize<CanvasCreateModel>(text);
                     canvasContext = createCanvas;
                 }
@@ -251,7 +255,7 @@ namespace ChatGPTExport.Exporters
                     var updateCanvas = JsonSerializer.Deserialize<CanvasUpdateModel>(text + "]}"); // for some reason the json isn't complete.
                     Debug.Assert(canvasContext != null);
                     canvasContext ??= new CanvasCreateModel() { type = "document " }; // default to document if no canvas exists
-                    
+
                     foreach (var update in updateCanvas.updates)
                     {
                         canvasContext.content = update.replacement;
@@ -264,9 +268,8 @@ namespace ChatGPTExport.Exporters
                 }
                 else if (canvasContext.type.StartsWith("code"))
                 {
-                    yield return "```" + canvasContext.type.Replace("code/", "");
-                    yield return canvasContext.content;
-                    yield return "```";
+                    var language = canvasContext.type.Replace("code/", "");
+                    yield return ToCodeBlock(canvasContext.content, language);
                 }
                 else
                 {
@@ -281,8 +284,8 @@ namespace ChatGPTExport.Exporters
 
         private class PromptFormat
         {
-            public string prompt { get; set; }
-            public string size { get; set; }
+            public string? prompt { get; set; }
+            public string? size { get; set; }
 
             public bool HasPrompt() => string.IsNullOrWhiteSpace(prompt) == false && string.IsNullOrWhiteSpace(size) == false;
         }
