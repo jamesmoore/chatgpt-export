@@ -45,7 +45,6 @@ namespace ChatGPTExport.Exporters
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{{titleString}}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
@@ -70,7 +69,9 @@ namespace ChatGPTExport.Exporters
   </style>
 </head>
 <body class="container">
-<h1>{{titleString}}</h1>
+<div class="my-4">
+  <h1>{{titleString}}</h1>
+</div>
 {{string.Join("", bodyHtml)}}
 </body>
 </html>
