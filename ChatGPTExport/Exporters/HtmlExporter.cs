@@ -1,4 +1,5 @@
-﻿using ChatGPTExport.Assets;
+﻿using System.Net;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using Markdig;
 
@@ -19,17 +20,22 @@ namespace ChatGPTExport.Exporters
             var bodyHtml = markdown.Select(p => Markdown.ToHtml(p, pipeline));
 
             // Wrap in a minimal HTML document (you can add CSS/JS here)
+            string titleString = WebUtility.HtmlEncode(conversation.title);
             string html = $"""
 <!doctype html>
 <html lang="en" data-bs-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{conversation.title}</title>
+  <title>{titleString}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
 </head>
 <body class="container">
+<h1>{titleString}</h1>
 {string.Join("", bodyHtml)}
 </body>
 </html>
