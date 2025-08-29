@@ -131,7 +131,7 @@ rootCommand.SetAction(parseResult =>
         }
         if (parseResult.GetRequiredValue(htmlOption))
         {
-            exporters.Add(new HtmlExporter(new MarkdownExporter()));
+            exporters.Add(new HtmlExporter());
         }
         
         var exporter = new Exporter(fileSystem, exporters);

@@ -9,10 +9,7 @@ namespace ChatGPTExport.Exporters
 
         public IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation)
         {
-            var messages = conversation.mapping.Select(p => p.Value).
-                Where(p => p.message != null).
-                Select(p => p.message).
-                Where(p => p.content != null);
+            var messages = conversation.GetMessagesWithContent();
 
             var strings = new List<string>();
 
@@ -40,6 +37,8 @@ namespace ChatGPTExport.Exporters
 
             return strings;
         }
+
+
 
         public string GetExtension() => ".md";
     }
