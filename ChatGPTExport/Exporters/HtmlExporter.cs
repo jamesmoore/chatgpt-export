@@ -5,7 +5,7 @@ using Markdig;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class HtmlExporter() : IExporter
+    internal class HtmlExporter(IHtmlFormatter formatter) : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -38,44 +38,18 @@ namespace ChatGPTExport.Exporters
             var bodyHtml = strings.Select(p => GetHtmlChunks(p.Author, p.Content, markdownPipeline));
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
-            var html = $$"""
-<!doctype html>
-<html lang="en" data-bs-theme="dark">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{titleString}}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
-
-</head>
-<body class="container">
-<div class="my-4">
-  <h1>{{titleString}}</h1>
-</div>
-{{string.Join("", bodyHtml)}}
-</body>
-</html>
-""";
+            string html = formatter.FormatHtmlPage(titleString, bodyHtml);
 
             return [html];
         }
 
-        private static string GetHtmlChunks(Author author, string content, MarkdownPipeline markdownPipeline)
+        private string GetHtmlChunks(Author author, string content, MarkdownPipeline markdownPipeline)
         {
             var html = Markdown.ToHtml(content, markdownPipeline);
 
             if(author.role == "user")
             {
-                return $"""
-                    <div class="d-flex justify-content-end mb-2">
-                      <div class="bg-body-secondary rounded-3 px-3 pt-3 ms-auto col-12 col-sm-10 col-md-8 col-lg-6 text-break">
-                        {html}
-                      </div>
-                    </div>
-                    """;
+                return formatter.FormatUserInput(html);
             }
             else
             {
