@@ -49,24 +49,7 @@ namespace ChatGPTExport.Exporters
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script>hljs.highlightAll();</script>
-  <style>
-    .user-container {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 10px;
-    }
 
-    .user {
-      background-color: var(--bs-secondary-bg);
-      padding: 10px 10px 0px 10px;
-      border-radius: 10px;
-      max-width: 66%;
-    }
-
-    .user p {
-      margin-bottom: 10px;
-    }
-  </style>
 </head>
 <body class="container">
 <div class="my-4">
@@ -86,7 +69,13 @@ namespace ChatGPTExport.Exporters
 
             if(author.role == "user")
             {
-                return $"""<div class="user-container"><div class="user">{html}</div></div>""";
+                return $"""
+                    <div class="d-flex justify-content-end mb-2">
+                      <div class="bg-body-secondary rounded-3 px-3 pt-3 ms-auto col-12 col-sm-10 col-md-8 col-lg-6 text-break">
+                        {html}
+                      </div>
+                    </div>
+                    """;
             }
             else
             {
