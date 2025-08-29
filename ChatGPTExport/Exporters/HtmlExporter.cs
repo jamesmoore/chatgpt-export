@@ -59,7 +59,7 @@ namespace ChatGPTExport.Exporters
     .user {
       background-color: var(--bs-secondary-bg);
       padding: 10px 10px 0px 10px;
-      border-radius: 7px;
+      border-radius: 10px;
       max-width: 66%;
     }
 
@@ -86,7 +86,7 @@ namespace ChatGPTExport.Exporters
 
             if(author.role == "user")
             {
-                return $"<div class=\"user-container\"><div class=\"user\">{html}</div></div>";
+                return $"""<div class="user-container"><div class="user">{html}</div></div>""";
             }
             else
             {
