@@ -1,7 +1,13 @@
-﻿namespace ChatGPTExport.Exporters.HtmlTemplate
+﻿using Markdig;
+
+namespace ChatGPTExport.Exporters.HtmlTemplate
 {
     internal class TailwindHtmlFormatter : IHtmlFormatter
     {
+        public void ApplyMarkdownPipelineBuilder(MarkdownPipelineBuilder markdownPipelineBuilder)
+        {
+        }
+
         public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml)
         {
             return $$"""

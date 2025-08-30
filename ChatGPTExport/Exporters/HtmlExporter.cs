@@ -57,13 +57,15 @@ namespace ChatGPTExport.Exporters
             }
         }
 
-        private static MarkdownPipeline GetPipeline()
+        private MarkdownPipeline GetPipeline()
         {
-            var pipeline = new MarkdownPipelineBuilder()
+            var pipelineBuilder = new MarkdownPipelineBuilder()
                 .UseAdvancedExtensions()     // tables, footnotes, lists, etc.
-                .UsePipeTables()
-                .UseBootstrap()              // optional: nicer HTML classes
-                .Build();
+                .UsePipeTables();
+
+            formatter.ApplyMarkdownPipelineBuilder(pipelineBuilder);
+
+            var pipeline = pipelineBuilder.Build();
             return pipeline;
         }
 

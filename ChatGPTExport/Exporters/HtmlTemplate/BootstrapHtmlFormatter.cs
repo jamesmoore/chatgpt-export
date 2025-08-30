@@ -1,7 +1,14 @@
-﻿namespace ChatGPTExport.Exporters.HtmlTemplate
+﻿using Markdig;
+
+namespace ChatGPTExport.Exporters.HtmlTemplate
 {
     internal class BootstrapHtmlFormatter : IHtmlFormatter
     {
+        public void ApplyMarkdownPipelineBuilder(MarkdownPipelineBuilder markdownPipelineBuilder)
+        {
+            markdownPipelineBuilder.UseBootstrap();
+        }
+
         public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml)
         {
             return $$"""
