@@ -58,7 +58,7 @@ namespace ChatGPTExport.Assets
                     }
                 }
 
-                return $"![{withoutPath}](./{assetsPath}/{withoutPath})  ";
+                return $"![{withoutPath}](./{assetsPath}/{Uri.EscapeDataString(withoutPath)})  ";
             }
 
             return null;

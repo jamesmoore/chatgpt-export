@@ -40,7 +40,7 @@ namespace ChatGPTExport.Assets
                 {
                     relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
                 }
-                return $"![{targetFile.Name}](./{relativePath})  ";
+                return $"![{targetFile.Name}](./{Uri.EscapeDataString(relativePath).Replace("%2F","/")})  ";
             }
             return null;
         }
