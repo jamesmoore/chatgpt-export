@@ -6,6 +6,7 @@ using ChatGPTExport;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
+using ChatGPTExport.Exporters.HtmlTemplate;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -64,6 +65,20 @@ var markdownOption = new Option<bool>("--markdown", "-m")
     DefaultValueFactory = (ArgumentResult ar) => true,
 };
 
+var htmlOption = new Option<bool>("--html")
+{
+    Description = "Export to html files.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
+var htmlFormatOption = new Option<HtmlFormat>("-hf", "--htmlformat")
+{
+    Description = "Specify format for html exports.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => HtmlFormat.Tailwind,
+};
+
 var validateOption = new Option<bool>("--validate")
 {
     Description = "Validate the json against the known and expected schema.",
@@ -77,6 +92,8 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     destinationDirectoryOption,
     jsonOption,
     markdownOption,
+    htmlOption,
+    htmlFormatOption,
     validateOption,
 };
 
@@ -121,6 +138,13 @@ rootCommand.SetAction(parseResult =>
         {
             exporters.Add(new MarkdownExporter());
         }
+        if (parseResult.GetRequiredValue(htmlOption))
+        {
+            var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
+            var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter() as IHtmlFormatter : new TailwindHtmlFormatter();
+            exporters.Add(new HtmlExporter(formatter));
+        }
+        
         var exporter = new Exporter(fileSystem, exporters);
 
         Conversations? GetConversations(IFileInfo p)

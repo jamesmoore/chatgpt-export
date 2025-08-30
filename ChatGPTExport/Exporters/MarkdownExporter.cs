@@ -9,10 +9,7 @@ namespace ChatGPTExport.Exporters
 
         public IEnumerable<string> Export(IAssetLocator assetLocator, Conversation conversation)
         {
-            var messages = conversation.mapping.Select(p => p.Value).
-                Where(p => p.message != null).
-                Select(p => p.message).
-                Where(p => p.content != null);
+            var messages = conversation.GetMessagesWithContent();
 
             var strings = new List<string>();
 
@@ -22,13 +19,13 @@ namespace ChatGPTExport.Exporters
             {
                 try
                 {
-                    var (itemContent, suffix) = message.Accept(visitor);
+                    var (messageContent, suffix) = message.Accept(visitor);
 
-                    if (itemContent.Any())
+                    if (messageContent.Any())
                     {
                         var authorname = string.IsNullOrWhiteSpace(message.author.name) ? "" : $" ({message.author.name})";
                         strings.Add($"**{message.author.role}{authorname}{suffix}**:  "); // double space for line break
-                        strings.AddRange(itemContent);
+                        strings.Add(string.Join(LineBreak, messageContent));
                         strings.Add(LineBreak);
                     }
                 }
@@ -40,6 +37,8 @@ namespace ChatGPTExport.Exporters
 
             return strings;
         }
+
+
 
         public string GetExtension() => ".md";
     }
