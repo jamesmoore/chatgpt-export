@@ -68,42 +68,17 @@ docker run --rm \
 
 ## Complete Usage
 
-```
-ChatGPTExport.exe --help
-Description:
-  ChatGPT export reformatter
-
-Usage:
-  ChatGPTExport [options]
-
-Options:
-  -?, -h, --help                          Show help and usage information
-  --version                               Show version information
-  -s, --source (REQUIRED)                 The source directory/directories containing the unzipped ChatGPT exported files.
-                                          Must contain at least one conversations.json, in the folder or one of its subfolders.
-                                          You can specify a parent directory containing multiple exports.
-                                          You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.
-  -d, --destination (REQUIRED)            The the destination directory where markdown files and assets are to be created.
-  -j, --json                              Export to json files. [default: False]
-  -m, --markdown                          Export to markdown files. [default: True]
-  --html                                  Export to html files. [default: False]
-  -hf, --htmlformat <Bootstrap|Tailwind>  Specify format for html exports. [default: Tailwind]
-  --validate                              Validate the json against the known and expected schema. [default: False]
-
-```
-
-## Running with docker
-
-Change the volume paths (`local-source-path`, `local-destination-path`) according to your local filesystem. Keep the source as read-only:
-
-```sh
-docker run --rm \
-  -v /local-source-path:/source:ro \
-  -v /local-destination-path:/destination \
-  ghcr.io/jamesmoore/chatgpt-export:latest \
-  -s /source \
-  -d /destination
-```
+|Parameter|Optional|Usage|
+|----|----|----|
+|-?, -h, --help||Show help and usage information|
+|--version||Show version information|
+|-s, --source|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br> Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.|
+|-d, --destination|Required|The directory where markdown files and assets are to be created|
+|-j, --json||Export to json files. [default: False]|
+|-m, --markdown||Export to markdown files. [default: True]|
+|--html||Export to html files. [default: False]|
+|-hf, --htmlformat ||Specify format for html exports (Bootstrap or Tailwind). [default: Tailwind]|
+|--validate||Validate the json against the known and expected schema. [default: False]|
 
 ## How it works
 The source folder must contain a file named conversations.json, which holds all your conversations in JSON format. The conversations.json can be in a subfolder, and you can have multiple subfolders (eg, one for each export if you have created many).
