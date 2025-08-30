@@ -1,4 +1,4 @@
-﻿namespace ChatGPTExport.Exporters
+﻿namespace ChatGPTExport.Exporters.HtmlTemplate
 {
     internal class TailwindHtmlFormatter : IHtmlFormatter
     {
@@ -44,7 +44,7 @@
         {
             return $"""
 <div class="flex justify-end mb-2">
-  <div class="ml-auto w-full sm:w-5/6 md:w-2/3 lg:w-1/2 rounded-xl bg-neutral-800 px-3 break-words">
+  <div class="ml-auto w-full sm:w-5/6 md:w-2/3 lg:w-2/3 rounded-xl bg-neutral-800 px-3 break-words">
       {html}
   </div>
 </div>

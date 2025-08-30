@@ -131,7 +131,7 @@ rootCommand.SetAction(parseResult =>
         }
         if (parseResult.GetRequiredValue(htmlOption))
         {
-            exporters.Add(new HtmlExporter(new BootstrapHtmlFormatter()));
+            exporters.Add(new HtmlExporter(new TailwindHtmlFormatter()));
         }
         
         var exporter = new Exporter(fileSystem, exporters);
