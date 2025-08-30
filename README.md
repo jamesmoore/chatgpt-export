@@ -72,11 +72,11 @@ docker run --rm \
 |----|----|----|
 |-?, -h, --help||Show help and usage information|
 |--version||Show version information|
-|-s, --source|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br> Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.|
+|-s, --source|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br>Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.|
 |-d, --destination|Required|The directory where markdown files and assets are to be created|
-|-j, --json||Export to json files. [default: False]|
-|-m, --markdown||Export to markdown files. [default: True]|
-|--html||Export to html files. [default: False]|
+|-j, --json||Export to json files (true or false). [default: False`]|
+|-m, --markdown||Export to markdown files (true or false). [default: True]|
+|--html||Export to html files (true or false). [default: False]|
 |-hf, --htmlformat ||Specify format for html exports (Bootstrap or Tailwind). [default: Tailwind]|
 |--validate||Validate the json against the known and expected schema. [default: False]|
 
