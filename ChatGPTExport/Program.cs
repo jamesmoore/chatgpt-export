@@ -65,11 +65,18 @@ var markdownOption = new Option<bool>("--markdown", "-m")
     DefaultValueFactory = (ArgumentResult ar) => true,
 };
 
-var htmlOption = new Option<bool>("--html", "-h")
+var htmlOption = new Option<bool>("--html")
 {
     Description = "Export to html files.",
     Required = false,
     DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
+var htmlFormatOption = new Option<HtmlFormat>("-hf", "--htmlformat")
+{
+    Description = "Specify format for html exports.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => HtmlFormat.Tailwind,
 };
 
 var validateOption = new Option<bool>("--validate")
@@ -86,6 +93,7 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     jsonOption,
     markdownOption,
     htmlOption,
+    htmlFormatOption,
     validateOption,
 };
 
@@ -132,7 +140,9 @@ rootCommand.SetAction(parseResult =>
         }
         if (parseResult.GetRequiredValue(htmlOption))
         {
-            exporters.Add(new HtmlExporter(new TailwindHtmlFormatter()));
+            var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
+            var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter() as IHtmlFormatter : new TailwindHtmlFormatter();
+            exporters.Add(new HtmlExporter(formatter));
         }
         
         var exporter = new Exporter(fileSystem, exporters);
