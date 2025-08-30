@@ -6,6 +6,7 @@ using ChatGPTExport;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
+using ChatGPTExport.Exporters.HtmlTemplate;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
