@@ -60,8 +60,25 @@ namespace ChatGPTExport.Exporters
         private MarkdownPipeline GetPipeline()
         {
             var pipelineBuilder = new MarkdownPipelineBuilder()
-                .UseAdvancedExtensions()     // tables, footnotes, lists, etc.
-                .UsePipeTables();
+                //.UseAlertBlocks()
+                //.UseAbbreviations()
+                .UseAutoIdentifiers()
+                //.UseCitations()
+                //.UseCustomContainers()
+                //.UseDefinitionLists()
+                //.UseEmphasisExtras()
+                //.UseFigures()
+                //.UseFooters()
+                .UseFootnotes()
+                //.UseGridTables()
+                //.UseMathematics()
+                //.UseMediaLinks()
+                .UsePipeTables()
+                .UseListExtras()
+                .UseTaskLists()
+                //.UseDiagrams()
+                .UseAutoLinks();
+            //.UseGenericAttributes(); 
 
             formatter.ApplyMarkdownPipelineBuilder(pipelineBuilder);
 
