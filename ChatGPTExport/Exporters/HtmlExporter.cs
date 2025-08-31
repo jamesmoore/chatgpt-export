@@ -35,33 +35,63 @@ namespace ChatGPTExport.Exporters
             }
 
             var markdownPipeline = GetPipeline();
-            var bodyHtml = strings.Select(p => GetHtmlChunks(p.Author, p.Content, markdownPipeline));
+            var bodyHtml = strings.Select(p => GetHtmlChunks(p.Author, p.Content, markdownPipeline)).ToList();
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
-            string html = formatter.FormatHtmlPage(titleString, bodyHtml);
+            string html = formatter.FormatHtmlPage(titleString, bodyHtml.Select(p => p.HtmlContent), bodyHtml.Any(p => p.PotentialMath));
 
             return [html];
         }
 
-        private string GetHtmlChunks(Author author, string content, MarkdownPipeline markdownPipeline)
+        private (string HtmlContent, bool PotentialMath) GetHtmlChunks(Author author, string markdown, MarkdownPipeline markdownPipeline)
         {
-            var html = Markdown.ToHtml(content, markdownPipeline);
+            var originalLength = markdown.Length;
+            markdown = markdown.Replace(@"\[", "MARKDIG_MATHJAX_LEFT_BRACKET");
+            markdown = markdown.Replace(@"\]", "MARKDIG_MATHJAX_RIGHT_BRACKET");
+            markdown = markdown.Replace(@"\(", "MARKDIG_MATHJAX_LEFT_PARENTHESIS");
+            markdown = markdown.Replace(@"\)", "MARKDIG_MATHJAX_RIGHT_PARENTHESIS");
 
-            if(author.role == "user")
+            var potentialMath = markdown.Length != originalLength;
+
+            var html = Markdown.ToHtml(markdown, markdownPipeline);
+
+            html = html.Replace("MARKDIG_MATHJAX_LEFT_BRACKET", @"\[");
+            html = html.Replace("MARKDIG_MATHJAX_RIGHT_BRACKET", @"\]");
+            html = html.Replace("MARKDIG_MATHJAX_LEFT_PARENTHESIS", @"\(");
+            html = html.Replace("MARKDIG_MATHJAX_RIGHT_PARENTHESIS", @"\)");
+
+            if (author.role == "user")
             {
-                return formatter.FormatUserInput(html);
+                return (formatter.FormatUserInput(html), potentialMath);
             }
             else
             {
-                return html;
+                return (html, potentialMath);
             }
         }
 
         private MarkdownPipeline GetPipeline()
         {
             var pipelineBuilder = new MarkdownPipelineBuilder()
-                .UseAdvancedExtensions()     // tables, footnotes, lists, etc.
-                .UsePipeTables();
+                //.UseAlertBlocks()
+                //.UseAbbreviations()
+                .UseAutoIdentifiers()
+                //.UseCitations()
+                //.UseCustomContainers()
+                //.UseDefinitionLists()
+                //.UseEmphasisExtras()
+                //.UseFigures()
+                //.UseFooters()
+                .UseFootnotes()
+                //.UseGridTables()
+                //.UseMathematics()
+                //.UseMediaLinks()
+                .UsePipeTables()
+                .UseListExtras()
+                .UseTaskLists()
+                //.UseDiagrams()
+                .UseAutoLinks();
+            //.UseGenericAttributes(); 
 
             formatter.ApplyMarkdownPipelineBuilder(pipelineBuilder);
 

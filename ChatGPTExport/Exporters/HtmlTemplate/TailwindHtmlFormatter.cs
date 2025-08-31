@@ -8,8 +8,10 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
         {
         }
 
-        public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml)
+        public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml, bool includeMathJax)
         {
+            var mathInclude = includeMathJax ? """<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>""" : "";
+
             return $$"""
 <!doctype html>
 <html lang="en" class="dark">
@@ -27,7 +29,7 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
   <!-- highlight.js (dark theme) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script>hljs.highlightAll();</script>{{mathInclude}}
 </head>
 <body class="bg-neutral-900 text-neutral-100 antialiased">
 <div class="container mx-auto max-w-4xl px-4 py-6">

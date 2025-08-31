@@ -9,7 +9,7 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
             markdownPipelineBuilder.UseBootstrap();
         }
 
-        public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml)
+        public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml, bool includeMathJax)
         {
             return $$"""
 <!doctype html>
