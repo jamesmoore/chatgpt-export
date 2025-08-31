@@ -1,12 +1,11 @@
-﻿
-using Markdig;
+﻿using Markdig;
 
 namespace ChatGPTExport.Exporters
 {
     internal interface IHtmlFormatter
     {
         void ApplyMarkdownPipelineBuilder(MarkdownPipelineBuilder markdownPipelineBuilder);
-        string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml);
+        string FormatHtmlPage(HtmlPage page);
         string FormatUserInput(string html);
     }
 }

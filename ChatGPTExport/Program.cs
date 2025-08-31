@@ -141,7 +141,8 @@ rootCommand.SetAction(parseResult =>
         if (parseResult.GetRequiredValue(htmlOption))
         {
             var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
-            var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter() as IHtmlFormatter : new TailwindHtmlFormatter();
+            var headerProvider = new HighlightHeaderProvider();
+            var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
             exporters.Add(new HtmlExporter(formatter));
         }
         

@@ -1,11 +1,12 @@
 ﻿using System.Net;
+using System.Text.RegularExpressions;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using Markdig;
 
 namespace ChatGPTExport.Exporters
 {
-    internal class HtmlExporter(IHtmlFormatter formatter) : IExporter
+    internal partial class HtmlExporter(IHtmlFormatter formatter) : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -35,27 +36,50 @@ namespace ChatGPTExport.Exporters
             }
 
             var markdownPipeline = GetPipeline();
-            var bodyHtml = strings.Select(p => GetHtmlChunks(p.Author, p.Content, markdownPipeline));
+            var bodyHtml = strings.Select(p => GetHtmlFragment(p.Author, p.Content, markdownPipeline));
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
-            string html = formatter.FormatHtmlPage(titleString, bodyHtml);
+            string html = formatter.FormatHtmlPage(
+                new HtmlPage()
+                {
+                    Body = bodyHtml,
+                    Title = titleString,
+                });
 
             return [html];
         }
 
-        private string GetHtmlChunks(Author author, string content, MarkdownPipeline markdownPipeline)
+        [GeneratedRegex("```(.*)")]
+        private static partial Regex MarkdownCodeBlockRegex();
+        private (bool HasCode, List<string> Languages) GetLanguages(string markdown)
         {
-            var html = Markdown.ToHtml(content, markdownPipeline);
-
-            if(author.role == "user")
-            {
-                return formatter.FormatUserInput(html);
-            }
-            else
-            {
-                return html;
-            }
+            var codeBlockRegex = MarkdownCodeBlockRegex().Matches(markdown);
+            var languages = codeBlockRegex.Where(p => p.Groups.Count > 1).
+                Select(p => p.Groups[1].Value).
+                Where(p => string.IsNullOrWhiteSpace(p) == false).
+                Select(p => p.Trim()).
+                Distinct(StringComparer.OrdinalIgnoreCase).
+                Select(v => v.ToLowerInvariant()).
+                ToList();
+            return (codeBlockRegex.Count > 0, languages);
         }
+
+        private HtmlFragment GetHtmlFragment(Author author, string markdown, MarkdownPipeline markdownPipeline)
+        {
+            var html = Markdown.ToHtml(markdown, markdownPipeline);
+
+
+            var lanugages = GetLanguages(markdown);
+
+            var fragment = new HtmlFragment()
+            {
+                Html = author.role == "user" ? formatter.FormatUserInput(html) : html,
+                HasCode = lanugages.HasCode,
+                Languages = lanugages.Languages,
+            };
+            return fragment;
+        }
+
 
         private MarkdownPipeline GetPipeline()
         {
@@ -87,5 +111,6 @@ namespace ChatGPTExport.Exporters
         }
 
         public string GetExtension() => ".html";
+
     }
 }
