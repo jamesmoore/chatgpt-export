@@ -7,12 +7,14 @@
 
         public string GetBodyString() => string.Join(Environment.NewLine, Body);
         public bool HasCode => Body.Any(p => p.HasCode);
+        public IReadOnlyCollection<string> Languages => Body.SelectMany(p => p.Languages).Distinct().ToList();
     }
 
     public class HtmlFragment
     {
         public string Html { get; set; }
         public bool HasCode { get; set; }
+        public IReadOnlyCollection<string> Languages { get; set; }
         public override string ToString() => Html;
     }
 }
