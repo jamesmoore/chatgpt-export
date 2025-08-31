@@ -39,7 +39,7 @@ namespace ChatGPTExport.Exporters
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
             string html = formatter.FormatHtmlPage(
-                new HtmlTemplate.PageContent()
+                new HtmlPage()
                 {
                     Body = bodyHtml,
                     Title = titleString,
@@ -48,18 +48,16 @@ namespace ChatGPTExport.Exporters
             return [html];
         }
 
-        private string GetHtmlChunks(Author author, string content, MarkdownPipeline markdownPipeline)
+        private HtmlFragment GetHtmlChunks(Author author, string markdown, MarkdownPipeline markdownPipeline)
         {
-            var html = Markdown.ToHtml(content, markdownPipeline);
+            var html = Markdown.ToHtml(markdown, markdownPipeline);
 
-            if(author.role == "user")
+            var fragment = new HtmlFragment()
             {
-                return formatter.FormatUserInput(html);
-            }
-            else
-            {
-                return html;
-            }
+                Html = author.role == "user" ? formatter.FormatUserInput(html) : html,
+                HasCode = markdown.Contains("```"),
+            };
+            return fragment;
         }
 
         private MarkdownPipeline GetPipeline()

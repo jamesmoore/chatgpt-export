@@ -9,7 +9,7 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
             markdownPipelineBuilder.UseBootstrap();
         }
 
-        public string FormatHtmlPage(PageContent pageContent)
+        public string FormatHtmlPage(HtmlPage page)
         {
             return $$"""
 <!doctype html>
@@ -17,15 +17,15 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{pageContent.Title}}</title>
+  <title>{{page.Title}}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css">
-{{headerProvider.GetHeaders()}}
+{{headerProvider.GetHeaders(page)}}
 </head>
 <body class="container">
 <div class="my-4">
-  <h1>{{pageContent.Title}}</h1>
+  <h1>{{page.Title}}</h1>
 </div>
-{{string.Join("", pageContent.Body)}}
+{{page.GetBodyString()}}
 </body>
 </html>
 """;

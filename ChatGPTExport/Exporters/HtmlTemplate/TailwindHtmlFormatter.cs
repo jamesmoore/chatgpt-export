@@ -8,7 +8,7 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
         {
         }
 
-        public string FormatHtmlPage(PageContent pageContent)
+        public string FormatHtmlPage(HtmlPage page)
         {
             return $$"""
 <!doctype html>
@@ -16,7 +16,7 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{pageContent.Title}}</title>
+  <title>{{page.Title}}</title>
 
   <!-- Tailwind (with Typography plugin) -->
   <script>
@@ -24,18 +24,18 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
   </script>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
 
-{{headerProvider.GetHeaders()}}
+{{headerProvider.GetHeaders(page)}}
 </head>
 <body class="bg-neutral-900 text-neutral-100 antialiased">
 <div class="container mx-auto max-w-4xl px-4 py-6">
-<h1 class="text-3xl font-semibold mb-6">{{pageContent.Title}}</h1>
+<h1 class="text-3xl font-semibold mb-6">{{page.Title}}</h1>
 <div class="prose prose-invert leading-relaxed max-w-[80ch] md:max-w-[90ch]
             prose-p:my-2 prose-li:my-1
             prose-ul:list-disc prose-ol:list-decimal
             prose-pre:overflow-x-auto
             prose-hr:my-4
             marker:text-neutral-400">
-  {{string.Join("", pageContent.Body)}}
+  {{page.GetBodyString()}}
 </div>
 </div> 
 </body>

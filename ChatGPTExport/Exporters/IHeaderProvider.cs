@@ -2,6 +2,6 @@
 {
     internal interface IHeaderProvider
     {
-        string GetHeaders();
+        string GetHeaders(HtmlPage htmlPage);
     }
 }
