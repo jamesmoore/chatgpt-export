@@ -2,14 +2,14 @@
 
 namespace ChatGPTExport.Exporters.HtmlTemplate
 {
-    internal class BootstrapHtmlFormatter : IHtmlFormatter
+    internal class BootstrapHtmlFormatter(IHeaderProvider headerProvider) : IHtmlFormatter
     {
         public void ApplyMarkdownPipelineBuilder(MarkdownPipelineBuilder markdownPipelineBuilder)
         {
             markdownPipelineBuilder.UseBootstrap();
         }
 
-        public string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml)
+        public string FormatHtmlPage(PageContent pageContent)
         {
             return $$"""
 <!doctype html>
@@ -17,18 +17,15 @@ namespace ChatGPTExport.Exporters.HtmlTemplate
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>{{titleString}}</title>
+  <title>{{pageContent.Title}}</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.7/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
-
+{{headerProvider.GetHeaders()}}
 </head>
 <body class="container">
 <div class="my-4">
-  <h1>{{titleString}}</h1>
+  <h1>{{pageContent.Title}}</h1>
 </div>
-{{string.Join("", bodyHtml)}}
+{{string.Join("", pageContent.Body)}}
 </body>
 </html>
 """;

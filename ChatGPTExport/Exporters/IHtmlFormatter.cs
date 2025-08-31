@@ -1,4 +1,5 @@
 ﻿
+using ChatGPTExport.Exporters.HtmlTemplate;
 using Markdig;
 
 namespace ChatGPTExport.Exporters
@@ -6,7 +7,7 @@ namespace ChatGPTExport.Exporters
     internal interface IHtmlFormatter
     {
         void ApplyMarkdownPipelineBuilder(MarkdownPipelineBuilder markdownPipelineBuilder);
-        string FormatHtmlPage(string titleString, IEnumerable<string> bodyHtml);
+        string FormatHtmlPage(PageContent pageContent);
         string FormatUserInput(string html);
     }
 }

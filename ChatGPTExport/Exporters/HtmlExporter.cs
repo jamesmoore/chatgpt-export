@@ -38,7 +38,12 @@ namespace ChatGPTExport.Exporters
             var bodyHtml = strings.Select(p => GetHtmlChunks(p.Author, p.Content, markdownPipeline));
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
-            string html = formatter.FormatHtmlPage(titleString, bodyHtml);
+            string html = formatter.FormatHtmlPage(
+                new HtmlTemplate.PageContent()
+                {
+                    Body = bodyHtml,
+                    Title = titleString,
+                });
 
             return [html];
         }
