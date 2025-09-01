@@ -1,6 +1,4 @@
-﻿using ChatGPTExport.Models;
-
-namespace ChatGPTExport.Exporters
+﻿namespace ChatGPTExport.Models
 {
     internal static class ExtensionMethods
     {

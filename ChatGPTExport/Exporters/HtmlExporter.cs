@@ -66,8 +66,12 @@ namespace ChatGPTExport.Exporters
 
         private HtmlFragment GetHtmlFragment(Author author, string markdown, MarkdownPipeline markdownPipeline)
         {
-            var html = Markdown.ToHtml(markdown, markdownPipeline);
+            if (markdown.Contains(@"\(") && markdown.Contains(@"\)") ||
+                markdown.Contains(@"\[") && markdown.Contains(@"\]")) {
+                markdown = EscapeMathDelimiters(markdown);
+            }
 
+            var html = Markdown.ToHtml(markdown, markdownPipeline);
 
             var lanugages = GetLanguages(markdown);
 
@@ -112,5 +116,35 @@ namespace ChatGPTExport.Exporters
 
         public string GetExtension() => ".html";
 
+        public static string EscapeMathDelimiters(string markdown)
+        {
+            // Regex for fenced code blocks (``` ... ``` or ~~~ ... ~~~)
+            //var fenced = new Regex(@"(^|\n)(`{3,}|~{3,}).*?\n[\s\S]*?\n\2\s*(?=\n|$)", RegexOptions.Singleline);
+            var fenced = new Regex(@"(^|\n)(`{3,}|~{3,})[^\r\n]*\r?\n[\s\S]*?\r?\n\2\s*(?=\r?\n|$)", RegexOptions.Compiled);
+            // Regex for inline code `...`
+            //var inline = new Regex(@"`+[^`]*?`+");
+            var inline = new Regex(@"(?<!`)`+[^`\r\n]*?`+(?!`)", RegexOptions.Compiled);
+
+            // Protect code regions
+            var placeholders = new List<string>();
+            string Protect(Match m)
+            {
+                placeholders.Add(m.Value);
+                return $"__CODEBLOCK_{placeholders.Count - 1}__";
+            }
+
+            string text = fenced.Replace(markdown, Protect);
+            text = inline.Replace(text, Protect);
+
+            // Do math escaping on the remaining text
+            text = text.Replace(@"\(", @"\\(").Replace(@"\)", @"\\)")
+                       .Replace(@"\[", @"\\[").Replace(@"\]", @"\\]");
+
+            // Restore placeholders
+            for (int i = 0; i < placeholders.Count; i++)
+                text = text.Replace($"__CODEBLOCK_{i}__", placeholders[i]);
+
+            return text;
+        }
     }
 }
