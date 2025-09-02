@@ -43,7 +43,7 @@ mkdir ~/chatgpt-markdown
 ```sh
 ChatGPTExport -s ~/chatgpt-export -d ~/chatgpt-markdown
 ```
-6. Open `~/chatgpt-markdown` – you’ll see one file per conversation, plus an _complete.md for each with full history.
+6. Open `~/chatgpt-markdown` – you’ll see an html and markdown file for each conversation.
 
 ## Quick-Start (Docker)
 1. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
@@ -64,7 +64,7 @@ docker run --rm \
   -s /source \
   -d /destination
 ```
-4. Open `~/chatgpt-markdown` – you’ll see one file per conversation, plus an _complete.md for each with full history.
+4. Open `~/chatgpt-markdown` – you’ll see an html and markdown file for each conversation.
 
 ## Complete Usage
 
@@ -74,7 +74,7 @@ docker run --rm \
 |`--version`||Show version information||
 |`-s`<br>`--source`|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br>Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2)||
 |`-d`<br>`--destination`|Required|The directory where markdown files and assets are to be created||
-|`-e`<br>`--export`||Export mode (`latest` or `complete`).|`latest`|
+|`-e`<br>`--export`||Export mode (`latest` or `complete`) see [below](#export-modes).|`latest`|
 |`-j`<br>`--json`||Export to json files (`true` or `false`).|`false`|
 |`-m`<br>`--markdown`||Export to markdown files (`true` or `false`).|`true`|
 |`--html`||Export to html files (`true` or `false`).|`true`|
@@ -90,10 +90,13 @@ The files will be named with a timestamp and the conversation title (eg, `<YYYY-
 
 For markdown and html exports, any image assets are also extracted and copied to the destination folder.
 
-### Export modes
-There are two export modes - Latest and Complete. This is to handle conversations that have multiple branches. In ChatGPT If you click "Try again..." or go back and edit one of your previous messages, this causes the conversation to start a new branch. The old branch is hidden and the conversation continues on the latest branch.
+### <a name="export-modes"></a>Export modes
+There are two export modes - `latest` and `complete`. This is to handle conversations that have multiple branches. In ChatGPT If you click "Try again..." or go back and edit one of your previous messages, this causes the conversation to start a new branch. The old branch is hidden and the conversation continues on the latest branch.
 
-Latest is the recommended mode, as it will produce an export that contains the latest instance of the conversation. Complete mode will include all the old hidden branches, but not in any specific order.
+`latest` is the recommended mode, as it will produce an export that contains the latest instance of the conversation. `complete` mode will include all the old hidden branches together in a single document. Because of this the conversation may not be coherent.
+
+### Asset management
+Any images generated in ChatGPT that are included in the exports will be copied into the destination directory under a subdirectory named `tool-assets`. The corresponding path in the markdown and html will be updated to a relative path. Similarly images uploaded by the user are copied into `user-assets` and referenced the same way.
 
 ## Tips
 * Running this on a large export may create many files. It will also overwrite any existing files with the same name. Be sure to choose choose an empty destination directory for the first run.
