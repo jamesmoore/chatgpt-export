@@ -68,28 +68,32 @@ docker run --rm \
 
 ## Complete Usage
 
-|Parameter|Optional|Usage|
-|----|----|----|
-|-?, -h, --help||Show help and usage information|
-|--version||Show version information|
-|-s, --source|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br>Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2), and they will be processed in sequence.|
-|-d, --destination|Required|The directory where markdown files and assets are to be created|
-|-j, --json||Export to json files (true or false). [default: False]|
-|-m, --markdown||Export to markdown files (true or false). [default: True]|
-|--html||Export to html files (true or false). [default: False]|
-|-hf, --htmlformat ||Specify format for html exports (Bootstrap or Tailwind). [default: Tailwind]|
-|--validate||Validate the json against the known and expected schema. [default: False]|
+|Parameter|Optional?|Usage|Default|
+|----|----|----|----|
+|`-?`<br>`-h`<br>`--help`||Show help and usage information||
+|`--version`||Show version information||
+|`-s`<br>`--source`|Required|The source directory/directories containing the unzipped ChatGPT exported files.<br>Must contain at least one conversations.json, in the folder or one of its subfolders.<br>You can specify a parent directory containing multiple exports.<br>You can also specify multiple source directories (eg, -s dir1 -s dir2)||
+|`-d`<br>`--destination`|Required|The directory where markdown files and assets are to be created||
+|`-e`<br>`--export`||Export mode (`latest` or `complete`).|`latest`|
+|`-j`<br>`--json`||Export to json files (`true` or `false`).|`false`|
+|`-m`<br>`--markdown`||Export to markdown files (`true` or `false`).|`true`|
+|`--html`||Export to html files (`true` or `false`).|`true`|
+|`-hf`<br>`--htmlformat`||Specify format for html exports (`bootstrap` or `tailwind`).|`tailwind`|
+|`--validate`||Validate the json against the known and expected schema.|`false`|
 
 ## How it works
 The source folder must contain a file named conversations.json, which holds all your conversations in JSON format. The conversations.json can be in a subfolder, and you can have multiple subfolders (eg, one for each export if you have created many).
 
-Each conversation is converted into a standalone Markdown file in the destination folder. For each conversation, the following files may be created:
+Each conversation is converted into one of more files in the destination folder. Depending on the parameters passed in, json, markdown and html files may be created.
 
-* A .json file containing just that conversation.
-* A .md file named with a timestamp and the conversation title (eg, `<YYYY-MM-DDTHH-MM-SS> - <chat title>.md`) - this represents the most recent state of the conversation. The timestamp is the creation date of the conversation.
-* Optionally, a _complete.md file - this extended version includes the full history of the conversation including edits, regenerations, and alternate messages in chronological order. If there are no edits or regenerations this will be absent.
+The files will be named with a timestamp and the conversation title (eg, `<YYYY-MM-DDTHH-MM-SS> - <chat title>.md`). The timestamp is the creation date of the conversation.
 
-Image assets (if present) are also extracted and copied to the destination folder.
+For markdown and html exports, any image assets are also extracted and copied to the destination folder.
+
+### Export modes
+There are two export modes - Latest and Complete. This is to handle conversations that have multiple branches. In ChatGPT If you click "Try again..." or go back and edit one of your previous messages, this causes the conversation to start a new branch. The old branch is hidden and the conversation continues on the latest branch.
+
+Latest is the recommended mode, as it will produce an export that contains the latest instance of the conversation. Complete mode will include all the old hidden branches, but not in any specific order.
 
 ## Tips
 * Running this on a large export may create many files. It will also overwrite any existing files with the same name. Be sure to choose choose an empty destination directory for the first run.
