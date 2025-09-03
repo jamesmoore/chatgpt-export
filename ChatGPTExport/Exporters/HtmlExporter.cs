@@ -112,7 +112,8 @@ namespace ChatGPTExport.Exporters
                 .UseListExtras()
                 .UseTaskLists()
                 //.UseDiagrams()
-                .UseAutoLinks();
+                .UseAutoLinks()
+                .DisableHtml();
             //.UseGenericAttributes(); 
 
             formatter.ApplyMarkdownPipelineBuilder(pipelineBuilder);
