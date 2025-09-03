@@ -9,10 +9,10 @@ ChatGPT does not offer a clean, built-in way to save or print conversations for 
 This tool enables you to extract and reformat your conversations from the official ChatGPT export ZIP file. You can export your data via [ChatGPT settings - https://chatgpt.com/#settings/DataControls](https://chatgpt.com/#settings/DataControls).
 
 ## Use cases
-* **Create a readable archive** – Convert your ChatGPT conversations into clean Markdown or HTML files that can be opened offline, shared, or backed up.
-* **Selective cleanup** – Keep a local copy of the chats you want to delete from the web interface, preserving only the chats you need.
-* **Knowledge‑base ingestion** – Import your conversations into a wiki, personal knowledge base, or documentation system with minimal effort.
-* **Account migration** – Export all conversations before closing your ChatGPT account, so you retain a viewable copy of your data in case you need it later.
+* **Create a readable archive** - Convert your ChatGPT conversations into clean Markdown or HTML files that can be read offline, shared, or backed up.
+* **Selective cleanup** - Keep a local copy of the chats you want to delete from the web interface, preserving only the chats you need.
+* **Knowledge‑base ingestion** - Import your conversations into a wiki, knowledge base, or documentation system with minimal effort.
+* **Account migration** - Export all conversations before closing your ChatGPT account, so you retain a viewable copy of your data in case you need it later.
 
 ## Features
 * Convert ChatGPT exports into smaller, viewable: 
@@ -22,28 +22,30 @@ This tool enables you to extract and reformat your conversations from the offici
 * Process multiple exports in one sweep, detecting the latest version of each conversation.
 * Include uploaded and generated image assets in the markdown.
 * Transform web references into markdown footnotes.
-* Include code blocks and canvas.
+* Include code blocks and canvas with syntax highlighting (thanks to [highlight.js](https://highlightjs.org/)).
+* Detect and render mathematical notation (thanks to [mathjax](https://www.mathjax.org/))
 * Runs on Docker, Windows, Linux and MacOS.
-* No usage limits or monetization.
+* Fully open source with no usage limits or monetization.
 
 ## Quick‑Start (Bare metal)
 
-1. Download the latest binary from the [Releases page](https://github.com/jamesmoore/chatgpt-export/releases).
-2. (Optional) Add it to your `PATH`.
-3. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
+1. Download the latest binary from the [Releases page](https://github.com/jamesmoore/chatgpt-export/releases) and unpack it.
+2. On unix systems you may need to `chmod +x` it.
+3. (Optional) Add it to your `PATH`.
+4. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
 ```sh
 mkdir ~/chatgpt-export
 unzip ~/Downloads/chatgpt_export.zip -d ~/chatgpt-export
 ```
-4. Create a directory for the destination
+5. Create a directory for the destination
 ```sh
 mkdir ~/chatgpt-markdown
 ```
-5. Run the tool
+6. Run the tool
 ```sh
-ChatGPTExport -s ~/chatgpt-export -d ~/chatgpt-markdown
+./ChatGPTExport -s ~/chatgpt-export -d ~/chatgpt-markdown
 ```
-6. Open `~/chatgpt-markdown` – you’ll see an html and markdown file for each conversation.
+7. Open `~/chatgpt-markdown` - you’ll see an html and markdown file for each conversation.
 
 ## Quick-Start (Docker)
 1. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
@@ -64,7 +66,7 @@ docker run --rm \
   -s /source \
   -d /destination
 ```
-4. Open `~/chatgpt-markdown` – you’ll see an html and markdown file for each conversation.
+4. Open `~/chatgpt-markdown` - you’ll see an html and markdown file for each conversation.
 
 ## Complete Usage
 
@@ -100,6 +102,6 @@ Any images generated in ChatGPT that are included in the exports will be copied 
 
 ## Tips
 * Running this on a large export may create many files. It will also overwrite any existing files with the same name. Be sure to choose choose an empty destination directory for the first run.
-* Keep a copy of your raw export ZIPs. In the future you may want to re‑run the tool to generate updated Markdown or a better format:
-  * This program may be improved with new features in the future and you may want to rerun
+* Keep a copy of your original export ZIPs. In the future you may want to re‑run the tool to generate updated Markdown or a better format:
+  * This program may be improved with new features in the future
   * Someone else may write a better one
