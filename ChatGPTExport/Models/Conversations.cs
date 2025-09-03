@@ -40,7 +40,12 @@ namespace ChatGPTExport.Models
 
         public DateTimeOffset GetUpdateTime() => update_time.ToDateTimeOffset();
 
-        private string GetLastLeaf() => mapping.Where(p => p.Value.IsLeaf()).Last().Key;
+        private string GetLastLeaf()
+        {
+            var leaves = mapping.Where(p => p.Value.IsLeaf()).ToList();
+            var lastLeaf = leaves.OrderBy(p => p.Value.message.GetMessageTimestamp()).Last().Key;
+            return lastLeaf;
+        }
 
         private Dictionary<string, MessageContainer> GetLatestBranch()
         {
@@ -91,6 +96,11 @@ namespace ChatGPTExport.Models
         public MessageMetadata metadata { get; set; }
         public string recipient { get; set; }
         public string channel { get; set; }
+
+        public decimal GetMessageTimestamp()
+        {
+            return update_time ?? create_time ?? 0;
+        }
 
         public class MessageMetadata
         {

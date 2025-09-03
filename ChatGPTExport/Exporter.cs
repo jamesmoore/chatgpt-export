@@ -5,7 +5,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport
 {
-    public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters)
+    public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters, ExportMode exportMode)
     {
         public void Process(IEnumerable<(IAssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
         {
@@ -28,15 +28,17 @@ namespace ChatGPTExport
                     {
                         Console.Write($"\t\t{exporter.GetType().Name}");
 
-                        if (conversation.HasMultipleBranches())
+                        if (exportMode == ExportMode.Complete)
                         {
-                            var completeFilename = GetFilename(conversation, "complete", exporter.GetExtension());
-                            fileContentsMap[completeFilename] = exporter.Export(assetLocator, conversation);
+                            var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
+                            ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
                         }
-
-                        var latest = conversation.GetLastestConversation();
-                        var filename = GetFilename(latest, "", exporter.GetExtension());
-                        fileContentsMap[filename] = exporter.Export(assetLocator, latest);
+                        else if (exportMode == ExportMode.Latest)
+                        {
+                            var latest = conversation.GetLastestConversation();
+                            var filename = GetFilename(latest, "", exporter.GetExtension());
+                            ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
+                        }
 
                         Console.WriteLine($"...Done");
                     }
@@ -50,8 +52,9 @@ namespace ChatGPTExport
                     if (destinationExists == false || destinationExists && fileSystem.File.ReadAllText(destinationFilename) != contents)
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
-                        fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, conversations.Last().conversation.GetCreateTime().DateTime);
-                        fileSystem.File.SetLastWriteTimeUtc(destinationFilename, conversations.Last().conversation.GetUpdateTime().DateTime);
+                        var lastConversation = conversations.Last().conversation;
+                        fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, lastConversation.GetCreateTime().DateTime);
+                        fileSystem.File.SetLastWriteTimeUtc(destinationFilename, lastConversation.GetUpdateTime().DateTime);
                         Console.WriteLine($"\t{kv.Key}...Saved");
                     }
                     else
@@ -63,6 +66,18 @@ namespace ChatGPTExport
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.ToString());
+            }
+        }
+
+        private static void ExportConversation(Dictionary<string, IEnumerable<string>> fileContentsMap, IAssetLocator assetLocator, IExporter exporter, Conversation conversation, string filename)
+        {
+            try
+            {
+                fileContentsMap[filename] = exporter.Export(assetLocator, conversation);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
             }
         }
 

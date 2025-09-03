@@ -45,6 +45,13 @@ sourceDirectoryOption.Validators.Add(result =>
     catch { }
 });
 
+var exportModeOption = new Option<ExportMode>("-e", "--export")
+{
+    Description = "Export mode.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => ExportMode.Latest,
+};
+
 var destinationDirectoryOption = new Option<DirectoryInfo>("--destination", "-d")
 {
     Description = "The the destination directory where markdown files and assets are to be created.",
@@ -69,7 +76,7 @@ var htmlOption = new Option<bool>("--html")
 {
     Description = "Export to html files.",
     Required = false,
-    DefaultValueFactory = (ArgumentResult ar) => false,
+    DefaultValueFactory = (ArgumentResult ar) => true,
 };
 
 var htmlFormatOption = new Option<HtmlFormat>("-hf", "--htmlformat")
@@ -90,12 +97,14 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
 {
     sourceDirectoryOption,
     destinationDirectoryOption,
+    exportModeOption,
     jsonOption,
     markdownOption,
     htmlOption,
     htmlFormatOption,
     validateOption,
 };
+
 
 rootCommand.SetAction(parseResult =>
 {
@@ -109,11 +118,18 @@ rootCommand.SetAction(parseResult =>
         ConsoleFeatures.StartIndeterminate();
 
         var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
+        var destinationDirectoryInfo = parseResult.GetRequiredValue(destinationDirectoryOption);
+        var exportMode = parseResult.GetRequiredValue(exportModeOption);
+        var validate = parseResult.GetRequiredValue(validateOption);
+        var json = parseResult.GetRequiredValue(jsonOption);
+        var markdown = parseResult.GetRequiredValue(markdownOption);
+        var html = parseResult.GetRequiredValue(htmlOption);
+        var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
+        
         var fileSystem = new FileSystem();
 
-        var destination = fileSystem.DirectoryInfo.Wrap(parseResult.GetRequiredValue(destinationDirectoryOption));
+        var destination = fileSystem.DirectoryInfo.Wrap(destinationDirectoryInfo);
         var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
-        var validate = parseResult.GetRequiredValue(validateOption);
 
         // check that destination is not the same as the source, or one of the source subdirectories
         foreach (var source in sources)
@@ -130,23 +146,22 @@ rootCommand.SetAction(parseResult =>
 
         var conversationsFactory = new ConversationsParser(fileSystem, validate);
         var exporters = new List<IExporter>();
-        if (parseResult.GetRequiredValue(jsonOption))
+        if (json)
         {
             exporters.Add(new JsonExporter());
         }
-        if (parseResult.GetRequiredValue(markdownOption))
+        if (markdown)
         {
             exporters.Add(new MarkdownExporter());
         }
-        if (parseResult.GetRequiredValue(htmlOption))
+        if (html)
         {
-            var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
             var headerProvider = new HighlightHeaderProvider();
             var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
             exporters.Add(new HtmlExporter(formatter));
         }
         
-        var exporter = new Exporter(fileSystem, exporters);
+        var exporter = new Exporter(fileSystem, exporters, exportMode);
 
         Conversations? GetConversations(IFileInfo p)
         {
