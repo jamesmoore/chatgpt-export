@@ -156,7 +156,13 @@ rootCommand.SetAction(parseResult =>
         }
         if (html)
         {
-            var headerProvider = new HighlightHeaderProvider();
+            var headerProvider = new CompositeHeaderProvider(
+                [
+                    new HighlightHeaderProvider(),
+                    new MathjaxHeaderProvider(),
+                ]
+            );
+            
             var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
             exporters.Add(new HtmlExporter(formatter));
         }
