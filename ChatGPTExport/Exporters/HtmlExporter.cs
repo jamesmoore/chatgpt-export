@@ -106,7 +106,7 @@ namespace ChatGPTExport.Exporters
                 //.UseFooters()
                 .UseFootnotes()
                 //.UseGridTables()
-                .UseMathematics()
+                //.UseMathematics()
                 //.UseMediaLinks()
                 .UsePipeTables()
                 .UseListExtras()
