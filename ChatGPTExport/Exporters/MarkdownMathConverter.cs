@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
@@ -9,41 +7,37 @@ namespace ChatGPTExport.Exporters
 {
     public static class MarkdownMathConverter
     {
+        // Reuse a single pipeline; UsePreciseSourceLocation is required for SourceSpan.
+        private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UsePreciseSourceLocation()
+            .Build();
+
         /// <summary>
         /// Converts backslash-delimited MathJax markers to dollar notation:
         ///   \( -> $ ,  \) -> $
         ///   \[ -> $$,  \] -> $$
         /// Skips text inside inline code spans and fenced/indented code blocks.
-        /// No special handling for double backslashes is performed (per requirement).
+        /// No pairing validation; converts delimiters literally.
         /// </summary>
         public static string ConvertBackslashMathToDollar(string markdown)
         {
             if (string.IsNullOrEmpty(markdown))
                 return markdown ?? string.Empty;
 
-            // Build a pipeline that fills SourceSpan so we can map code regions to original indices.
-            var pipeline = new MarkdownPipelineBuilder()
-                .UseAdvancedExtensions()
-                .UsePreciseSourceLocation()
-                .Build();
+            var doc = Markdown.Parse(markdown, Pipeline);
 
-            var doc = Markdown.Parse(markdown, pipeline);
+            // Collect protected spans (code of any kind).
+            var protectedSpans = doc
+                .Descendants()
+                .Where(p => p is CodeInline || p is FencedCodeBlock || p is CodeBlock)
+                .Where(p => p.Span.Start >= 0 && p.Span.End >= p.Span.Start)
+                .Select(p => (start: p.Span.Start, end: p.Span.End))
+                .ToList();
 
-            // Collect protected spans for any code nodes.
-            var protectedSpans = new List<(int start, int end)>();
-            foreach (var n in doc.Descendants())
-            {
-                if (n is CodeInline || n is FencedCodeBlock || n is CodeBlock)
-                {
-                    var s = n.Span; // indices into the ORIGINAL markdown
-                    if (s.Start >= 0 && s.End >= s.Start)
-                        protectedSpans.Add((s.Start, s.End));
-                }
-            }
-
-            // Merge overlapping/adjacent spans to speed up lookups.
+            // Merge overlaps/adjacent
             protectedSpans.Sort((a, b) => a.start.CompareTo(b.start));
-            var merged = new List<(int start, int end)>();
+            var merged = new List<(int start, int end)>(protectedSpans.Count);
             foreach (var r in protectedSpans)
             {
                 if (merged.Count == 0 || r.start > merged[^1].end + 1)
@@ -52,13 +46,16 @@ namespace ChatGPTExport.Exporters
                     merged[^1] = (merged[^1].start, Math.Max(merged[^1].end, r.end));
             }
 
-            static bool IsProtected(int idx, List<(int start, int end)> spans)
+            bool HasProtection = merged.Count > 0;
+
+            bool IsProtected(int idx)
             {
-                int lo = 0, hi = spans.Count - 1;
+                if (!HasProtection) return false;
+                int lo = 0, hi = merged.Count - 1;
                 while (lo <= hi)
                 {
-                    int mid = lo + hi >> 1;
-                    var (s, e) = spans[mid];
+                    int mid = lo + ((hi - lo) >> 1);
+                    var (s, e) = merged[mid];
                     if (idx < s) hi = mid - 1;
                     else if (idx > e) lo = mid + 1;
                     else return true;
@@ -73,31 +70,19 @@ namespace ChatGPTExport.Exporters
             int i = 0;
             while (i < src.Length)
             {
-                if (!IsProtected(i, merged) && src[i] == '\\' && i + 1 < src.Length)
+                if (src[i] == '\\' && i + 1 < src.Length && !IsProtected(i))
                 {
                     char n1 = src[i + 1];
-                    if (n1 == '(')
+                    if (n1 == '(' || n1 == ')')
                     {
                         sb.Append('$');
-                        i += 2; // skip the '\('
+                        i += 2;
                         continue;
                     }
-                    if (n1 == ')')
-                    {
-                        sb.Append('$');
-                        i += 2; // skip the '\)'
-                        continue;
-                    }
-                    if (n1 == '[')
+                    if (n1 == '[' || n1 == ']')
                     {
                         sb.Append("$$");
-                        i += 2; // skip the '\['
-                        continue;
-                    }
-                    if (n1 == ']')
-                    {
-                        sb.Append("$$");
-                        i += 2; // skip the '\]'
+                        i += 2;
                         continue;
                     }
                 }
