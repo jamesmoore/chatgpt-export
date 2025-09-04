@@ -73,7 +73,7 @@ namespace ChatGPTExport.Exporters
             if (markdown.Contains(@"\(") && markdown.Contains(@"\)") ||
                 markdown.Contains(@"\[") && markdown.Contains(@"\]"))
             {
-                var escaped = MathjaxEscaper.EscapeBackslashMathOutsideCode(markdown);
+                var escaped = MarkdownMathConverter.ConvertBackslashMathToDollar(markdown);
                 hasMath = markdown != escaped;
                 markdown = escaped;
             }
@@ -106,7 +106,7 @@ namespace ChatGPTExport.Exporters
                 //.UseFooters()
                 .UseFootnotes()
                 //.UseGridTables()
-                //.UseMathematics()
+                .UseMathematics()
                 //.UseMediaLinks()
                 .UsePipeTables()
                 .UseListExtras()
