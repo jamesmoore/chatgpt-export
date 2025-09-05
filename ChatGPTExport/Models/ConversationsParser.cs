@@ -19,12 +19,13 @@ namespace ChatGPTExport.Models
 
             if (validate)
             {
+                Console.WriteLine($"Validating: {sourceFile.FullName}");
                 var validateContentTypeResult = ValidateContentTypes(conversationsJson);
                 var validateResult = ValidateJsonSerialization(conversationsJson, conversations);
 
                 if (validateContentTypeResult == false || validateResult == false)
                 {
-                    throw new ApplicationException("Validation errors found");
+                    throw new ValidationException();
                 }
             }
             return conversations;
