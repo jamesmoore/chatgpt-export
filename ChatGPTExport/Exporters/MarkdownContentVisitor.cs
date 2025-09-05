@@ -327,17 +327,18 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentTetherBrowsingDisplay content, ContentVisitorContext context)
         {
-            throw new NotImplementedException();
+            string v = content.result.Replace("\n", "  \n");
+            return new MarkdownContentResult([v, content.summary]);
         }
 
         public MarkdownContentResult Visit(ContentComputerOutput content, ContentVisitorContext context)
         {
-            throw new NotImplementedException();
+            return new MarkdownContentResult();
         }
 
         public MarkdownContentResult Visit(ContentSystemError content, ContentVisitorContext context)
         {
-            throw new NotImplementedException();
+            return new MarkdownContentResult($"🔴 {content.name}: {content.text}");
         }
     }
 }
