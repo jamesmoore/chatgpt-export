@@ -24,7 +24,7 @@ namespace ChatGPTExport.Models
 
                 if (validateContentTypeResult == false || validateResult == false)
                 {
-                    throw new ApplicationException("Validation errors found");
+                    throw new ValidationException();
                 }
             }
             return conversations;
