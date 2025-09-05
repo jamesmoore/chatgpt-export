@@ -7,6 +7,15 @@ namespace ChatGPTExport
 {
     public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters, ExportMode exportMode)
     {
+        /// <summary>
+        /// Processes multiple instances of the same conversation.
+        /// Why do we process all conversations instead of just the latest instance? 
+        ///     There may be assets in older exports that are absent in newer ones. 
+        ///     Processing the older ones enables them to be transferred to the destination directory.
+        /// </summary>
+        /// <param name="conversations">Enumerable tuple of asset locator and corresponding conversation (Must be in date order).</param>
+        /// <param name="destination">Destination directory.</param>
+        /// <exception cref="ApplicationException"></exception>
         public void Process(IEnumerable<(IAssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
         {
             try

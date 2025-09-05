@@ -66,8 +66,19 @@ namespace ChatGPTExport.Exporters
 
         private HtmlFragment GetHtmlFragment(Author author, string markdown, MarkdownPipeline markdownPipeline)
         {
-            var html = Markdown.ToHtml(markdown, markdownPipeline);
+            var doc = Markdown.Parse(markdown, markdownPipeline);
 
+            var hasMath = false;
+
+            if (markdown.Contains(@"\(") && markdown.Contains(@"\)") ||
+                markdown.Contains(@"\[") && markdown.Contains(@"\]"))
+            {
+                var escaped = MarkdownMathConverter.ConvertBackslashMathToDollar(markdown);
+                hasMath = markdown != escaped;
+                markdown = escaped;
+            }
+
+            var html = Markdown.ToHtml(markdown, markdownPipeline);
 
             var lanugages = GetLanguages(markdown);
 
@@ -76,10 +87,10 @@ namespace ChatGPTExport.Exporters
                 Html = author.role == "user" ? formatter.FormatUserInput(html) : html,
                 HasCode = lanugages.HasCode,
                 Languages = lanugages.Languages,
+                HasMath = hasMath,
             };
             return fragment;
         }
-
 
         private MarkdownPipeline GetPipeline()
         {
@@ -95,7 +106,7 @@ namespace ChatGPTExport.Exporters
                 //.UseFooters()
                 .UseFootnotes()
                 //.UseGridTables()
-                //.UseMathematics()
+                .UseMathematics()
                 //.UseMediaLinks()
                 .UsePipeTables()
                 .UseListExtras()
@@ -112,6 +123,5 @@ namespace ChatGPTExport.Exporters
         }
 
         public string GetExtension() => ".html";
-
     }
 }
