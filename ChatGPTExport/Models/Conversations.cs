@@ -71,6 +71,9 @@ namespace ChatGPTExport.Models
         {
             return mapping.Where(p => p.Value.IsLeaf()).Count() > 1;
         }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; set; }
     }
 
     public class MessageContainer
@@ -353,6 +356,7 @@ namespace ChatGPTExport.Models
     [JsonDerivedType(typeof(ContentReasoningRecap), ContentTypes.ReasoningRecap)]
     [JsonDerivedType(typeof(ContentCode), ContentTypes.Code)]
     [JsonDerivedType(typeof(ContentExecutionOutput), ContentTypes.ExecutionOutput)]
+    [JsonDerivedType(typeof(ContentUserEditableContext), ContentTypes.UserEditableContext)]
     public class ContentBase
     {
         [JsonExtensionData]
@@ -487,6 +491,41 @@ namespace ChatGPTExport.Models
     {
         public string text { get; set; }
 
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentUserEditableContext : ContentBase
+    {
+        public string user_profile { get; set; }
+        public string user_instructions { get; set; }
+
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentTetherBrowsingDisplay : ContentBase
+    {
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentComputerOutput : ContentBase
+    {
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentSystemError : ContentBase
+    {
         public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
         {
             return visitor.Visit(this, context);
