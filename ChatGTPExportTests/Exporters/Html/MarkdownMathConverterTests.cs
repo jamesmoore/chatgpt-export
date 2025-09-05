@@ -1,6 +1,6 @@
-﻿using ChatGPTExport.Exporters;
+﻿using ChatGPTExport.Exporters.Html;
 
-namespace ChatGTPExportTests.Exporters
+namespace ChatGTPExportTests.Exporters.Html
 {
     public class MarkdownMathConverterTests
     {

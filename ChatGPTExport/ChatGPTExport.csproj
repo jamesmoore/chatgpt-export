@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Exporters\NewFolder\**" />
+    <EmbeddedResource Remove="Exporters\NewFolder\**" />
+    <None Remove="Exporters\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Markdig" Version="0.41.3" />
     <PackageReference Include="System.IO.Abstractions" Version="22.0.15" />
     <PackageReference Include="System.Text.Json" Version="9.0.8" />

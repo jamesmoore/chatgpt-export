@@ -1,4 +1,4 @@
-﻿namespace ChatGPTExport.Exporters.HtmlTemplate
+﻿namespace ChatGPTExport.Exporters.Html.Headers
 {
     internal class MathjaxHeaderProvider : IHeaderProvider
     {

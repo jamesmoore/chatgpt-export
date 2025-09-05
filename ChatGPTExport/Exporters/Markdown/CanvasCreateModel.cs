@@ -1,4 +1,4 @@
-﻿namespace ChatGPTExport.Exporters
+﻿namespace ChatGPTExport.Exporters.Markdown
 {
     public class CanvasCreateModel
     {

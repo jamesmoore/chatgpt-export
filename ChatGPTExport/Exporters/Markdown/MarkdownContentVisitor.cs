@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ChatGPTExport.Assets;
+using ChatGPTExport.Exporters.Markdown;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters

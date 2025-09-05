@@ -3,10 +3,14 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.IO.Abstractions;
 using ChatGPTExport;
-using ChatGPTExport.Exporters;
 using ChatGPTExport.Assets;
+using ChatGPTExport.Exporters;
+using ChatGPTExport.Exporters.Html;
+using ChatGPTExport.Exporters.Html.Headers;
+using ChatGPTExport.Exporters.Html.Template;
+using ChatGPTExport.Exporters.Json;
+using ChatGPTExport.Exporters.Markdown;
 using ChatGPTExport.Models;
-using ChatGPTExport.Exporters.HtmlTemplate;
 using ChatGPTExport.Validators;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;

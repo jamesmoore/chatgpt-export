@@ -4,7 +4,7 @@ using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using Markdig;
 
-namespace ChatGPTExport.Exporters
+namespace ChatGPTExport.Exporters.Html
 {
     internal partial class HtmlExporter(IHtmlFormatter formatter) : IExporter
     {
@@ -66,7 +66,7 @@ namespace ChatGPTExport.Exporters
 
         private HtmlFragment GetHtmlFragment(Author author, string markdown, MarkdownPipeline markdownPipeline)
         {
-            var doc = Markdown.Parse(markdown, markdownPipeline);
+            var doc = Markdig.Markdown.Parse(markdown, markdownPipeline);
 
             var hasMath = false;
 
@@ -78,7 +78,7 @@ namespace ChatGPTExport.Exporters
                 markdown = escaped;
             }
 
-            var html = Markdown.ToHtml(markdown, markdownPipeline);
+            var html = Markdig.Markdown.ToHtml(markdown, markdownPipeline);
 
             var lanugages = GetLanguages(markdown);
 
