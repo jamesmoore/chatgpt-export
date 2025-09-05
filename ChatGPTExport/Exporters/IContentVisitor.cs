@@ -11,5 +11,9 @@ namespace ChatGPTExport.Exporters
         T Visit(ContentExecutionOutput content, ContentVisitorContext context);
         T Visit(ContentReasoningRecap content, ContentVisitorContext context);
         T Visit(ContentBase content, ContentVisitorContext context);
+        T Visit(ContentUserEditableContext content, ContentVisitorContext context);
+        T Visit(ContentTetherBrowsingDisplay content, ContentVisitorContext context);
+        T Visit(ContentComputerOutput content, ContentVisitorContext context);
+        T Visit(ContentSystemError content, ContentVisitorContext context);
     }
 }
