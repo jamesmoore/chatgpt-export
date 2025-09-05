@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
-namespace ChatGPTExport.Exporters
+namespace ChatGPTExport.Exporters.Json
 {
     internal class JsonExporter : IExporter
     {

@@ -3,7 +3,7 @@ using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
 
-namespace ChatGPTExport.Exporters
+namespace ChatGPTExport.Exporters.Html
 {
     public static class MarkdownMathConverter
     {
@@ -25,7 +25,7 @@ namespace ChatGPTExport.Exporters
             if (string.IsNullOrEmpty(markdown))
                 return markdown ?? string.Empty;
 
-            var doc = Markdown.Parse(markdown, Pipeline);
+            var doc = Markdig.Markdown.Parse(markdown, Pipeline);
 
             // Collect protected spans (code of any kind).
             var protectedSpans = doc

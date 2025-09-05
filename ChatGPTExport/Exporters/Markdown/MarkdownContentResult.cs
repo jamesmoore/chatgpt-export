@@ -1,4 +1,4 @@
-﻿namespace ChatGPTExport.Exporters
+﻿namespace ChatGPTExport.Exporters.Markdown
 {
     public record MarkdownContentResult(IEnumerable<string> Lines, string? Suffix = null)
     {

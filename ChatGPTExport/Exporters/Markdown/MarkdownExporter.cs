@@ -1,7 +1,7 @@
 ﻿using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 
-namespace ChatGPTExport.Exporters
+namespace ChatGPTExport.Exporters.Markdown
 {
     internal class MarkdownExporter : IExporter
     {

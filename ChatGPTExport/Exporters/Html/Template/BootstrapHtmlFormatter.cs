@@ -1,6 +1,6 @@
 ﻿using Markdig;
 
-namespace ChatGPTExport.Exporters.HtmlTemplate
+namespace ChatGPTExport.Exporters.Html.Template
 {
     internal class BootstrapHtmlFormatter(IHeaderProvider headerProvider) : IHtmlFormatter
     {
