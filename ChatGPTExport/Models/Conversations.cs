@@ -71,6 +71,9 @@ namespace ChatGPTExport.Models
         {
             return mapping.Where(p => p.Value.IsLeaf()).Count() > 1;
         }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; set; }
     }
 
     public class MessageContainer
@@ -353,6 +356,10 @@ namespace ChatGPTExport.Models
     [JsonDerivedType(typeof(ContentReasoningRecap), ContentTypes.ReasoningRecap)]
     [JsonDerivedType(typeof(ContentCode), ContentTypes.Code)]
     [JsonDerivedType(typeof(ContentExecutionOutput), ContentTypes.ExecutionOutput)]
+    [JsonDerivedType(typeof(ContentUserEditableContext), ContentTypes.UserEditableContext)]
+    [JsonDerivedType(typeof(ContentTetherBrowsingDisplay), ContentTypes.TetherBrowsingDisplay)]
+    [JsonDerivedType(typeof(ContentComputerOutput), ContentTypes.ComputerOutput)]
+    [JsonDerivedType(typeof(ContentSystemError), ContentTypes.SystemError)]
     public class ContentBase
     {
         [JsonExtensionData]
@@ -394,9 +401,9 @@ namespace ChatGPTExport.Models
         {
             public string content_type { get; set; }
             public string asset_pointer { get; set; }
-            public int size_bytes { get; set; }
-            public int width { get; set; }
-            public int height { get; set; }
+            public int? size_bytes { get; set; }
+            public int? width { get; set; }
+            public int? height { get; set; }
             public object fovea { get; set; }
             public Metadata metadata { get; set; }
 
@@ -409,9 +416,11 @@ namespace ChatGPTExport.Models
                 public int? container_pixel_width { get; set; }
                 public object emu_omit_glimpse_image { get; set; }
                 public object emu_patches_override { get; set; }
-                public bool sanitized { get; set; }
+                public bool? sanitized { get; set; }
                 public object asset_pointer_link { get; set; }
                 public object watermarked_asset_pointer { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
             }
 
             public class Dalle
@@ -436,6 +445,8 @@ namespace ChatGPTExport.Models
                 public string serialization_title { get; set; }
             }
 
+            [JsonExtensionData]
+            public Dictionary<string, JsonElement> ExtraData { get; set; }
         }
 
         public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
@@ -487,6 +498,45 @@ namespace ChatGPTExport.Models
     {
         public string text { get; set; }
 
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentUserEditableContext : ContentBase
+    {
+        public string user_profile { get; set; }
+        public string user_instructions { get; set; }
+
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentTetherBrowsingDisplay : ContentBase
+    {
+        public string result { get; set; }
+        public string summary { get; set; }
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentComputerOutput : ContentBase
+    {
+        public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
+        {
+            return visitor.Visit(this, context);
+        }
+    }
+
+    public class ContentSystemError : ContentBase
+    {
+        public string name { get; set; }
+        public string text { get; set; }
         public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
         {
             return visitor.Visit(this, context);

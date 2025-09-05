@@ -12,6 +12,35 @@ namespace ChatGPTExport.Exporters
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
 
+        /// <summary>
+        /// Catch all for unhandled content types.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public MarkdownContentResult Visit(ContentBase content, ContentVisitorContext context)
+        {
+            string name = content.GetType().Name;
+            Console.WriteLine("\tUnhandled content type: " + name);
+
+            var lines = new List<string>
+            {
+                $"Unhandled content type: {content}"
+            };
+
+            if (content.ExtraData.Count != 0)
+            {
+                lines.Add("|Name|Value|");
+                lines.Add("|---|---|");
+                foreach (var item in content.ExtraData.Take(1))
+                {
+                    lines.Add("|" + item.Key + "|" + item.Value.GetRawText().Replace("\\n", "<br>") + "|");
+                }
+            }
+
+            return new MarkdownContentResult(lines);
+        }
+
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
             var parts = content.parts.Where(TextContentFilter).SelectMany(p => DecodeText(p, context)).ToList();
@@ -206,13 +235,6 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult(content.content);
         }
 
-        public MarkdownContentResult Visit(ContentBase content, ContentVisitorContext context)
-        {
-            string name = content.GetType().Name;
-            Console.WriteLine("\t" + name);
-            return new MarkdownContentResult($"Unhandled content type: {content}");
-        }
-
         private IEnumerable<string> DecodeText(string text, ContentVisitorContext context)
         {
             // image prompt
@@ -292,5 +314,31 @@ namespace ChatGPTExport.Exporters
 
         [GeneratedRegex("""^search\("(.*)"\)$""")]
         private static partial Regex SearchRegex();
+
+        public MarkdownContentResult Visit(ContentUserEditableContext content, ContentVisitorContext context)
+        {
+            var markdownContent = new List<string>
+            {
+                "**User profile:** " + content.user_profile + "  ",
+                "**User instructions:** " + content.user_instructions + "  "
+            };
+            return new MarkdownContentResult(markdownContent);
+        }
+
+        public MarkdownContentResult Visit(ContentTetherBrowsingDisplay content, ContentVisitorContext context)
+        {
+            string v = content.result.Replace("\n", "  \n");
+            return new MarkdownContentResult([v, content.summary]);
+        }
+
+        public MarkdownContentResult Visit(ContentComputerOutput content, ContentVisitorContext context)
+        {
+            return new MarkdownContentResult();
+        }
+
+        public MarkdownContentResult Visit(ContentSystemError content, ContentVisitorContext context)
+        {
+            return new MarkdownContentResult($"🔴 {content.name}: {content.text}");
+        }
     }
 }
