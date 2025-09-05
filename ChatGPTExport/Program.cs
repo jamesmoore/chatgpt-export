@@ -7,6 +7,7 @@ using ChatGPTExport.Exporters;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using ChatGPTExport.Exporters.HtmlTemplate;
+using ChatGPTExport.Validators;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -125,7 +126,7 @@ rootCommand.SetAction(parseResult =>
         var markdown = parseResult.GetRequiredValue(markdownOption);
         var html = parseResult.GetRequiredValue(htmlOption);
         var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
-        
+
         var fileSystem = new FileSystem();
 
         var destination = fileSystem.DirectoryInfo.Wrap(destinationDirectoryInfo);
@@ -160,8 +161,10 @@ rootCommand.SetAction(parseResult =>
             var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
             exporters.Add(new HtmlExporter(formatter));
         }
-        
+
         var exporter = new Exporter(fileSystem, exporters, exportMode);
+
+        bool validationFail = false;
 
         Conversations? GetConversations(IFileInfo p)
         {
@@ -170,10 +173,14 @@ rootCommand.SetAction(parseResult =>
                 Console.WriteLine($"Loading conversation " + p.FullName);
                 return conversationsFactory.GetConversations(p);
             }
+            catch (ValidationException)
+            {
+                validationFail = true;
+                return null;
+            }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
-                if (validate) throw;
                 return null;
             }
         }
@@ -189,6 +196,11 @@ rootCommand.SetAction(parseResult =>
             .Where(x => x.Conversations != null)
             .OrderBy(x => x.Conversations.GetUpdateTime())
             .ToList();
+
+        if (validationFail)
+        {
+            throw new ApplicationException("Validation errors found");
+        }
 
         var groupedByConversationId = directoryConversationsMap
             .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.AssetLocator, Conversation))
