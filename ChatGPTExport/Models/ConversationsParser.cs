@@ -19,6 +19,7 @@ namespace ChatGPTExport.Models
 
             if (validate)
             {
+                Console.WriteLine($"Validating: {sourceFile.FullName}");
                 var validateContentTypeResult = ValidateContentTypes(conversationsJson);
                 var validateResult = ValidateJsonSerialization(conversationsJson, conversations);
 
