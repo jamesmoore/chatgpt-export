@@ -95,7 +95,7 @@ namespace ChatGPTExport
             var createtime = conversation.GetCreateTime();
             var value = $"{createtime:yyyy-MM-ddTHH-mm-ss} - {conversation.title}{(string.IsNullOrWhiteSpace(modifier) ? "" : $" - {modifier}")}";
             value = new string(value.Where(p => fileSystem.Path.GetInvalidFileNameChars().Contains(p) == false).ToArray());
-            return value + extension;
+            return value.Trim() + extension;
         }
     }
 }
