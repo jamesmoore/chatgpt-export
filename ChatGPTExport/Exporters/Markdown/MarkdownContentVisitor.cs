@@ -147,33 +147,7 @@ namespace ChatGPTExport.Exporters
             {
                 if (part.IsObject)
                 {
-                    var obj = part.ObjectValue;
-                    if (obj.content_type == "image_asset_pointer" && string.IsNullOrWhiteSpace(obj.asset_pointer) == false)
-                    {
-                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
-                        var markdownImage = assetLocator.GetMarkdownImage(new AssetRequest(
-                            searchPattern,
-                            context.Role,
-                            context.CreatedDate,
-                            context.UpdatedDate)
-                            );
-
-                        if (string.IsNullOrWhiteSpace(markdownImage) == false)
-                        {
-                            markdownContent.Add(markdownImage);
-                        }
-                        else
-                        {
-                            Console.Error.WriteLine("\tUnable to find asset " + obj.asset_pointer);
-                            markdownContent.Add($"> ⚠️ **Warning:** Could not find asset: {obj.asset_pointer}.");
-                        }
-
-                        if (context.MessageMetadata.image_gen_title != null)
-                        {
-                            markdownContent.Add($"*{context.MessageMetadata.image_gen_title}*  ");
-                        }
-                        markdownContent.Add($"**Size:** {obj.size_bytes} **Dims:** {obj.width}x{obj.height}  ");
-                    }
+                    markdownContent.AddRange(GetMarkdownMediaAsset(context, part.ObjectValue));
                 }
                 else if (part.IsString)
                 {
@@ -181,6 +155,67 @@ namespace ChatGPTExport.Exporters
                 }
             }
             return new MarkdownContentResult(markdownContent);
+        }
+
+        private IEnumerable<string> GetMarkdownMediaAsset(ContentVisitorContext context, ContentMultimodalText.ContentMultimodalTextParts obj)
+        {
+            switch (obj.content_type)
+            {
+                case "image_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
+                    {
+                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var markdownImage = GetMediaAsset(context, searchPattern);
+
+                        if (string.IsNullOrWhiteSpace(markdownImage) == false)
+                        {
+                            yield return markdownImage;
+                        }
+                        else
+                        {
+                            Console.Error.WriteLine("\tUnable to find asset " + obj.asset_pointer);
+                            yield return $"> ⚠️ **Warning:** Could not find asset: {obj.asset_pointer}.";
+                        }
+
+                        if (context.MessageMetadata.image_gen_title != null)
+                        {
+                            yield return $"*{context.MessageMetadata.image_gen_title}*  ";
+                        }
+                        yield return $"**Size:** {obj.size_bytes} **Dims:** {obj.width}x{obj.height}  ";
+                        break;
+                    }
+
+                case "real_time_user_audio_video_asset_pointer" when string.IsNullOrWhiteSpace(obj.audio_asset_pointer?.asset_pointer) == false:
+                    {
+                        var searchPattern = obj.audio_asset_pointer.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var markdownAsset = GetMediaAsset(context, searchPattern);
+
+                        yield return $"{markdownAsset}  ";
+                        break;
+                    }
+
+                case "audio_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
+                    {
+                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var markdownAsset = GetMediaAsset(context, searchPattern);
+
+                        yield return $"{markdownAsset}  ";
+                        break;
+                    }
+
+                case "audio_transcription" when string.IsNullOrWhiteSpace(obj.text) == false:
+                    yield return $"*{obj.text}*  ";
+                    break;
+            }
+        }
+
+        private string? GetMediaAsset(ContentVisitorContext context, string searchPattern)
+        {
+            return assetLocator.GetMarkdownMediaAsset(new AssetRequest(
+                searchPattern,
+                context.Role,
+                context.CreatedDate,
+                context.UpdatedDate)
+                );
         }
 
         public MarkdownContentResult Visit(ContentCode content, ContentVisitorContext context)

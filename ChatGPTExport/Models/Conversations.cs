@@ -406,6 +406,8 @@ namespace ChatGPTExport.Models
             public int? height { get; set; }
             public object fovea { get; set; }
             public Metadata metadata { get; set; }
+            public AudioAssetPointer audio_asset_pointer { get; set; }
+            public string text { get; set; } // for audio transcription
 
             public class Metadata
             {
@@ -447,6 +449,14 @@ namespace ChatGPTExport.Models
 
             [JsonExtensionData]
             public Dictionary<string, JsonElement> ExtraData { get; set; }
+
+            public class AudioAssetPointer
+            {
+                public string asset_pointer { get; set; }
+
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
+            }
         }
 
         public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
