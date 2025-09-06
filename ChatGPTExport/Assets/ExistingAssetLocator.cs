@@ -23,7 +23,7 @@ namespace ChatGPTExport.Assets
             GetCache().Add(newFile);
         }
 
-        public string? GetMarkdownImage(AssetRequest assetRequest)
+        public string? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
             // it may already exist in the destination directory from a previous export 
             var destinationMatches = GetCachedDestinationFiles(assetRequest.SearchPattern).ToList();

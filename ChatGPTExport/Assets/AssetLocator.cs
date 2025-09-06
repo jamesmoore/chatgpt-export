@@ -12,10 +12,10 @@ namespace ChatGPTExport.Assets
     {
         private List<string>? cachedSourceList = null;
 
-        public string? GetMarkdownImage(AssetRequest assetRequest)
+        public string? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
             return FindAssetInSourceDirectory(assetRequest) ??
-                existingAssetLocator.GetMarkdownImage(assetRequest);
+                existingAssetLocator.GetMarkdownMediaAsset(assetRequest);
         }
 
         private IEnumerable<string> GetCachedSourceFiles(string searchPattern)
