@@ -6,7 +6,7 @@ using Markdig;
 
 namespace ChatGPTExport.Exporters.Html
 {
-    internal partial class HtmlExporter(IHtmlFormatter formatter) : IExporter
+    internal partial class HtmlExporter(IHtmlFormatter formatter, bool showHidden) : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -16,7 +16,7 @@ namespace ChatGPTExport.Exporters.Html
 
             var strings = new List<(Author Author, string Content)>();
 
-            var visitor = new MarkdownContentVisitor(assetLocator);
+            var visitor = new MarkdownContentVisitor(assetLocator, showHidden);
 
             foreach (var message in messages)
             {

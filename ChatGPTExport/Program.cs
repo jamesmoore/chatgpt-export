@@ -98,6 +98,13 @@ var validateOption = new Option<bool>("--validate")
     DefaultValueFactory = (ArgumentResult ar) => false,
 };
 
+var showHiddenOption = new Option<bool>("--showhidden")
+{
+    Description = "Inclues hidden content (thinking, web searches etc.) in markdown and html.",
+    Required = false,
+    DefaultValueFactory = (ArgumentResult ar) => false,
+};
+
 var rootCommand = new RootCommand("ChatGPT export reformatter")
 {
     sourceDirectoryOption,
@@ -108,6 +115,7 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     htmlOption,
     htmlFormatOption,
     validateOption,
+    showHiddenOption,
 };
 
 
@@ -122,109 +130,21 @@ rootCommand.SetAction(parseResult =>
 
         ConsoleFeatures.StartIndeterminate();
 
-        var sourceDirectoryInfos = parseResult.GetRequiredValue(sourceDirectoryOption);
-        var destinationDirectoryInfo = parseResult.GetRequiredValue(destinationDirectoryOption);
-        var exportMode = parseResult.GetRequiredValue(exportModeOption);
-        var validate = parseResult.GetRequiredValue(validateOption);
-        var json = parseResult.GetRequiredValue(jsonOption);
-        var markdown = parseResult.GetRequiredValue(markdownOption);
-        var html = parseResult.GetRequiredValue(htmlOption);
-        var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
-
-        var fileSystem = new FileSystem();
-
-        var destination = fileSystem.DirectoryInfo.Wrap(destinationDirectoryInfo);
-        var sources = sourceDirectoryInfos.Select(p => fileSystem.DirectoryInfo.Wrap(p));
-
-        // check that destination is not the same as the source, or one of the source subdirectories
-        foreach (var source in sources)
+        var programArgs = new ProgramArgs
         {
-            var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
-            if (isSameOrSubdirectory)
-            {
-                Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
-                return 1;
-            }
-        }
+            SourceDirectory = parseResult.GetRequiredValue(sourceDirectoryOption),
+            DestinationDirectory = parseResult.GetRequiredValue(destinationDirectoryOption),
+            ExportMode = parseResult.GetRequiredValue(exportModeOption),
+            Validate = parseResult.GetRequiredValue(validateOption),
+            Json = parseResult.GetRequiredValue(jsonOption),
+            Markdown = parseResult.GetRequiredValue(markdownOption),
+            Html = parseResult.GetRequiredValue(htmlOption),
+            HtmlFormat = parseResult.GetRequiredValue(htmlFormatOption),
+            ShowHidden = parseResult.GetRequiredValue(showHiddenOption),
+        };
 
-        var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
-
-        var conversationsFactory = new ConversationsParser(fileSystem, validate);
-        var exporters = new List<IExporter>();
-        if (json)
-        {
-            exporters.Add(new JsonExporter());
-        }
-        if (markdown)
-        {
-            exporters.Add(new MarkdownExporter());
-        }
-        if (html)
-        {
-            var headerProvider = new CompositeHeaderProvider(
-                [
-                    new HighlightHeaderProvider(),
-                    new MathjaxHeaderProvider(),
-                ]
-            );
-            
-            var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-            exporters.Add(new HtmlExporter(formatter));
-        }
-
-        var exporter = new Exporter(fileSystem, exporters, exportMode);
-
-        bool validationFail = false;
-
-        Conversations? GetConversations(IFileInfo p)
-        {
-            try
-            {
-                Console.WriteLine($"Loading conversation " + p.FullName);
-                return conversationsFactory.GetConversations(p);
-            }
-            catch (ValidationException)
-            {
-                validationFail = true;
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
-                return null;
-            }
-        }
-
-        var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-
-        var directoryConversationsMap = conversationFiles
-            .Select(file => new
-            {
-                AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator) as IAssetLocator,
-                Conversations = GetConversations(file)
-            })
-            .Where(x => x.Conversations != null)
-            .OrderBy(x => x.Conversations.GetUpdateTime())
-            .ToList();
-
-        if (validationFail)
-        {
-            throw new ApplicationException("Validation errors found");
-        }
-
-        var groupedByConversationId = directoryConversationsMap
-            .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.AssetLocator, Conversation))
-            .GroupBy(x => x.Conversation.conversation_id)
-            .OrderBy(p => p.Key).ToList();
-
-        var count = groupedByConversationId.Count;
-        var position = 0;
-        foreach (var group in groupedByConversationId)
-        {
-            var percent = (int)(position++ * 100.0 / count);
-            ConsoleFeatures.SetProgress(percent);
-            exporter.Process(group, destination);
-        }
+        var result = RunExport(programArgs);
+        return result;
     }
     catch (Exception ex)
     {
@@ -235,8 +155,107 @@ rootCommand.SetAction(parseResult =>
         ConsoleFeatures.ClearState();
     }
     return 0;
-
 });
 
 var parseResult = rootCommand.Parse(args);
 return parseResult.Invoke();
+
+static int RunExport(ProgramArgs programArgs)
+{
+    var fileSystem = new FileSystem();
+
+    var destination = fileSystem.DirectoryInfo.Wrap(programArgs.DestinationDirectory);
+    var sources = programArgs.SourceDirectory.Select(p => fileSystem.DirectoryInfo.Wrap(p));
+
+    // check that destination is not the same as the source, or one of the source subdirectories
+    foreach (var source in sources)
+    {
+        var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
+        if (isSameOrSubdirectory)
+        {
+            Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
+            return 1;
+        }
+    }
+
+    var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
+
+    var conversationsFactory = new ConversationsParser(fileSystem, programArgs.Validate);
+    var exporters = new List<IExporter>();
+    if (programArgs.Json)
+    {
+        exporters.Add(new JsonExporter());
+    }
+    if (programArgs.Markdown)
+    {
+        exporters.Add(new MarkdownExporter(programArgs.ShowHidden));
+    }
+    if (programArgs.Html)
+    {
+        var headerProvider = new CompositeHeaderProvider(
+            [
+                new HighlightHeaderProvider(),
+                new MathjaxHeaderProvider(),
+            ]
+        );
+
+        var formatter = programArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
+        exporters.Add(new HtmlExporter(formatter, programArgs.ShowHidden));
+    }
+
+    var exporter = new Exporter(fileSystem, exporters, programArgs.ExportMode);
+
+    bool validationFail = false;
+
+    Conversations? GetConversations(IFileInfo p)
+    {
+        try
+        {
+            Console.WriteLine($"Loading conversation " + p.FullName);
+            return conversationsFactory.GetConversations(p);
+        }
+        catch (ValidationException)
+        {
+            validationFail = true;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
+            return null;
+        }
+    }
+
+    var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
+
+    var directoryConversationsMap = conversationFiles
+        .Select(file => new
+        {
+            AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator) as IAssetLocator,
+            Conversations = GetConversations(file)
+        })
+        .Where(x => x.Conversations != null)
+        .OrderBy(x => x.Conversations.GetUpdateTime())
+        .ToList();
+
+    if (validationFail)
+    {
+        throw new ApplicationException("Validation errors found");
+    }
+
+    var groupedByConversationId = directoryConversationsMap
+        .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.AssetLocator, Conversation))
+        .GroupBy(x => x.Conversation.conversation_id)
+        .OrderBy(p => p.Key).ToList();
+
+    var count = groupedByConversationId.Count;
+    var position = 0;
+    foreach (var group in groupedByConversationId)
+    {
+        var percent = (int)(position++ * 100.0 / count);
+        ConsoleFeatures.SetProgress(percent);
+        exporter.Process(group, destination);
+    }
+
+    return 0;
+}
