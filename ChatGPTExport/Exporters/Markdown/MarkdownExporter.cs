@@ -3,7 +3,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters.Markdown
 {
-    internal class MarkdownExporter : IExporter
+    internal class MarkdownExporter(bool showHidden) : IExporter
     {
         private readonly string LineBreak = Environment.NewLine;
 
@@ -13,7 +13,7 @@ namespace ChatGPTExport.Exporters.Markdown
 
             var strings = new List<string>();
 
-            var visitor = new MarkdownContentVisitor(assetLocator);
+            var visitor = new MarkdownContentVisitor(assetLocator, showHidden);
 
             foreach (var message in messages)
             {

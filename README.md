@@ -81,6 +81,7 @@ docker run --rm \
 |`-m`<br>`--markdown`||Export to markdown files (`true` or `false`).|`true`|
 |`--html`||Export to html files (`true` or `false`).|`true`|
 |`-hf`<br>`--htmlformat`||Specify format for html exports (`bootstrap` or `tailwind`).|`tailwind`|
+|`--showhidden`||Includes hidden content in markdown and html exports.<br>Enabling this will include thinking, web searches, image prompts in the export.|`false`|
 |`--validate`||Validate the json against the known and expected schema.|`false`|
 
 ## How it works

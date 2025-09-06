@@ -8,7 +8,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator) : IContentVisitor<MarkdownContentResult>
+    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
@@ -185,6 +185,11 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentCode content, ContentVisitorContext context)
         {
+            if (showHidden == false && context.Recipient != "all")
+            {
+                return new MarkdownContentResult();
+            }
+
             if (string.IsNullOrWhiteSpace(content.text))
             {
                 return new MarkdownContentResult();
@@ -216,24 +221,33 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentThoughts content, ContentVisitorContext context)
         {
-            var markdownContent = new List<string>();
-            foreach (var thought in content.thoughts)
+            return GetShowAllGuardedContentResult(() =>
             {
-                markdownContent.Add(thought.summary + "  ");
-                markdownContent.Add(thought.content + "  ");
-            }
-            return new MarkdownContentResult(markdownContent, " 💭");
+                var markdownContent = new List<string>();
+                foreach (var thought in content.thoughts)
+                {
+                    markdownContent.Add(thought.summary + "  ");
+                    markdownContent.Add(thought.content + "  ");
+                }
+                return new MarkdownContentResult(markdownContent, " 💭");
+            });
         }
 
         public MarkdownContentResult Visit(ContentExecutionOutput content, ContentVisitorContext context)
         {
-            var code = ToCodeBlock(content.text);
-            return new MarkdownContentResult(code);
+            return GetShowAllGuardedContentResult(() =>
+            {
+                var code = ToCodeBlock(content.text);
+                return new MarkdownContentResult(code);
+            });
         }
 
         public MarkdownContentResult Visit(ContentReasoningRecap content, ContentVisitorContext context)
         {
-            return new MarkdownContentResult(content.content);
+            return GetShowAllGuardedContentResult(() =>
+            {
+                return new MarkdownContentResult(content.content);
+            });
         }
 
         private IEnumerable<string> DecodeText(string text, ContentVisitorContext context)
@@ -318,18 +332,24 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentUserEditableContext content, ContentVisitorContext context)
         {
-            var markdownContent = new List<string>
+            return GetShowAllGuardedContentResult(() =>
             {
-                "**User profile:** " + content.user_profile + "  ",
-                "**User instructions:** " + content.user_instructions + "  "
-            };
-            return new MarkdownContentResult(markdownContent);
+                var markdownContent = new List<string>
+                {
+                    "**User profile:** " + content.user_profile + "  ",
+                    "**User instructions:** " + content.user_instructions + "  "
+                };
+                return new MarkdownContentResult(markdownContent);
+            });
         }
 
         public MarkdownContentResult Visit(ContentTetherBrowsingDisplay content, ContentVisitorContext context)
         {
-            string v = content.result.Replace("\n", "  \n");
-            return new MarkdownContentResult([v, content.summary]);
+            return GetShowAllGuardedContentResult(() =>
+            {
+                string v = content.result.Replace("\n", "  \n");
+                return new MarkdownContentResult([v, content.summary]);
+            });
         }
 
         public MarkdownContentResult Visit(ContentComputerOutput content, ContentVisitorContext context)
@@ -339,7 +359,15 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentSystemError content, ContentVisitorContext context)
         {
-            return new MarkdownContentResult($"🔴 {content.name}: {content.text}");
+            return GetShowAllGuardedContentResult(() =>
+            {
+                return new MarkdownContentResult($"🔴 {content.name}: {content.text}");
+            });
+        }
+
+        private MarkdownContentResult GetShowAllGuardedContentResult(Func<MarkdownContentResult> func)
+        {
+            return showHidden ? func() : new MarkdownContentResult();
         }
     }
 }
