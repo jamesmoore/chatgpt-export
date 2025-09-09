@@ -2,9 +2,17 @@
 
 namespace ChatGPTExport
 {
-    internal static class FileSystemExtensions
+    public static class FileSystemExtensions
     {
         private static bool? _isCaseSensitive;
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        public static void OverrideCaseSensitivityCache(bool? value)
+        {
+            _isCaseSensitive = value;
+        }
 
         public static bool IsFileSystemCaseSensitive(this IFileSystem fileSystem, string? path = null)
         {
@@ -37,8 +45,8 @@ namespace ChatGPTExport
             var candidatePath = candidate.FullName.TrimEnd(fileSystem.Path.DirectorySeparatorChar, fileSystem.Path.AltDirectorySeparatorChar);
 
             var comparison = fileSystem.IsFileSystemCaseSensitive()
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal;
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
 
             if (string.Equals(basePath, candidatePath, comparison))
             {
