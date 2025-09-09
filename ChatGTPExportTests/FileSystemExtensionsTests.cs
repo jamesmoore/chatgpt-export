@@ -1,5 +1,4 @@
 using System.IO.Abstractions.TestingHelpers;
-
 using ChatGPTExport;
 
 namespace ChatGTPExportTests;
@@ -38,7 +37,7 @@ public class FileSystemExtensionsTests
         Assert.True(baseDir.IsSameOrSubdirectory(candidate));
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public void IsSameOrSubdirectory_SamePath_CaseInsensitive()
     {
         ResetCaseSensitivityCache();
@@ -49,7 +48,7 @@ public class FileSystemExtensionsTests
         Assert.True(baseDir.IsSameOrSubdirectory(candidate));
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public void IsSameOrSubdirectory_Subdirectory_CaseInsensitive()
     {
         ResetCaseSensitivityCache();
