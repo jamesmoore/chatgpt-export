@@ -9,9 +9,9 @@ namespace ChatGPTExport
         /// <summary>
         /// For testing purposes only.
         /// </summary>
-        public static void ResetCaseSensitivityCache()
+        public static void OverrideCaseSensitivityCache(bool? value)
         {
-            _isCaseSensitive = null;
+            _isCaseSensitive = value;
         }
 
         public static bool IsFileSystemCaseSensitive(this IFileSystem fileSystem, string? path = null)

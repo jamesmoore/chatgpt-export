@@ -5,21 +5,16 @@ namespace ChatGTPExportTests;
 
 public class FileSystemExtensionsTests
 {
-    private static void ResetCaseSensitivityCache()
+    private static MockFileSystem CreateFileSystem()
     {
-        FileSystemExtensions.ResetCaseSensitivityCache();
-    }
-    private static MockFileSystem CreateFileSystem(bool caseSensitive)
-    {
-        var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
-        return new MockFileSystem(new Dictionary<string, MockFileData>(comparer));
+        return new MockFileSystem(new Dictionary<string, MockFileData>());
     }
 
     [Fact]
     public void IsSameOrSubdirectory_SamePath_CaseSensitive()
     {
-        ResetCaseSensitivityCache();
-        var fs = CreateFileSystem(caseSensitive: true);
+        FileSystemExtensions.OverrideCaseSensitivityCache(true);
+        var fs = CreateFileSystem();
         var baseDir = fs.DirectoryInfo.New("/root");
         var candidate = fs.DirectoryInfo.New("/root");
 
@@ -29,30 +24,30 @@ public class FileSystemExtensionsTests
     [Fact]
     public void IsSameOrSubdirectory_Subdirectory_CaseSensitive()
     {
-        ResetCaseSensitivityCache();
-        var fs = CreateFileSystem(caseSensitive: true);
+        FileSystemExtensions.OverrideCaseSensitivityCache(true);
+        var fs = CreateFileSystem();
         var baseDir = fs.DirectoryInfo.New("/root");
         var candidate = fs.DirectoryInfo.New("/root/sub");
 
         Assert.True(baseDir.IsSameOrSubdirectory(candidate));
     }
 
-    [WindowsOnlyFact]
+    [Fact]
     public void IsSameOrSubdirectory_SamePath_CaseInsensitive()
     {
-        ResetCaseSensitivityCache();
-        var fs = CreateFileSystem(caseSensitive: false);
+        FileSystemExtensions.OverrideCaseSensitivityCache(false);
+        var fs = CreateFileSystem();
         var baseDir = fs.DirectoryInfo.New("/root");
         var candidate = fs.DirectoryInfo.New("/ROOT");
 
         Assert.True(baseDir.IsSameOrSubdirectory(candidate));
     }
 
-    [WindowsOnlyFact]
+    [Fact]
     public void IsSameOrSubdirectory_Subdirectory_CaseInsensitive()
     {
-        ResetCaseSensitivityCache();
-        var fs = CreateFileSystem(caseSensitive: false);
+        FileSystemExtensions.OverrideCaseSensitivityCache(false);
+        var fs = CreateFileSystem();
         var baseDir = fs.DirectoryInfo.New("/root");
         var candidate = fs.DirectoryInfo.New("/ROOT/sub");
 
