@@ -16,7 +16,7 @@ public class FileSystemExtensionsTests
     private static MockFileSystem CreateFileSystem(bool caseSensitive)
     {
         var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
-        return new MockFileSystem(new Dictionary<string, MockFileData>(), "/", comparer);
+        return new MockFileSystem(new Dictionary<string, MockFileData>(comparer));
     }
 
     [Fact]
