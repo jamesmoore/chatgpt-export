@@ -37,8 +37,8 @@ namespace ChatGPTExport
             var candidatePath = candidate.FullName.TrimEnd(fileSystem.Path.DirectorySeparatorChar, fileSystem.Path.AltDirectorySeparatorChar);
 
             var comparison = fileSystem.IsFileSystemCaseSensitive()
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal;
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
 
             if (string.Equals(basePath, candidatePath, comparison))
             {
