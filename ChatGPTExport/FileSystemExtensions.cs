@@ -2,9 +2,17 @@
 
 namespace ChatGPTExport
 {
-    internal static class FileSystemExtensions
+    public static class FileSystemExtensions
     {
         private static bool? _isCaseSensitive;
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        public static void ResetCaseSensitivityCache()
+        {
+            _isCaseSensitive = null;
+        }
 
         public static bool IsFileSystemCaseSensitive(this IFileSystem fileSystem, string? path = null)
         {

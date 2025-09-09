@@ -8,11 +8,8 @@ public class FileSystemExtensionsTests
 {
     private static void ResetCaseSensitivityCache()
     {
-        typeof(FileSystemExtensions)
-            .GetField("_isCaseSensitive", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
-            .SetValue(null, null);
+        FileSystemExtensions.ResetCaseSensitivityCache();
     }
-
     private static MockFileSystem CreateFileSystem(bool caseSensitive)
     {
         var comparer = caseSensitive ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase;
