@@ -10,12 +10,12 @@ namespace ChatGTPExportTests.Assets
         {
             var fs = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { @"c:\\source\\img.png", new MockFileData("data") }
+                { MockUnixSupport.Path(@"c:\\source\\img.png"), new MockFileData("data") }
             });
-            fs.AddDirectory(@"c:\\dest");
+            fs.AddDirectory(MockUnixSupport.Path(@"c:\\dest"));
 
-            var sourceDir = fs.DirectoryInfo.New(@"c:\\source");
-            var destDir = fs.DirectoryInfo.New(@"c:\\dest");
+            var sourceDir = fs.DirectoryInfo.New(MockUnixSupport.Path(@"c:\\source"));
+            var destDir = fs.DirectoryInfo.New(MockUnixSupport.Path(@"c:\\dest"));
             var existing = new ExistingAssetLocator(fs, destDir);
             var locator = new AssetLocator(fs, sourceDir, destDir, existing);
 
