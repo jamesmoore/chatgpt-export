@@ -68,6 +68,35 @@ docker run --rm \
 ```
 4. Open `~/chatgpt-markdown` - you’ll see an html and markdown file for each conversation.
 
+## Quick-Start (Docker compose)
+1. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
+```sh
+mkdir ~/chatgpt-export
+unzip ~/Downloads/chatgpt_export.zip -d ~/chatgpt-export
+```
+2. Create a directory for the destination
+```sh
+mkdir ~/chatgpt-markdown
+```
+3. Create a `docker-compose.yaml` (adapt the `-v ~/chatgpt-export` and `-v ~/chatgpt-markdown` parameters to the directories you have just created)
+```yaml
+services:
+  chatgptexport:
+    command: >
+      -s /source
+      -d /destination
+    # append any other parameters as needed
+    image: ghcr.io/jamesmoore/chatgpt-export:latest
+    volumes:
+      - ~/chatgpt-export:/source:ro
+      - ~/chatgpt-markdown:/destination
+```
+4. Run the container:
+```sh
+docker compose run --rm chatgptexport
+```
+5. Open `~/chatgpt-markdown` - you’ll see an html and markdown file for each conversation.
+
 ## Complete Usage
 
 |Parameter|Optional?|Usage|Default|
