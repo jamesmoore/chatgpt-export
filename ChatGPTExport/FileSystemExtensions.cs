@@ -2,9 +2,17 @@
 
 namespace ChatGPTExport
 {
-    internal static class FileSystemExtensions
+    public static class FileSystemExtensions
     {
         private static bool? _isCaseSensitive;
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        public static void OverrideCaseSensitivityCache(bool? value)
+        {
+            _isCaseSensitive = value;
+        }
 
         public static bool IsFileSystemCaseSensitive(this IFileSystem fileSystem, string? path = null)
         {
@@ -37,8 +45,8 @@ namespace ChatGPTExport
             var candidatePath = candidate.FullName.TrimEnd(fileSystem.Path.DirectorySeparatorChar, fileSystem.Path.AltDirectorySeparatorChar);
 
             var comparison = fileSystem.IsFileSystemCaseSensitive()
-                ? StringComparison.OrdinalIgnoreCase
-                : StringComparison.Ordinal;
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
 
             if (string.Equals(basePath, candidatePath, comparison))
             {
@@ -46,6 +54,33 @@ namespace ChatGPTExport
             }
 
             return candidatePath.StartsWith(basePath + fileSystem.Path.DirectorySeparatorChar, comparison);
+        }
+
+        public static string GetRelativePathTo(this IFileSystem fileSystem, IDirectoryInfo baseDir, IFileInfo targetFile)
+        {
+            var basePath = fileSystem.Path.GetFullPath(baseDir.FullName + fileSystem.Path.DirectorySeparatorChar);
+            var targetPath = targetFile.FullName;
+
+            if (!string.Equals(fileSystem.Path.GetPathRoot(basePath), fileSystem.Path.GetPathRoot(targetPath), StringComparison.OrdinalIgnoreCase))
+            {
+                // Different drives, return full path
+                return targetPath;
+            }
+
+            var baseUri = new Uri(basePath);
+            var targetUri = new Uri(targetPath);
+
+            var relativePath = Uri.UnescapeDataString(baseUri.MakeRelativeUri(targetUri).ToString())
+                                     .Replace('/', fileSystem.Path.DirectorySeparatorChar);
+            return relativePath;
+        }
+
+        public static void SetCreationTimeUtcIfPossible(this IFile target, string filename, DateTime createdDate)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                target.SetCreationTimeUtc(filename, createdDate);
+            }
         }
     }
 }

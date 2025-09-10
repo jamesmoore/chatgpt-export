@@ -1,38 +1,10 @@
 ﻿using System.Globalization;
-using System.IO.Abstractions;
 using System.Text.Json;
 
 namespace ChatGPTExport
 {
     public static class ExtensionMethods
     {
-        public static string GetRelativePathTo(this IFileSystem fileSystem, IDirectoryInfo baseDir, IFileInfo targetFile)
-        {
-            var basePath = fileSystem.Path.GetFullPath(baseDir.FullName + fileSystem.Path.DirectorySeparatorChar);
-            var targetPath = targetFile.FullName;
-
-            if (!string.Equals(fileSystem.Path.GetPathRoot(basePath), fileSystem.Path.GetPathRoot(targetPath), StringComparison.OrdinalIgnoreCase))
-            {
-                // Different drives, return full path
-                return targetPath;
-            }
-
-            var baseUri = new Uri(basePath);
-            var targetUri = new Uri(targetPath);
-
-            var relativePath = Uri.UnescapeDataString(baseUri.MakeRelativeUri(targetUri).ToString())
-                                     .Replace('/', fileSystem.Path.DirectorySeparatorChar);
-            return relativePath;
-        }
-
-        public static void SetCreationTimeUtcIfPossible(this IFile target, string filename, DateTime createdDate)
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                target.SetCreationTimeUtc(filename, createdDate);
-            }
-        }
-
         public static DateTimeOffset ToDateTimeOffset(this decimal d)
         {
             // Convert to total milliseconds

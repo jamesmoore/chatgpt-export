@@ -11,6 +11,14 @@ namespace ChatGPTExport.Assets
         ) : IAssetLocator
     {
         private List<string>? cachedSourceList = null;
+        private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "system",
+            "user",
+            "assistant",
+            "tool",
+            "function"
+        };
 
         public string? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
@@ -33,7 +41,8 @@ namespace ChatGPTExport.Assets
             if (file != null)
             {
                 var withoutPath = fileSystem.Path.GetFileName(file);
-                var assetsPath = $"{assetRequest.Role}-assets";
+                var sanitizedRole = SanitizeRole(assetRequest.Role);
+                var assetsPath = $"{sanitizedRole}-assets";
                 var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
                 if (fileSystem.Directory.Exists(assetsDir) == false)
                 {
@@ -62,6 +71,27 @@ namespace ChatGPTExport.Assets
             }
 
             return null;
+        }
+
+        private string SanitizeRole(string role)
+        {
+            if (AllowedRoles.Contains(role))
+            {
+                return role;
+            }
+
+            var invalidChars = fileSystem.Path.GetInvalidFileNameChars()
+                .Concat(new[]
+                {
+                    fileSystem.Path.DirectorySeparatorChar,
+                    fileSystem.Path.AltDirectorySeparatorChar,
+                    '.'
+                })
+                .ToHashSet();
+
+            var cleaned = new string(role.Where(c => !invalidChars.Contains(c)).ToArray());
+
+            return AllowedRoles.Contains(cleaned) ? cleaned : "unknown";
         }
     }
 }
