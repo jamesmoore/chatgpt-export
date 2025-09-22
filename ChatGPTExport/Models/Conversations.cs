@@ -474,6 +474,8 @@ namespace ChatGPTExport.Models
         {
             public string summary { get; set; }
             public string content { get; set; }
+            public object chunks { get; set; }
+            public bool? finished { get; set; }
         }
 
         public override T Accept<T>(IContentVisitor<T> visitor, ContentVisitorContext context)
