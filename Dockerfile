@@ -12,7 +12,7 @@ RUN dotnet restore
 RUN dotnet publish ./ChatGPTExport -c Release -o out
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/runtime:9.0-alpine
+FROM mcr.microsoft.com/dotnet/runtime:10.0-alpine
 WORKDIR /app
 COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "ChatGPTExport.dll"]

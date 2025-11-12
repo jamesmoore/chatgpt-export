@@ -6,7 +6,7 @@ namespace ChatGPTExport.Exporters
         string Role, 
         DateTimeOffset? CreatedDate,
         DateTimeOffset? UpdatedDate,
-        Message.MessageMetadata MessageMetadata,
+        MessageMetadata MessageMetadata,
         string Recipient
         );
 }
