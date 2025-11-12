@@ -221,7 +221,7 @@ static int RunExport(ProgramArgs programArgs)
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error parsing file: {p.FullName} {ex.Message}");
+            Console.Error.WriteLine($"Error parsing file: {p.FullName}{Environment.NewLine}\t{ex.Message}");
             return null;
         }
     }

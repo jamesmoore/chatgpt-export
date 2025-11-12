@@ -163,7 +163,7 @@ namespace ChatGPTExport.Exporters
             {
                 case "image_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
                     {
-                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownImage = GetMediaAsset(context, searchPattern);
 
                         if (string.IsNullOrWhiteSpace(markdownImage) == false)
@@ -186,7 +186,7 @@ namespace ChatGPTExport.Exporters
 
                 case "real_time_user_audio_video_asset_pointer" when string.IsNullOrWhiteSpace(obj.audio_asset_pointer?.asset_pointer) == false:
                     {
-                        var searchPattern = obj.audio_asset_pointer.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var searchPattern = GetSearchPattern(obj.audio_asset_pointer.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
                         yield return $"{markdownAsset}  ";
@@ -195,7 +195,7 @@ namespace ChatGPTExport.Exporters
 
                 case "audio_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
                     {
-                        var searchPattern = obj.asset_pointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
+                        var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
                         yield return $"{markdownAsset}  ";
@@ -206,6 +206,11 @@ namespace ChatGPTExport.Exporters
                     yield return $"*{obj.text}*  ";
                     break;
             }
+        }
+
+        private static string GetSearchPattern(string assetPointer)
+        {
+            return assetPointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
         }
 
         private string? GetMediaAsset(ContentVisitorContext context, string searchPattern)
