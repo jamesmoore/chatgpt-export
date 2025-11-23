@@ -16,8 +16,8 @@
             var output = new List<string>();
 
             // The \n line ending detection is to preserve the same line ending (\r\n or just \n) as the original when the lines are recombined.
-            // There is no guarantee that the line endings are consistent.
-            // No provision is made for standalone \r line endings.
+            // There is no guarantee that the input's line endings are consistent.
+            // No provision is made for standalone \r line endings - these will just be treated as one big line.
             var lineSeparator = "\n";
 
             foreach (var line in text.Split(lineSeparator))

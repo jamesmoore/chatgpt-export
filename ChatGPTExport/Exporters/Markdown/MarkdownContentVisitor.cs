@@ -353,9 +353,13 @@ namespace ChatGPTExport.Exporters
                     yield return text;
                 }
             }
-            else
+            else if(context.Role == "user")
             {
                 yield return MarkdownContentVisitorHelpers.SanitizeMarkdown(text);
+            }
+            else
+            {
+                yield return text;
             }
         }
 
