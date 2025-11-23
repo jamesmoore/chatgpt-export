@@ -1,10 +1,10 @@
-﻿using System.Data;
+﻿using ChatGPTExport.Assets;
+using ChatGPTExport.Exporters.Markdown;
+using ChatGPTExport.Models;
+using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using ChatGPTExport.Assets;
-using ChatGPTExport.Exporters.Markdown;
-using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
@@ -355,7 +355,7 @@ namespace ChatGPTExport.Exporters
             }
             else
             {
-                yield return text;
+                yield return MarkdownContentVisitorHelpers.SanitizeMarkdown(text);
             }
         }
 
