@@ -22,7 +22,7 @@
 
             foreach (var line in text.Split(lineSeparator))
             {
-                if (line.StartsWith("    ", StringComparison.Ordinal) || line.StartsWith("> ", StringComparison.Ordinal)) // don't sanitize preformatted text or quotations
+                if (line.StartsWith("    ", StringComparison.Ordinal)) // don't sanitize preformatted or tagless
                 {
                     output.Add(line);
                     continue;
@@ -43,7 +43,7 @@
                 }
                 else
                 {
-                    if(trimmedLine.StartsWith(fencedTerminator))
+                    if (trimmedLine.StartsWith(fencedTerminator))
                     {
                         fenced = false;
                         output.Add(line);
@@ -68,10 +68,18 @@
 
         private static string Escape(string line)
         {
+            if (line.Contains('<') == false || line.Contains('>') == false)
+            {
+                return line;
+            }
+
             if (relevantTags.Any(p => line.Contains(p, StringComparison.OrdinalIgnoreCase)) == false)
             {
                 return line;
             }
+
+            var prefix = line.StartsWith("> ", StringComparison.Ordinal) ? "> " : string.Empty;
+            line = line.Substring(prefix.Length);
 
             var parts = line.Split('`');
             for (int i = 0; i < parts.Length; i += 2) // even indices: outside code
@@ -81,7 +89,7 @@
                     .Replace(">", "&gt;");
             }
 
-            return string.Join("`", parts);
+            return prefix + string.Join("`", parts);
         }
     }
 }

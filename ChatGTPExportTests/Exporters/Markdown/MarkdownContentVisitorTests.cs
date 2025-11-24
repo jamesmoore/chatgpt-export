@@ -2,7 +2,7 @@ using ChatGPTExport.Assets;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
 
-namespace ChatGTPExportTests.Exporters;
+namespace ChatGTPExportTests.Exporters.Markdown;
 
 public class MarkdownContentVisitorTests
 {

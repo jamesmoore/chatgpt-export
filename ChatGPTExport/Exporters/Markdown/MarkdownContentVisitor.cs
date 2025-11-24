@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
+    public partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
