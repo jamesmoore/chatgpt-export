@@ -15,7 +15,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="22.0.16" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="22.1.0" />
   </ItemGroup>
 
   <ItemGroup>
