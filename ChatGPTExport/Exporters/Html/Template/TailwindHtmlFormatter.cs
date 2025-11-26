@@ -24,6 +24,16 @@ namespace ChatGPTExport.Exporters.Html.Template
   </script>
   <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
 
+  <style>
+  /* Remove inline-code styling when code is inside a pre block */
+  .prose pre code {
+      background-color: transparent !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      color: inherit !important;
+  }
+  </style>
+
 {{headerProvider.GetHeaders(page)}}
 </head>
 <body class="bg-neutral-900 text-neutral-100 antialiased">
@@ -34,7 +44,16 @@ namespace ChatGPTExport.Exporters.Html.Template
             prose-ul:list-disc prose-ol:list-decimal
             prose-pre:overflow-x-auto
             prose-hr:my-4
-            marker:text-neutral-400">
+            marker:text-neutral-400
+
+            prose-code:before:content-none
+            prose-code:after:content-none
+            prose-code:bg-gray-700
+            prose-code:rounded
+            prose-code:px-[0.3rem]
+            prose-code:py-[0.15rem]
+            prose-code:text-[--tw-prose-code]
+            ">
   {{page.GetBodyString()}}
 </div>
 </div> 
