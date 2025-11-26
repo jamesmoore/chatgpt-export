@@ -1,14 +1,14 @@
-﻿using System.Data;
+﻿using ChatGPTExport.Assets;
+using ChatGPTExport.Exporters.Markdown;
+using ChatGPTExport.Models;
+using System.Data;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using ChatGPTExport.Assets;
-using ChatGPTExport.Exporters.Markdown;
-using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Exporters
 {
-    internal partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
+    public partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
@@ -352,6 +352,10 @@ namespace ChatGPTExport.Exporters
                 {
                     yield return text;
                 }
+            }
+            else if(context.Role == "user")
+            {
+                yield return MarkdownContentVisitorHelpers.SanitizeMarkdown(text);
             }
             else
             {
