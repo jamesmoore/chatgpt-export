@@ -5,61 +5,61 @@ namespace ChatGTPExportTests.Exporters.Markdown;
 public class MarkdownContentVisitorHelpersTests
 {
     [Fact]
-    public void SanitizeMarkdown_EscapesRelevantTagsOutsideCode()
+    public void SanitizeUserInputMarkdown_EscapesRelevantTagsOutsideCode()
     {
         var input = "<script>alert('x')</script>";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal("&lt;script&gt;alert('x')&lt;/script&gt;", result);
     }
 
     [Fact]
-    public void SanitizeMarkdown_DoesNotEscapeInsideInlineCode()
+    public void SanitizeUserInputMarkdown_DoesNotEscapeInsideInlineCode()
     {
         var input = "Use `<script>` here";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal("Use `<script>` here", result);
     }
 
     [Fact]
-    public void SanitizeMarkdown_DoesNotEscapeInFencedBlock()
+    public void SanitizeUserInputMarkdown_DoesNotEscapeInFencedBlock()
     {
         var input = "```\n<script>alert('x')</script>\n```";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal(input, result);
     }
 
     [Fact]
-    public void SanitizeMarkdown_DoesNotEscapeInPreformattedLine()
+    public void SanitizeUserInputMarkdown_DoesNotEscapeInPreformattedLine()
     {
         var input = "    <script>alert('x')</script>";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal(input, result);
     }
 
     [Fact]
-    public void SanitizeMarkdown_ReformatsLineEndings_WhenSafe()
+    public void SanitizeUserInputMarkdown_ReformatsLineEndings_WhenSafe()
     {
         var input = "line1\nline2";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal("line1  \nline2", result);
     }
 
     [Fact]
-    public void SanitizeMarkdown_DoesNotReformat_WhenNextLineEmpty()
+    public void SanitizeUserInputMarkdown_DoesNotReformat_WhenNextLineEmpty()
     {
         var input = "line1\n\nline2";
 
-        var result = MarkdownContentVisitorHelpers.SanitizeMarkdown(input);
+        var result = MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(input);
 
         Assert.Equal(input, result);
     }

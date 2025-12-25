@@ -9,7 +9,7 @@
         /// </summary>
         /// <param name="text">Potentially unsafe markdown</param>
         /// <returns>Markdown with </returns>
-        public static string SanitizeMarkdown(string text)
+        public static string SanitizeUserInputMarkdown(string text)
         {
             var output = new List<string>();
 
@@ -27,13 +27,13 @@
                 var line = linesWithFencedStatus[i];
                 var fenced = line.fenced;
                 var lineText = fenced ? line.s : EscapeContents(line.s);
-                var dontReformatLineEndings =
-                    fenced ||
-                    i == linesWithFencedStatus.Count - 1 || // EOF
-                    linesWithFencedStatus[i + 1].fenced || // Next line fenced
-                    string.IsNullOrWhiteSpace(linesWithFencedStatus[i + 1].s) || // Next line empty 
-                    lineText.EndsWith("  "); // Already has break indicator
-                output.Add(dontReformatLineEndings ? lineText : ReformatLineEndings(lineText));
+                var reformatLineEndings =
+                    fenced == false && // not fenced
+                    i < linesWithFencedStatus.Count -1 &&  // not EOF
+                    linesWithFencedStatus[i + 1].fenced == false && // Next line not fenced
+                    string.IsNullOrWhiteSpace(linesWithFencedStatus[i + 1].s) == false && // Next line NOT empty 
+                    lineText.EndsWith("  ") == false; // Already has break indicator
+                output.Add(reformatLineEndings ? ReformatLineEndings(lineText) : lineText);
             }
 
             return string.Join(lineSeparator, output);
@@ -94,8 +94,14 @@
             {
                 return line;
             }
-
-            return line + "  ";
+            else if (line.EndsWith('\r'))
+            {
+                return line.Insert(line.Length - 1, "  ");
+            }
+            else
+            {
+                return line + "  ";
+            }
         }
 
         private static string EscapeContents(string line)
