@@ -43,7 +43,16 @@ namespace ChatGPTExport.Models
         private string GetLastLeaf()
         {
             var leaves = mapping.Where(p => p.Value.IsLeaf()).ToList();
-            var lastLeaf = leaves.OrderBy(p => p.Value.message.GetMessageTimestamp()).Last().Key;
+
+            var allHaveTimestamp = leaves.All(p => p.Value.message.create_time.HasValue);
+            if (!allHaveTimestamp)
+            {
+                Console.WriteLine("Warning: Not all messages have create_time.");
+            }
+
+            var lastLeaf = allHaveTimestamp ?
+                leaves.OrderBy(p => p.Value.message.GetMessageTimestamp()).Last().Key :
+                leaves.Last().Key;
             return lastLeaf;
         }
 
