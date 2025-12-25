@@ -95,7 +95,7 @@
                 return line;
             }
 
-            return line + "\n";
+            return line + "  ";
         }
 
         private static string EscapeContents(string line)
