@@ -310,8 +310,11 @@ namespace ChatGPTExport.Exporters
 
                 if (pf != null)
                 {
-                    yield return "> **Prompt:** " + pf.prompt;
-                    yield return LineBreak;
+                    if (pf.prompt != null)
+                    {
+                        yield return "> **Prompt:** " + GetPrompt(pf.prompt);
+                        yield return LineBreak;
+                    }
                     yield return "> **Size:** " + pf.size;
                 }
                 else
@@ -361,6 +364,13 @@ namespace ChatGPTExport.Exporters
             {
                 yield return text;
             }
+        }
+
+        private string? GetPrompt(string prompt)
+        {
+            var lines = prompt.Split('\n').Select(p => p.Trim()).Where(p => string.IsNullOrEmpty(p) == false);
+            var concatenated = string.Join("  " + LineBreak, lines); // add double space so the quote comes out in a single block
+            return concatenated;
         }
 
         private class PromptFormat
