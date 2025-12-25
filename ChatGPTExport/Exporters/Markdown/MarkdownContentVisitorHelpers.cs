@@ -26,13 +26,13 @@
             {
                 var line = linesWithFencedStatus[i];
                 var fenced = line.fenced;
-                var lineText = line.fenced ? line.s : EscapeContents(line.s);
-                bool dontReformatLineEndings =
+                var lineText = fenced ? line.s : EscapeContents(line.s);
+                var dontReformatLineEndings =
                     fenced ||
-                    i == linesWithFencedStatus.Count - 1 || // EOL
+                    i == linesWithFencedStatus.Count - 1 || // EOF
                     linesWithFencedStatus[i + 1].fenced || // Next line fenced
                     string.IsNullOrWhiteSpace(linesWithFencedStatus[i + 1].s) || // Next line empty 
-                    lineText.EndsWith("  "); // Alread has break indicator
+                    lineText.EndsWith("  "); // Already has break indicator
                 output.Add(dontReformatLineEndings ? lineText : ReformatLineEndings(lineText));
             }
 
