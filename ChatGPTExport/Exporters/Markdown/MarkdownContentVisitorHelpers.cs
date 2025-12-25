@@ -1,6 +1,6 @@
 ﻿namespace ChatGPTExport.Exporters.Markdown
 {
-    internal static class MarkdownContentVisitorHelpers
+    public static class MarkdownContentVisitorHelpers
     {
 
         /// <summary>
