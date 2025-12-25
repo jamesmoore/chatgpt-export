@@ -11,8 +11,6 @@
         /// <returns>Markdown with </returns>
         public static string SanitizeMarkdown(string text)
         {
-            var fenced = false;
-            var fencedTerminator = null as string;
             var output = new List<string>();
 
             // The \n line ending detection is to preserve the same line ending (\r\n or just \n) as the original when the lines are recombined.
@@ -20,11 +18,37 @@
             // No provision is made for standalone \r line endings - these will just be treated as one big line.
             var lineSeparator = "\n";
 
-            foreach (var line in text.Split(lineSeparator))
+            var lines = text.Split(lineSeparator);
+
+            var linesWithFencedStatus = DetermineFenced(lines).ToList();
+
+            for (int i = 0; i < linesWithFencedStatus.Count; i++)
+            {
+                var line = linesWithFencedStatus[i];
+                var fenced = line.fenced;
+                var lineText = line.fenced ? line.s : EscapeContents(line.s);
+                bool dontReformatLineEndings =
+                    fenced ||
+                    i == linesWithFencedStatus.Count - 1 || // EOL
+                    linesWithFencedStatus[i + 1].fenced || // Next line fenced
+                    string.IsNullOrWhiteSpace(linesWithFencedStatus[i + 1].s) || // Next line empty 
+                    lineText.EndsWith("  "); // Alread has break indicator
+                output.Add(dontReformatLineEndings ? lineText : ReformatLineEndings(lineText));
+            }
+
+            return string.Join(lineSeparator, output);
+        }
+
+
+        private static IEnumerable<(string s, bool fenced)> DetermineFenced(IEnumerable<string> lines)
+        {
+            var fenced = false;
+            var fencedTerminator = null as string;
+            foreach (var line in lines)
             {
                 if (line.StartsWith("    ", StringComparison.Ordinal)) // don't sanitize preformatted or tagless
                 {
-                    output.Add(line);
+                    yield return (line, true);
                     continue;
                 }
 
@@ -37,7 +61,7 @@
                         var count = trimmedLine.TakeWhile(p => p == blockchar).Count();
                         fencedTerminator = new string(blockchar, count);
                         fenced = true;
-                        output.Add(line);
+                        yield return (line, true);
                         continue;
                     }
                 }
@@ -46,15 +70,13 @@
                     if (trimmedLine.StartsWith(fencedTerminator))
                     {
                         fenced = false;
-                        output.Add(line);
+                        yield return (line, true);
                         continue;
                     }
                 }
 
-                output.Add(fenced ? line : Escape(line));
+                yield return (line, fenced);
             }
-
-            return string.Join(lineSeparator, output);
         }
 
         static readonly List<string> relevantTags =
@@ -66,7 +88,17 @@
                 // maybe add others
             ];
 
-        private static string Escape(string line)
+        private static string ReformatLineEndings(string line)
+        {
+            if (string.IsNullOrWhiteSpace(line.Trim()))
+            {
+                return line;
+            }
+
+            return line + "\n";
+        }
+
+        private static string EscapeContents(string line)
         {
             if (line.Contains('<') == false || line.Contains('>') == false)
             {
