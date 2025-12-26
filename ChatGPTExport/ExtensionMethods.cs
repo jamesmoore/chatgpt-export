@@ -62,6 +62,13 @@ namespace ChatGPTExport
         public static int GetRealElementWidth(this string element)
         {
             const char VariationSelector16 = '\uFE0F';
+
+            // FLAG EMOJI SPECIAL CASE
+            if (IsFlagEmoji(element))
+            {
+                return 3;
+            }
+
             if (element.Contains(VariationSelector16)) //  eg "⚠️" or 🗂️ or 🧛‍♂️
             {
                 if (element.Length > 2)
@@ -102,6 +109,19 @@ namespace ChatGPTExport
             {
                 return element.Length;
             }
+        }
+
+
+        static bool IsFlagEmoji(string element)
+        {
+            if (element.Length != 4)
+                return false;
+
+            int first = char.ConvertToUtf32(element, 0);
+            int second = char.ConvertToUtf32(element, 2);
+
+            return first >= 0x1F1E6 && first <= 0x1F1FF &&
+                   second >= 0x1F1E6 && second <= 0x1F1FF;
         }
     }
 }
