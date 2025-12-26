@@ -10,6 +10,7 @@ namespace ChatGPTExport.Exporters
 {
     public partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
+        private const string trackingSource = "?utm_source=chatgpt.com";
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
 
@@ -101,6 +102,10 @@ namespace ChatGPTExport.Exporters
                             var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
                             parts[0] = string.Concat(firstSpan, refHighlight, lastSpan);
                             break;
+                        case "image_group":
+                            var images = LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, contentReference.safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct());
+                            parts[0] = string.Concat(firstSpan, images, lastSpan);
+                            break;
                         default:
                             Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
                             break;
@@ -111,7 +116,7 @@ namespace ChatGPTExport.Exporters
                 int i = 1;
                 foreach (var item in groupedWebpagesItems)
                 {
-                    parts.Add($"[^{i++}]: [{item.title}]({item.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                    parts.Add($"[^{i++}]: [{item.title}]({item.url.Replace(trackingSource, "")})  ");
                 }
 
                 if (sourcesFootnote != null)
@@ -124,7 +129,7 @@ namespace ChatGPTExport.Exporters
                         parts.Add("### Sources");
                         foreach (var source in newSources)
                         {
-                            parts.Add($"* [{source.title}]({source.url.Replace("?utm_source=chatgpt.com", "")})  ");
+                            parts.Add($"* [{source.title}]({source.url.Replace(trackingSource, "")})  ");
                         }
                     }
                 }
@@ -356,7 +361,7 @@ namespace ChatGPTExport.Exporters
                     yield return text;
                 }
             }
-            else if(context.Role == "user")
+            else if (context.Role == "user")
             {
                 yield return MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(text);
             }
