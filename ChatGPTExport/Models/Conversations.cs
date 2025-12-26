@@ -247,6 +247,8 @@ namespace ChatGPTExport.Models
                 public int width { get; set; }
                 public bool transparent_background { get; set; }
                 public string serialization_title { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
             }
 
             [JsonExtensionData]
