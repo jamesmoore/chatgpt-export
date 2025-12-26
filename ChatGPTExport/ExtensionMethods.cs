@@ -69,7 +69,7 @@ namespace ChatGPTExport
                 return 3;
             }
 
-            if (element.Contains(VariationSelector16))
+            if (element.Contains(VariationSelector16)) //  eg "⚠️" or 🗂️ or 🧛‍♂️
             {
                 if (element.Length > 2)
                 {
@@ -82,7 +82,7 @@ namespace ChatGPTExport
             }
             else if (element.Length == 2 && char.IsSurrogatePair(element, 0))
             {
-                return 2;
+                return 2; // external system treats this emoji as 2 units
             }
             else if (element.Length > 1)
             {
@@ -94,7 +94,7 @@ namespace ChatGPTExport
                         char.IsLowSurrogate(element[i + 1]))
                     {
                         unitCount++;
-                        i++;
+                        i++; // skip low surrogate
                     }
                     else
                     {
