@@ -358,7 +358,7 @@ namespace ChatGPTExport.Exporters
             }
             else if(context.Role == "user")
             {
-                yield return MarkdownContentVisitorHelpers.SanitizeMarkdown(text);
+                yield return MarkdownContentVisitorHelpers.SanitizeUserInputMarkdown(text);
             }
             else
             {
