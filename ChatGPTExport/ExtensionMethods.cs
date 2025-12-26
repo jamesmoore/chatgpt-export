@@ -86,6 +86,7 @@ namespace ChatGPTExport
             }
             else if (element.Length > 1)
             {
+                // Count surrogate pairs as 1 unit
                 int unitCount = 0;
                 for (int i = 0; i < element.Length; i++)
                 {
