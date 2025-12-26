@@ -83,6 +83,9 @@ namespace ChatGPTExport.Exporters
                         case "image_v2":
                         case "tldr":
                         case "nav_list":
+                        case "navigation":
+                        case "webpage_extended":
+                        case "image_inline":
                             var hidden = "";
                             parts[0] = string.Concat(firstSpan, hidden, lastSpan);
                             break;
@@ -108,6 +111,15 @@ namespace ChatGPTExport.Exporters
                                 LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct()) :
                                 string.Empty;
                             parts[0] = string.Concat(firstSpan, images, lastSpan);
+                            break;
+                        case "alt_text":
+                            parts[0] = string.Concat(firstSpan, contentReference.alt, lastSpan);
+                            break;
+                        case "entity":
+                            var entityInfo = contentReference.name;
+                            var disambiguation = contentReference.extra_params?.disambiguation;
+                            var entityInfoString = $"{entityInfo}{(  string.IsNullOrWhiteSpace(disambiguation) == false ? $" ({disambiguation})" : ""  )}";
+                            parts[0] = string.Concat(firstSpan, entityInfoString, lastSpan);
                             break;
                         default:
                             Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
