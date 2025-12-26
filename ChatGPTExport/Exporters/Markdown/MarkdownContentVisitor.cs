@@ -103,7 +103,10 @@ namespace ChatGPTExport.Exporters
                             parts[0] = string.Concat(firstSpan, refHighlight, lastSpan);
                             break;
                         case "image_group":
-                            var images = LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, contentReference.safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct());
+                            var safe_urls = contentReference.safe_urls;
+                            var images = safe_urls.Any() ?
+                                LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct()) :
+                                string.Empty;
                             parts[0] = string.Concat(firstSpan, images, lastSpan);
                             break;
                         default:
