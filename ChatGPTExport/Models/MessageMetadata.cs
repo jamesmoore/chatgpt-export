@@ -258,6 +258,8 @@ namespace ChatGPTExport.Models
                 public int? width { get; set; }
                 public int? height { get; set; }
                 public double? timeout_triggered { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement> ExtraData { get; set; }
             }
         }
     }
