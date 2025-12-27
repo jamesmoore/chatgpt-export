@@ -20,7 +20,7 @@ This tool enables you to extract and reformat your conversations from the offici
   * html (Tailwind or Bootstrap formatted)
   * json files
 * Process multiple exports in one sweep, detecting the latest version of each conversation.
-* Include uploaded and generated image assets in the markdown.
+* Include uploaded and generated image assets in the markdown (thanks to [GLightbox](https://biati-digital.github.io/glightbox/)).
 * Transform web references into markdown footnotes.
 * Include code blocks and canvas with syntax highlighting (thanks to [highlight.js](https://highlightjs.org/)).
 * Detect and render mathematical notation (thanks to [mathjax](https://www.mathjax.org/))
