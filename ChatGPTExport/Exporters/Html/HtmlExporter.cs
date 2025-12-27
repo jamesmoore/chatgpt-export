@@ -14,7 +14,7 @@ namespace ChatGPTExport.Exporters.Html
         {
             var messages = conversation.GetMessagesWithContent();
 
-            var strings = new List<(Author Author, string Content)>();
+            var strings = new List<(Author Author, string Content, bool HasImage)>();
 
             var visitor = new MarkdownContentVisitor(assetLocator, showHidden);
 
@@ -22,11 +22,11 @@ namespace ChatGPTExport.Exporters.Html
             {
                 try
                 {
-                    var (messageContent, suffix) = message.Accept(visitor);
+                    var (messageContent, suffix, hasImage) = message.Accept(visitor);
 
                     if (messageContent.Any())
                     {
-                        strings.Add((message.author, string.Join(LineBreak, messageContent)));
+                        strings.Add((message.author, string.Join(LineBreak, messageContent), hasImage));
                     }
                 }
                 catch (Exception ex)
@@ -36,15 +36,11 @@ namespace ChatGPTExport.Exporters.Html
             }
 
             var markdownPipeline = GetPipeline();
-            var bodyHtml = strings.Select(p => GetHtmlFragment(p.Author, p.Content, markdownPipeline));
+            var bodyHtml = strings.Select(p => GetHtmlFragment(p.Author, p.Content, p.HasImage, markdownPipeline));
 
             var titleString = WebUtility.HtmlEncode(conversation.title);
             string html = formatter.FormatHtmlPage(
-                new HtmlPage()
-                {
-                    Body = bodyHtml,
-                    Title = titleString,
-                });
+                new HtmlPage(titleString, bodyHtml));
 
             return [html];
         }
@@ -64,7 +60,7 @@ namespace ChatGPTExport.Exporters.Html
             return (codeBlockRegex.Count > 0, languages);
         }
 
-        private HtmlFragment GetHtmlFragment(Author author, string markdown, MarkdownPipeline markdownPipeline)
+        private HtmlFragment GetHtmlFragment(Author author, string markdown, bool hasImage, MarkdownPipeline markdownPipeline)
         {
             var doc = Markdig.Markdown.Parse(markdown, markdownPipeline);
 
@@ -88,6 +84,7 @@ namespace ChatGPTExport.Exporters.Html
                 HasCode = lanugages.HasCode,
                 Languages = lanugages.Languages,
                 HasMath = hasMath,
+                HasImage = hasImage,
             };
             return fragment;
         }
