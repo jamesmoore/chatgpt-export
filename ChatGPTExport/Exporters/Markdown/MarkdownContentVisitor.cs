@@ -180,9 +180,9 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownImage = GetMediaAsset(context, searchPattern);
 
-                        if (string.IsNullOrWhiteSpace(markdownImage) == false)
+                        if (markdownImage != null)
                         {
-                            yield return markdownImage;
+                            yield return markdownImage.GetMarkdownLink();
                         }
                         else
                         {
@@ -203,7 +203,7 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.audio_asset_pointer.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
-                        yield return $"{markdownAsset}  ";
+                        yield return $"{markdownAsset?.GetMarkdownLink()}  ";
                         break;
                     }
 
@@ -212,7 +212,7 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
-                        yield return $"{markdownAsset}  ";
+                        yield return $"{markdownAsset?.GetMarkdownLink()}  ";
                         break;
                     }
 
@@ -227,7 +227,7 @@ namespace ChatGPTExport.Exporters
             return assetPointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
         }
 
-        private string? GetMediaAsset(ContentVisitorContext context, string searchPattern)
+        private Asset? GetMediaAsset(ContentVisitorContext context, string searchPattern)
         {
             return assetLocator.GetMarkdownMediaAsset(new AssetRequest(
                 searchPattern,

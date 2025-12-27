@@ -20,7 +20,7 @@ namespace ChatGPTExport.Assets
             "function"
         };
 
-        public string? GetMarkdownMediaAsset(AssetRequest assetRequest)
+        public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
             return FindAssetInSourceDirectory(assetRequest) ??
                 existingAssetLocator.GetMarkdownMediaAsset(assetRequest);
@@ -33,7 +33,7 @@ namespace ChatGPTExport.Assets
             return match;
         }
 
-        private string? FindAssetInSourceDirectory(AssetRequest assetRequest)
+        private Asset? FindAssetInSourceDirectory(AssetRequest assetRequest)
         {
             var files = GetCachedSourceFiles(assetRequest.SearchPattern).ToList();
             Debug.Assert(files.Count <= 1); // There shouldn't be more than one file.
@@ -67,7 +67,7 @@ namespace ChatGPTExport.Assets
                     }
                 }
 
-                return $"![{withoutPath}](./{assetsPath}/{Uri.EscapeDataString(withoutPath)})  ";
+                return new Asset(withoutPath, $"./{assetsPath}/{Uri.EscapeDataString(withoutPath)}"); 
             }
 
             return null;
