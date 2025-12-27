@@ -23,7 +23,7 @@ namespace ChatGPTExport.Assets
             GetCache().Add(newFile);
         }
 
-        public string? GetMarkdownMediaAsset(AssetRequest assetRequest)
+        public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
             // it may already exist in the destination directory from a previous export 
             var destinationMatches = GetCachedDestinationFiles(assetRequest.SearchPattern).ToList();
@@ -40,7 +40,7 @@ namespace ChatGPTExport.Assets
                 {
                     relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');
                 }
-                return $"![{targetFile.Name}](./{Uri.EscapeDataString(relativePath).Replace("%2F","/")})  ";
+                return new Asset(targetFile.Name, $"./{Uri.EscapeDataString(relativePath).Replace("%2F", "/")}");
             }
             return null;
         }

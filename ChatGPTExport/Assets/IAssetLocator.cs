@@ -3,6 +3,6 @@ namespace ChatGPTExport.Assets
 {
     public interface IAssetLocator
     {
-        string? GetMarkdownMediaAsset(AssetRequest assetRequest);
+        Asset? GetMarkdownMediaAsset(AssetRequest assetRequest);
     }
 }
