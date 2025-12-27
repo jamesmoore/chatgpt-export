@@ -44,6 +44,6 @@ public class MarkdownContentVisitorTests
 
     private class NullAssetLocator : IAssetLocator
     {
-        public string? GetMarkdownMediaAsset(AssetRequest assetRequest) => null;
+        public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest) => null;
     }
 }
