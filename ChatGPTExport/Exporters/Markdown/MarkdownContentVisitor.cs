@@ -157,18 +157,25 @@ namespace ChatGPTExport.Exporters
         public MarkdownContentResult Visit(ContentMultimodalText content, ContentVisitorContext context)
         {
             var markdownContent = new List<string>();
+            bool hasImage = false;
             foreach (var part in content.parts)
             {
                 if (part.IsObject)
                 {
-                    markdownContent.AddRange(GetMarkdownMediaAsset(context, part.ObjectValue));
+                    var mediaAssets = GetMarkdownMediaAsset(context, part.ObjectValue);
+                    markdownContent.AddRange(mediaAssets);
+                    hasImage = mediaAssets.Any(p => 
+                        p.Contains(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                        p.Contains(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                        p.Contains(".png", StringComparison.OrdinalIgnoreCase)
+                        );
                 }
                 else if (part.IsString)
                 {
                     markdownContent.Add(part.StringValue);
                 }
             }
-            return new MarkdownContentResult(markdownContent);
+            return new MarkdownContentResult(markdownContent, null, hasImage);
         }
 
         private IEnumerable<string> GetMarkdownMediaAsset(ContentVisitorContext context, ContentMultimodalText.ContentMultimodalTextParts obj)
