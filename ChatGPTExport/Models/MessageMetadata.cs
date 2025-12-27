@@ -100,6 +100,7 @@ namespace ChatGPTExport.Models
             public Item[] items { get; set; }
             public Fallback_Items[] fallback_items { get; set; }
             public string status { get; set; }
+            public string name { get; set; }
             public object error { get; set; }
             public string style { get; set; }
             public Source[] sources { get; set; }
@@ -114,6 +115,8 @@ namespace ChatGPTExport.Models
             public string[] breadcrumbs { get; set; }
             public string title { get; set; }
             public string thumbnail_url { get; set; }
+            public ExtraParams extra_params { get; set; }
+
             [JsonExtensionData]
             public Dictionary<string, JsonElement> ExtraData { get; set; }
 
@@ -165,6 +168,11 @@ namespace ChatGPTExport.Models
                 public string attribution { get; set; }
                 [JsonExtensionData]
                 public Dictionary<string, JsonElement> ExtraData { get; set; }
+            }
+
+            public class ExtraParams
+            {
+                public string disambiguation { get; set; }
             }
         }
 

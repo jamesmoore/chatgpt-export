@@ -83,6 +83,9 @@ namespace ChatGPTExport.Exporters
                         case "image_v2":
                         case "tldr":
                         case "nav_list":
+                        case "navigation":
+                        case "webpage_extended":
+                        case "image_inline":
                             var hidden = "";
                             parts[0] = string.Concat(firstSpan, hidden, lastSpan);
                             break;
@@ -109,6 +112,15 @@ namespace ChatGPTExport.Exporters
                                 string.Empty;
                             parts[0] = string.Concat(firstSpan, images, lastSpan);
                             break;
+                        case "alt_text":
+                            parts[0] = string.Concat(firstSpan, contentReference.alt, lastSpan);
+                            break;
+                        case "entity":
+                            var entityInfo = contentReference.name;
+                            var disambiguation = contentReference.extra_params?.disambiguation;
+                            var entityInfoString = $"{entityInfo}{(string.IsNullOrWhiteSpace(disambiguation) == false ? $" ({disambiguation})" : "")}";
+                            parts[0] = string.Concat(firstSpan, entityInfoString, lastSpan);
+                            break;
                         default:
                             Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
                             break;
@@ -116,11 +128,8 @@ namespace ChatGPTExport.Exporters
                 }
 
                 parts.Add(string.Empty);
-                int i = 1;
-                foreach (var item in groupedWebpagesItems)
-                {
-                    parts.Add($"[^{i++}]: [{item.title}]({item.url.Replace(trackingSource, "")})  ");
-                }
+                var footnotes = groupedWebpagesItems.Select((p, i) => $"[^{i + 1}]: [{p.title}]({p.url.Replace(trackingSource, "")})  ");
+                parts.AddRange(footnotes);
 
                 if (sourcesFootnote != null)
                 {
@@ -130,10 +139,7 @@ namespace ChatGPTExport.Exporters
                     {
                         parts.Add(string.Empty);
                         parts.Add("### Sources");
-                        foreach (var source in newSources)
-                        {
-                            parts.Add($"* [{source.title}]({source.url.Replace(trackingSource, "")})  ");
-                        }
+                        parts.AddRange(newSources.Select(source => $"* [{source.title}]({source.url.Replace(trackingSource, "")})  "));
                     }
                 }
             }
