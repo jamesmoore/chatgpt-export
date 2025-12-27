@@ -154,6 +154,14 @@ namespace ChatGPTExport.Exporters
                 ;
         }
 
+        private readonly List<string> imageExtensions =
+        [
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".webp",
+        ];
+
         public MarkdownContentResult Visit(ContentMultimodalText content, ContentVisitorContext context)
         {
             var markdownContent = new List<string>();
@@ -164,11 +172,7 @@ namespace ChatGPTExport.Exporters
                 {
                     var mediaAssets = GetMarkdownMediaAsset(context, part.ObjectValue);
                     markdownContent.AddRange(mediaAssets);
-                    hasImage = mediaAssets.Any(p => 
-                        p.Contains(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                        p.Contains(".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                        p.Contains(".png", StringComparison.OrdinalIgnoreCase)
-                        );
+                    hasImage = mediaAssets.Any(p => imageExtensions.Any(q => p.Contains(q, StringComparison.InvariantCultureIgnoreCase)));
                 }
                 else if (part.IsString)
                 {
