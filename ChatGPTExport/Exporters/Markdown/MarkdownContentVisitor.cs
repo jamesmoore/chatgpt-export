@@ -68,62 +68,17 @@ namespace ChatGPTExport.Exporters
 
                 foreach (var contentReference in reversed)
                 {
-                    var start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
-                    var end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
-                    var firstPartSpan = parts[0].AsSpan();
-                    var firstSpan = firstPartSpan[..start_idx];
-                    var lastSpan = firstPartSpan[end_idx..];
-                    switch (contentReference.type)
+                    var replacement = GetContentReferenceReplacement(contentReference, groupedWebpagesItems);
+
+                    if (replacement != null)
                     {
-                        case "attribution":
-                        case "sources_footnote":
-                            break;
-                        case "hidden":
-                        case "grouped_webpages_model_predicted_fallback":
-                        case "image_v2":
-                        case "tldr":
-                        case "nav_list":
-                        case "navigation":
-                        case "webpage_extended":
-                        case "image_inline":
-                            var hidden = "";
-                            parts[0] = string.Concat(firstSpan, hidden, lastSpan);
-                            break;
-                        case "products":
-                            var products = contentReference.alt;
-                            parts[0] = string.Concat(firstSpan, products, lastSpan);
-                            break;
-                        case "product_entity":
-                            var productsEntity = contentReference.alt;
-                            parts[0] = string.Concat(firstSpan, productsEntity, lastSpan);
-                            break;
-                        case "video":
-                            var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
-                            parts[0] = string.Concat(firstSpan, videolink, lastSpan);
-                            break;
-                        case "grouped_webpages":
-                            var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
-                            parts[0] = string.Concat(firstSpan, refHighlight, lastSpan);
-                            break;
-                        case "image_group":
-                            var safe_urls = contentReference.safe_urls;
-                            var images = safe_urls.Any() ?
-                                LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct()) :
-                                string.Empty;
-                            parts[0] = string.Concat(firstSpan, images, lastSpan);
-                            break;
-                        case "alt_text":
-                            parts[0] = string.Concat(firstSpan, contentReference.alt, lastSpan);
-                            break;
-                        case "entity":
-                            var entityInfo = contentReference.name;
-                            var disambiguation = contentReference.extra_params?.disambiguation;
-                            var entityInfoString = $"{entityInfo}{(string.IsNullOrWhiteSpace(disambiguation) == false ? $" ({disambiguation})" : "")}";
-                            parts[0] = string.Concat(firstSpan, entityInfoString, lastSpan);
-                            break;
-                        default:
-                            Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
-                            break;
+                        var start_idx = contentReference.start_idx < reindexedElements.Count ? reindexedElements[contentReference.start_idx] : contentReference.start_idx;
+                        var end_idx = contentReference.end_idx < reindexedElements.Count ? reindexedElements[contentReference.end_idx] : contentReference.end_idx;
+                        var firstPartSpan = parts[0].AsSpan();
+                        var firstSpan = firstPartSpan[..start_idx];
+                        var lastSpan = firstPartSpan[end_idx..];
+
+                        parts[0] = string.Concat(firstSpan, replacement, lastSpan);
                     }
                 }
 
@@ -145,6 +100,49 @@ namespace ChatGPTExport.Exporters
             }
 
             return new MarkdownContentResult(parts);
+        }
+
+        private string GetContentReferenceReplacement(MessageMetadata.Content_References contentReference, List<MessageMetadata.Content_References.Item> groupedWebpagesItems)
+        {
+            switch (contentReference.type)
+            {
+                case "attribution":
+                case "sources_footnote":
+                    return null;
+                case "hidden":
+                case "grouped_webpages_model_predicted_fallback":
+                case "image_v2":
+                case "tldr":
+                case "nav_list":
+                case "navigation":
+                case "webpage_extended":
+                case "image_inline":
+                    return string.Empty;
+                case "products":
+                case "product_entity":
+                case "alt_text":
+                    return contentReference.alt;
+                case "video":
+                    var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
+                    return videolink;
+                case "grouped_webpages":
+                    var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
+                    return refHighlight;
+                case "image_group":
+                    var safe_urls = contentReference.safe_urls;
+                    var images = safe_urls.Any() ?
+                        LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct()) :
+                        string.Empty;
+                    return images;
+                case "entity":
+                    var entityInfo = contentReference.name;
+                    var disambiguation = contentReference.extra_params?.disambiguation;
+                    var entityInfoString = $"{entityInfo}{(string.IsNullOrWhiteSpace(disambiguation) == false ? $" ({disambiguation})" : "")}";
+                    return entityInfoString;
+                default:
+                    Console.WriteLine($"Unhandled content reference type: {contentReference.type}");
+                    return $"[{contentReference.type}]";
+            }
         }
 
         private static bool TextContentFilter(string p)
@@ -191,9 +189,9 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownImage = GetMediaAsset(context, searchPattern);
 
-                        if (string.IsNullOrWhiteSpace(markdownImage) == false)
+                        if (markdownImage != null)
                         {
-                            yield return markdownImage;
+                            yield return markdownImage.GetMarkdownLink();
                         }
                         else
                         {
@@ -214,7 +212,7 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.audio_asset_pointer.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
-                        yield return $"{markdownAsset}  ";
+                        yield return $"{markdownAsset?.GetMarkdownLink()}  ";
                         break;
                     }
 
@@ -223,7 +221,7 @@ namespace ChatGPTExport.Exporters
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownAsset = GetMediaAsset(context, searchPattern);
 
-                        yield return $"{markdownAsset}  ";
+                        yield return $"{markdownAsset?.GetMarkdownLink()}  ";
                         break;
                     }
 
@@ -238,7 +236,7 @@ namespace ChatGPTExport.Exporters
             return assetPointer.Replace("sediment://", string.Empty).Replace("file-service://", string.Empty);
         }
 
-        private string? GetMediaAsset(ContentVisitorContext context, string searchPattern)
+        private Asset? GetMediaAsset(ContentVisitorContext context, string searchPattern)
         {
             return assetLocator.GetMarkdownMediaAsset(new AssetRequest(
                 searchPattern,
