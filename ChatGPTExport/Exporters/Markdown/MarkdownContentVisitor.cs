@@ -11,6 +11,7 @@ namespace ChatGPTExport.Exporters
     public partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
         private const string trackingSource = "?utm_source=chatgpt.com";
+        private const string ImageAssetPointer = "image_asset_pointer";
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
 
@@ -155,25 +156,28 @@ namespace ChatGPTExport.Exporters
         public MarkdownContentResult Visit(ContentMultimodalText content, ContentVisitorContext context)
         {
             var markdownContent = new List<string>();
+            bool hasImage = false;
             foreach (var part in content.parts)
             {
                 if (part.IsObject)
                 {
-                    markdownContent.AddRange(GetMarkdownMediaAsset(context, part.ObjectValue));
+                    var mediaAssets = GetMarkdownMediaAsset(context, part.ObjectValue);
+                    markdownContent.AddRange(mediaAssets);
+                    hasImage = hasImage || part.ObjectValue.content_type == ImageAssetPointer;
                 }
                 else if (part.IsString)
                 {
                     markdownContent.Add(part.StringValue);
                 }
             }
-            return new MarkdownContentResult(markdownContent);
+            return new MarkdownContentResult(markdownContent, null, hasImage);
         }
 
         private IEnumerable<string> GetMarkdownMediaAsset(ContentVisitorContext context, ContentMultimodalText.ContentMultimodalTextParts obj)
         {
             switch (obj.content_type)
             {
-                case "image_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
+                case ImageAssetPointer when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
                     {
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownImage = GetMediaAsset(context, searchPattern);

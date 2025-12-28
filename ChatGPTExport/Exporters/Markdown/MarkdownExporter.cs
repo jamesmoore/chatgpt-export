@@ -19,7 +19,7 @@ namespace ChatGPTExport.Exporters.Markdown
             {
                 try
                 {
-                    var (messageContent, suffix) = message.Accept(visitor);
+                    var (messageContent, suffix, hasImage) = message.Accept(visitor);
 
                     if (messageContent.Any())
                     {

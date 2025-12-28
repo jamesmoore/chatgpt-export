@@ -196,6 +196,7 @@ static int RunExport(ProgramArgs programArgs)
             [
                 new HighlightHeaderProvider(),
                 new MathjaxHeaderProvider(),
+                new GlightboxHeaderProvider(),
             ]
         );
 
