@@ -11,6 +11,7 @@ namespace ChatGPTExport.Exporters
     public partial class MarkdownContentVisitor(IAssetLocator assetLocator, bool showHidden) : IContentVisitor<MarkdownContentResult>
     {
         private const string trackingSource = "?utm_source=chatgpt.com";
+        private const string ImageAssetPointer = "image_asset_pointer";
         private readonly string LineBreak = Environment.NewLine;
         private CanvasCreateModel? canvasContext = null;
 
@@ -152,14 +153,6 @@ namespace ChatGPTExport.Exporters
                 ;
         }
 
-        private readonly List<string> imageExtensions =
-        [
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".webp",
-        ];
-
         public MarkdownContentResult Visit(ContentMultimodalText content, ContentVisitorContext context)
         {
             var markdownContent = new List<string>();
@@ -170,7 +163,7 @@ namespace ChatGPTExport.Exporters
                 {
                     var mediaAssets = GetMarkdownMediaAsset(context, part.ObjectValue);
                     markdownContent.AddRange(mediaAssets);
-                    hasImage = mediaAssets.Any(p => imageExtensions.Any(q => p.Contains(q, StringComparison.InvariantCultureIgnoreCase)));
+                    hasImage = hasImage || part.ObjectValue.content_type == ImageAssetPointer;
                 }
                 else if (part.IsString)
                 {
@@ -184,7 +177,7 @@ namespace ChatGPTExport.Exporters
         {
             switch (obj.content_type)
             {
-                case "image_asset_pointer" when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
+                case ImageAssetPointer when string.IsNullOrWhiteSpace(obj.asset_pointer) == false:
                     {
                         var searchPattern = GetSearchPattern(obj.asset_pointer);
                         var markdownImage = GetMediaAsset(context, searchPattern);
