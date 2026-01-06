@@ -181,7 +181,7 @@ namespace ChatGPTExport.Models
     public class ContentMultimodalText : ContentBase
     {
         /// <summary>
-        /// This could be a string? or a ContentMultimodalTextParts
+        /// This could be a nullable string or a ContentMultimodalTextParts
         /// </summary>
         [JsonConverter(typeof(ItemListConverter))]
         public List<ContentMultimodalTextPartsContainer>? parts { get; set; }
