@@ -103,7 +103,7 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult(parts);
         }
 
-        private string GetContentReferenceReplacement(MessageMetadata.Content_References contentReference, List<MessageMetadata.Content_References.Item> groupedWebpagesItems)
+        private string? GetContentReferenceReplacement(MessageMetadata.Content_References contentReference, List<MessageMetadata.Content_References.Item> groupedWebpagesItems)
         {
             switch (contentReference.type)
             {

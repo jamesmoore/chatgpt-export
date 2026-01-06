@@ -130,18 +130,16 @@ rootCommand.SetAction(parseResult =>
 
         ConsoleFeatures.StartIndeterminate();
 
-        var programArgs = new ProgramArgs
-        {
-            SourceDirectory = parseResult.GetRequiredValue(sourceDirectoryOption),
-            DestinationDirectory = parseResult.GetRequiredValue(destinationDirectoryOption),
-            ExportMode = parseResult.GetRequiredValue(exportModeOption),
-            Validate = parseResult.GetRequiredValue(validateOption),
-            Json = parseResult.GetRequiredValue(jsonOption),
-            Markdown = parseResult.GetRequiredValue(markdownOption),
-            Html = parseResult.GetRequiredValue(htmlOption),
-            HtmlFormat = parseResult.GetRequiredValue(htmlFormatOption),
-            ShowHidden = parseResult.GetRequiredValue(showHiddenOption),
-        };
+        var programArgs = new ProgramArgs(
+            parseResult.GetRequiredValue(sourceDirectoryOption),
+            parseResult.GetRequiredValue(destinationDirectoryOption),
+            parseResult.GetRequiredValue(exportModeOption),
+            parseResult.GetRequiredValue(validateOption),
+            parseResult.GetRequiredValue(jsonOption),
+            parseResult.GetRequiredValue(markdownOption),
+            parseResult.GetRequiredValue(htmlOption),
+            parseResult.GetRequiredValue(htmlFormatOption),
+            parseResult.GetRequiredValue(showHiddenOption));
 
         var result = RunExport(programArgs);
         return result;

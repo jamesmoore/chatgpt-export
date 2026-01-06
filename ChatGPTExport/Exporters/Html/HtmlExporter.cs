@@ -78,14 +78,12 @@ namespace ChatGPTExport.Exporters.Html
 
             var lanugages = GetLanguages(markdown);
 
-            var fragment = new HtmlFragment()
-            {
-                Html = author.role == "user" ? formatter.FormatUserInput(html) : html,
-                HasCode = lanugages.HasCode,
-                Languages = lanugages.Languages,
-                HasMath = hasMath,
-                HasImage = hasImage,
-            };
+            var fragment = new HtmlFragment(
+                author.role == "user" ? formatter.FormatUserInput(html) : html,
+                lanugages.HasCode,
+                hasMath,
+                hasImage,
+                lanugages.Languages);
             return fragment;
         }
 
