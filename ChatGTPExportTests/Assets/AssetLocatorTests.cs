@@ -25,7 +25,10 @@ namespace ChatGTPExportTests.Assets
 
             var expected = fs.Path.Combine(destDir.FullName, "unknown-assets", "img.png");
             Assert.True(fs.File.Exists(expected));
-            Assert.Equal("![img.png](./unknown-assets/img.png)  ", result.GetMarkdownLink());
+            
+            Assert.NotNull(result);
+            var markdownLink = result.GetMarkdownLink();
+            Assert.Equal("![img.png](./unknown-assets/img.png)  ", markdownLink);
 
             var traversal = fs.Path.Combine(destDir.FullName, "..", "evil-assets", "img.png");
             Assert.False(fs.File.Exists(traversal));
