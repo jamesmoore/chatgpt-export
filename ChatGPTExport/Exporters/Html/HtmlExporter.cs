@@ -76,14 +76,14 @@ namespace ChatGPTExport.Exporters.Html
 
             var html = Markdig.Markdown.ToHtml(markdown, markdownPipeline);
 
-            var lanugages = GetLanguages(markdown);
+            var (HasCode, Languages) = GetLanguages(markdown);
 
             var fragment = new HtmlFragment(
                 author.role == "user" ? formatter.FormatUserInput(html) : html,
-                lanugages.HasCode,
+                HasCode,
                 hasMath,
                 hasImage,
-                lanugages.Languages);
+                Languages);
             return fragment;
         }
 
