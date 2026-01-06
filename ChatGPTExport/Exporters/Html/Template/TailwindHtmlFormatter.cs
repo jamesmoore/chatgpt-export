@@ -65,7 +65,7 @@ namespace ChatGPTExport.Exporters.Html.Template
         public string FormatUserInput(string html)
         {
             return $"""
-<div class="flex justify-end mb-2">
+<div class="flex justify-end my-4">
   <div class="ml-auto w-full sm:w-5/6 md:w-2/3 lg:w-2/3 rounded-xl bg-neutral-800 px-3 break-words">
       {html}
   </div>
