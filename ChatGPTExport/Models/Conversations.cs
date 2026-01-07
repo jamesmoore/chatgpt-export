@@ -42,22 +42,32 @@ namespace ChatGPTExport.Models
 
         private string? GetLastLeaf()
         {
+            if (mapping == null)
+            {
+                return null;
+            }
+
             var leaves = mapping.Where(p => p.Value.IsLeaf()).ToList();
 
-            var allHaveTimestamp = leaves.All(p => p.Value.message.create_time.HasValue);
+            var allHaveTimestamp = leaves.All(p => p.Value.message?.create_time.HasValue ?? false);
             if (!allHaveTimestamp)
             {
                 Console.WriteLine("Warning: Not all messages have create_time.");
             }
 
             var lastLeaf = allHaveTimestamp ?
-                leaves.OrderBy(p => p.Value.message.GetMessageTimestamp()).Last().Key :
+                leaves.OrderBy(p => p.Value.message!.create_time).Last().Key :
                 leaves.Last().Key;
             return lastLeaf;
         }
 
         private Dictionary<string, MessageContainer> GetLatestBranch()
         {
+            if (mapping == null)
+            {
+                return [];
+            }
+
             var temp = new List<MessageContainer>();
             var currentId = GetLastLeaf();
             do
@@ -87,7 +97,7 @@ namespace ChatGPTExport.Models
         public string? parent { get; set; }
         public List<string>? children { get; set; }
 
-        public bool IsLeaf() => this.children.Count == 0;
+        public bool IsLeaf() => this.children == null || this.children.Count == 0;
     }
 
     public class Message
