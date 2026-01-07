@@ -63,7 +63,7 @@ namespace ChatGPTExport.Exporters
                     Debug.Assert(footnote == sourcesFootnote);
                 }
 
-                var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items).ToList();
+                var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items ?? []).ToList();
 
                 var reindexedElements = textPart.GetRenderedElementIndexes();
 
@@ -365,20 +365,22 @@ namespace ChatGPTExport.Exporters
                     Debug.Assert(canvasContext != null);
                     canvasContext ??= new CanvasCreateModel() { type = "document " }; // default to document if no canvas exists
 
-                    foreach (var update in updateCanvas.updates)
+                    foreach (var update in updateCanvas?.updates ?? [])
                     {
                         canvasContext.content = update.replacement;
                     }
                 }
 
-                if (canvasContext?.type == "document")
+                var canvasContextType = canvasContext?.type;
+                var canvasContextContent = canvasContext?.content;
+                if (canvasContextContent != null && canvasContextType == "document")
                 {
-                    yield return canvasContext.content;
+                    yield return canvasContextContent;
                 }
-                else if (canvasContext?.type.StartsWith("code") ?? false)
+                else if (canvasContextContent != null && (canvasContextType?.StartsWith("code") ?? false))
                 {
-                    var language = canvasContext.type.Replace("code/", "");
-                    yield return ToCodeBlock(canvasContext.content, language);
+                    var language = canvasContextType.Replace("code/", "");
+                    yield return ToCodeBlock(canvasContextContent, language);
                 }
                 else
                 {

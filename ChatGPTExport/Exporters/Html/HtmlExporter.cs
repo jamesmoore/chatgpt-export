@@ -22,11 +22,11 @@ namespace ChatGPTExport.Exporters.Html
             {
                 try
                 {
-                    var (messageContent, suffix, hasImage) = message.Accept(visitor);
+                    var visitResult = message.Accept(visitor);
 
-                    if (messageContent.Any())
+                    if (message.author != null && visitResult != null && visitResult.Lines.Any())
                     {
-                        strings.Add((message.author, string.Join(LineBreak, messageContent), hasImage));
+                        strings.Add((message.author, string.Join(LineBreak, visitResult.Lines), visitResult.HasImage));
                     }
                 }
                 catch (Exception ex)

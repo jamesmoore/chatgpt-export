@@ -119,9 +119,20 @@ namespace ChatGPTExport.Models
             return update_time ?? create_time ?? 0;
         }
 
-        public T Accept<T>(IContentVisitor<T> visitor)
+        public T? Accept<T>(IContentVisitor<T> visitor)
         {
-            return this.content.Accept(visitor, new ContentVisitorContext(this.author.role, GetCreateTime(), GetUpdateTime(), metadata, this.recipient));
+            if (this.content != null &&
+                this.author?.role != null &&
+                this.metadata != null &&
+                this.recipient != null
+                )
+            {
+                return this.content.Accept(visitor, new ContentVisitorContext(this.author.role, GetCreateTime(), GetUpdateTime(), metadata, this.recipient));
+            }
+            else
+            {
+                return default;
+            }
         }
 
         public DateTimeOffset? GetCreateTime() => create_time.HasValue ? create_time.Value.ToDateTimeOffset() : null;
