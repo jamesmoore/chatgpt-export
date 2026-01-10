@@ -31,7 +31,7 @@ namespace ChatGPTExport.Exporters
                 $"Unhandled content type: {content}"
             };
 
-            if (content.ExtraData.Count != 0)
+            if (content.ExtraData != null && content.ExtraData.Count != 0)
             {
                 lines.Add("|Name|Value|");
                 lines.Add("|---|---|");
@@ -46,7 +46,7 @@ namespace ChatGPTExport.Exporters
 
         public MarkdownContentResult Visit(ContentText content, ContentVisitorContext context)
         {
-            var parts = content.parts.Where(TextContentFilter).SelectMany(p => DecodeText(p, context)).ToList();
+            var parts = content.parts?.Where(TextContentFilter).SelectMany(p => DecodeText(p, context)).ToList() ?? [];
 
             var content_references = context.MessageMetadata.content_references;
             if (content_references != null && content_references.Length != 0)
@@ -63,7 +63,7 @@ namespace ChatGPTExport.Exporters
                     Debug.Assert(footnote == sourcesFootnote);
                 }
 
-                var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items).ToList();
+                var groupedWebpagesItems = content_references.Where(p => p.type == "grouped_webpages").SelectMany(p => p.items ?? []).ToList();
 
                 var reindexedElements = textPart.GetRenderedElementIndexes();
 
@@ -84,18 +84,18 @@ namespace ChatGPTExport.Exporters
                 }
 
                 parts.Add(string.Empty);
-                var footnotes = groupedWebpagesItems.Select((p, i) => $"[^{i + 1}]: [{p.title}]({p.url.Replace(trackingSource, "")})  ");
+                var footnotes = groupedWebpagesItems.Select((p, i) => $"[^{i + 1}]: [{p.title}]({p.url?.Replace(trackingSource, "")})  ");
                 parts.AddRange(footnotes);
 
                 if (sourcesFootnote != null)
                 {
                     var existingUrls = groupedWebpagesItems.Select(p => p.url).ToArray();
-                    var newSources = sourcesFootnote.sources.Where(p => existingUrls.Contains(p.url) == false).ToList();
+                    var newSources = sourcesFootnote.sources?.Where(p => existingUrls.Contains(p.url) == false).ToList() ?? [];
                     if (newSources.Any())
                     {
                         parts.Add(string.Empty);
                         parts.Add("### Sources");
-                        parts.AddRange(newSources.Select(source => $"* [{source.title}]({source.url.Replace(trackingSource, "")})  "));
+                        parts.AddRange(newSources.Select(source => $"* [{source.title}]({source.url?.Replace(trackingSource, "")})  "));
                     }
                 }
             }
@@ -103,7 +103,7 @@ namespace ChatGPTExport.Exporters
             return new MarkdownContentResult(parts);
         }
 
-        private string GetContentReferenceReplacement(MessageMetadata.Content_References contentReference, List<MessageMetadata.Content_References.Item> groupedWebpagesItems)
+        private string? GetContentReferenceReplacement(MessageMetadata.Content_References contentReference, List<MessageMetadata.Content_References.Item> groupedWebpagesItems)
         {
             switch (contentReference.type)
             {
@@ -124,13 +124,13 @@ namespace ChatGPTExport.Exporters
                 case "alt_text":
                     return contentReference.alt;
                 case "video":
-                    var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
+                    var videolink = $"[![{contentReference.title}]({contentReference.thumbnail_url})]({contentReference.url?.Replace("&utm_source=chatgpt.com", "")} \"{contentReference.title}\")";
                     return videolink;
                 case "grouped_webpages":
-                    var refHighlight = string.Join("", contentReference.items.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray());
+                    var refHighlight = string.Join("", contentReference.items?.Select(p => $"[^{groupedWebpagesItems.IndexOf(p) + 1}]").ToArray() ?? []);
                     return refHighlight;
                 case "image_group":
-                    var safe_urls = contentReference.safe_urls;
+                    var safe_urls = contentReference.safe_urls ?? [];
                     var images = safe_urls.Any() ?
                         LineBreak + "Image search results: " + LineBreak + string.Join(LineBreak, safe_urls.Select(p => "* " + p.Replace(trackingSource, "")).Distinct()) :
                         string.Empty;
@@ -157,15 +157,15 @@ namespace ChatGPTExport.Exporters
         {
             var markdownContent = new List<string>();
             bool hasImage = false;
-            foreach (var part in content.parts)
+            foreach (var part in content.parts ?? [])
             {
-                if (part.IsObject)
+                if (part.IsObject && part.ObjectValue != null)
                 {
                     var mediaAssets = GetMarkdownMediaAsset(context, part.ObjectValue);
                     markdownContent.AddRange(mediaAssets);
                     hasImage = hasImage || part.ObjectValue.content_type == ImageAssetPointer;
                 }
-                else if (part.IsString)
+                else if (part.IsString && part.StringValue != null)
                 {
                     markdownContent.Add(part.StringValue);
                 }
@@ -280,10 +280,13 @@ namespace ChatGPTExport.Exporters
             return GetShowAllGuardedContentResult(() =>
             {
                 var markdownContent = new List<string>();
-                foreach (var thought in content.thoughts)
+                if (content.thoughts != null)
                 {
-                    markdownContent.Add(thought.summary + "  ");
-                    markdownContent.Add(thought.content + "  ");
+                    foreach (var thought in content.thoughts)
+                    {
+                        markdownContent.Add(thought.summary + "  ");
+                        markdownContent.Add(thought.content + "  ");
+                    }
                 }
                 return new MarkdownContentResult(markdownContent, " 💭");
             });
@@ -293,6 +296,11 @@ namespace ChatGPTExport.Exporters
         {
             return GetShowAllGuardedContentResult(() =>
             {
+                if (content.text == null)
+                {
+                    return new MarkdownContentResult();
+                }
+
                 var code = ToCodeBlock(content.text);
                 return new MarkdownContentResult(code);
             });
@@ -302,6 +310,10 @@ namespace ChatGPTExport.Exporters
         {
             return GetShowAllGuardedContentResult(() =>
             {
+                if (content.content == null)
+                {
+                    return new MarkdownContentResult();
+                }
                 return new MarkdownContentResult(content.content);
             });
         }
@@ -309,7 +321,7 @@ namespace ChatGPTExport.Exporters
         private IEnumerable<string> DecodeText(string text, ContentVisitorContext context)
         {
             // image prompt
-            if (text.Contains("prompt") && text.Contains("size"))
+            if (text.Contains("\"prompt\":") && text.Contains("\"size\":"))
             {
                 PromptFormat? pf = null;
                 try
@@ -322,6 +334,7 @@ namespace ChatGPTExport.Exporters
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine("Could not deserialize text to prompt: {0}", ex.Message);
                 }
 
                 if (pf != null)
@@ -329,9 +342,12 @@ namespace ChatGPTExport.Exporters
                     if (pf.prompt != null)
                     {
                         yield return "> **Prompt:** " + GetPrompt(pf.prompt);
-                        yield return LineBreak;
                     }
-                    yield return "> **Size:** " + pf.size;
+                    if (pf.size != null)
+                    {
+                        yield return LineBreak;
+                        yield return "> **Size:** " + pf.size;
+                    }
                 }
                 else
                 {
@@ -352,20 +368,22 @@ namespace ChatGPTExport.Exporters
                     Debug.Assert(canvasContext != null);
                     canvasContext ??= new CanvasCreateModel() { type = "document " }; // default to document if no canvas exists
 
-                    foreach (var update in updateCanvas.updates)
+                    foreach (var update in updateCanvas?.updates ?? [])
                     {
                         canvasContext.content = update.replacement;
                     }
                 }
 
-                if (canvasContext.type == "document")
+                var canvasContextType = canvasContext?.type;
+                var canvasContextContent = canvasContext?.content;
+                if (canvasContextContent != null && canvasContextType == "document")
                 {
-                    yield return canvasContext.content;
+                    yield return canvasContextContent;
                 }
-                else if (canvasContext.type.StartsWith("code"))
+                else if (canvasContextContent != null && (canvasContextType?.StartsWith("code") ?? false))
                 {
-                    var language = canvasContext.type.Replace("code/", "");
-                    yield return ToCodeBlock(canvasContext.content, language);
+                    var language = canvasContextType.Replace("code/", "");
+                    yield return ToCodeBlock(canvasContextContent, language);
                 }
                 else
                 {
@@ -417,8 +435,15 @@ namespace ChatGPTExport.Exporters
         {
             return GetShowAllGuardedContentResult(() =>
             {
-                string v = content.result.Replace("\n", "  \n");
-                return new MarkdownContentResult([v, content.summary]);
+                if (content.result == null)
+                {
+                    return new MarkdownContentResult();
+                }
+                var lines = new string?[] {
+                    content.result.Replace("\n", "  \n"),
+                    content.summary
+                }.OfType<string>();
+                return new MarkdownContentResult(lines);
             });
         }
 

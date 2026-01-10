@@ -32,24 +32,27 @@ namespace ChatGPTExport
 
                 foreach (var (assetLocator, conversation) in conversations)
                 {
-                    Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
-                    foreach (var exporter in exporters)
+                    if (conversation.mapping != null)
                     {
-                        Console.Write($"\t\t{exporter.GetType().Name}");
-
-                        if (exportMode == ExportMode.Complete)
+                        Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+                        foreach (var exporter in exporters)
                         {
-                            var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
-                            ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
-                        }
-                        else if (exportMode == ExportMode.Latest)
-                        {
-                            var latest = conversation.GetLastestConversation();
-                            var filename = GetFilename(latest, "", exporter.GetExtension());
-                            ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
-                        }
+                            Console.Write($"\t\t{exporter.GetType().Name}");
 
-                        Console.WriteLine($"...Done");
+                            if (exportMode == ExportMode.Complete)
+                            {
+                                var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
+                                ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
+                            }
+                            else if (exportMode == ExportMode.Latest)
+                            {
+                                var latest = conversation.GetLastestConversation();
+                                var filename = GetFilename(latest, "", exporter.GetExtension());
+                                ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
+                            }
+
+                            Console.WriteLine($"...Done");
+                        }
                     }
                 }
 

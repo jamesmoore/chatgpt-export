@@ -39,12 +39,19 @@ sourceDirectoryOption.Validators.Add(result =>
     try
     {
         var directoryInfos = result.GetValue(sourceDirectoryOption);
-        foreach (var directoryInfo in directoryInfos)
+        if (directoryInfos != null)
         {
-            if (directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories).Length == 0)
+            foreach (var directoryInfo in directoryInfos)
             {
-                result.AddError($"Source directory does not have a conversations.json file.");
+                if (directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories).Length == 0)
+                {
+                    result.AddError($"Source directory does not have a conversations.json file.");
+                }
             }
+        }
+        else
+        {
+            result.AddError($"Source directory absent.");
         }
     }
     catch { }
@@ -130,18 +137,16 @@ rootCommand.SetAction(parseResult =>
 
         ConsoleFeatures.StartIndeterminate();
 
-        var programArgs = new ProgramArgs
-        {
-            SourceDirectory = parseResult.GetRequiredValue(sourceDirectoryOption),
-            DestinationDirectory = parseResult.GetRequiredValue(destinationDirectoryOption),
-            ExportMode = parseResult.GetRequiredValue(exportModeOption),
-            Validate = parseResult.GetRequiredValue(validateOption),
-            Json = parseResult.GetRequiredValue(jsonOption),
-            Markdown = parseResult.GetRequiredValue(markdownOption),
-            Html = parseResult.GetRequiredValue(htmlOption),
-            HtmlFormat = parseResult.GetRequiredValue(htmlFormatOption),
-            ShowHidden = parseResult.GetRequiredValue(showHiddenOption),
-        };
+        var programArgs = new ProgramArgs(
+            parseResult.GetRequiredValue(sourceDirectoryOption),
+            parseResult.GetRequiredValue(destinationDirectoryOption),
+            parseResult.GetRequiredValue(exportModeOption),
+            parseResult.GetRequiredValue(validateOption),
+            parseResult.GetRequiredValue(jsonOption),
+            parseResult.GetRequiredValue(markdownOption),
+            parseResult.GetRequiredValue(htmlOption),
+            parseResult.GetRequiredValue(htmlFormatOption),
+            parseResult.GetRequiredValue(showHiddenOption));
 
         var result = RunExport(programArgs);
         return result;
@@ -178,31 +183,8 @@ static int RunExport(ProgramArgs programArgs)
         }
     }
 
-    var conversationFiles = sources.Select(p => p.GetFiles(searchPattern, SearchOption.AllDirectories)).SelectMany(s => s).ToList();
-
     var conversationsFactory = new ConversationsParser(fileSystem, programArgs.Validate);
-    var exporters = new List<IExporter>();
-    if (programArgs.Json)
-    {
-        exporters.Add(new JsonExporter());
-    }
-    if (programArgs.Markdown)
-    {
-        exporters.Add(new MarkdownExporter(programArgs.ShowHidden));
-    }
-    if (programArgs.Html)
-    {
-        var headerProvider = new CompositeHeaderProvider(
-            [
-                new HighlightHeaderProvider(),
-                new MathjaxHeaderProvider(),
-                new GlightboxHeaderProvider(),
-            ]
-        );
-
-        var formatter = programArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-        exporters.Add(new HtmlExporter(formatter, programArgs.ShowHidden));
-    }
+    var exporters = GetExporters(programArgs);
 
     var exporter = new Exporter(fileSystem, exporters, programArgs.ExportMode);
 
@@ -228,15 +210,17 @@ static int RunExport(ProgramArgs programArgs)
     }
 
     var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
+    var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(searchPattern, SearchOption.AllDirectories)).
+        SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirecory = file.Directory }).ToList();
 
-    var directoryConversationsMap = conversationFiles
+    var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirecory != null)
         .Select(file => new
         {
-            AssetLocator = new AssetLocator(fileSystem, file.Directory, destination, existingAssetLocator) as IAssetLocator,
-            Conversations = GetConversations(file)
+            AssetLocator = new AssetLocator(fileSystem, file.ParentDirecory!, destination, existingAssetLocator) as IAssetLocator,
+            Conversations = GetConversations(file.File)
         })
         .Where(x => x.Conversations != null)
-        .OrderBy(x => x.Conversations.GetUpdateTime())
+        .OrderBy(x => x.Conversations!.GetUpdateTime())
         .ToList();
 
     if (validationFail)
@@ -244,8 +228,8 @@ static int RunExport(ProgramArgs programArgs)
         throw new ApplicationException("Validation errors found");
     }
 
-    var groupedByConversationId = directoryConversationsMap
-        .SelectMany(entry => entry.Conversations, (entry, Conversation) => (entry.AssetLocator, Conversation))
+    var groupedByConversationId = directoryConversationsMap.Where(p => p.Conversations != null)
+        .SelectMany(entry => entry.Conversations!, (entry, Conversation) => (entry.AssetLocator, Conversation))
         .GroupBy(x => x.Conversation.conversation_id)
         .OrderBy(p => p.Key).ToList();
 
@@ -259,4 +243,32 @@ static int RunExport(ProgramArgs programArgs)
     }
 
     return 0;
+}
+
+static IEnumerable<IExporter> GetExporters(ProgramArgs programArgs)
+{
+    var exporters = new List<IExporter>();
+    if (programArgs.Json)
+    {
+        exporters.Add(new JsonExporter());
+    }
+    if (programArgs.Markdown)
+    {
+        exporters.Add(new MarkdownExporter(programArgs.ShowHidden));
+    }
+    if (programArgs.Html)
+    {
+        var headerProvider = new CompositeHeaderProvider(
+            [
+                new HighlightHeaderProvider(),
+                new MathjaxHeaderProvider(),
+                new GlightboxHeaderProvider(),
+            ]
+        );
+
+        var formatter = programArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
+        exporters.Add(new HtmlExporter(formatter, programArgs.ShowHidden));
+    }
+
+    return exporters;
 }

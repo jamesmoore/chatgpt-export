@@ -29,7 +29,7 @@
                 var lineText = fenced ? line.s : EscapeContents(line.s);
                 var reformatLineEndings =
                     fenced == false && // not fenced
-                    i < linesWithFencedStatus.Count -1 &&  // not EOF
+                    i < linesWithFencedStatus.Count - 1 &&  // not EOF
                     linesWithFencedStatus[i + 1].fenced == false && // Next line not fenced
                     string.IsNullOrWhiteSpace(linesWithFencedStatus[i + 1].s) == false && // Next line NOT empty 
                     lineText.EndsWith("  ") == false; // Already has break indicator
@@ -65,14 +65,11 @@
                         continue;
                     }
                 }
-                else
+                else if (fencedTerminator != null && trimmedLine.StartsWith(fencedTerminator))
                 {
-                    if (trimmedLine.StartsWith(fencedTerminator))
-                    {
-                        fenced = false;
-                        yield return (line, true);
-                        continue;
-                    }
+                    fenced = false;
+                    yield return (line, true);
+                    continue;
                 }
 
                 yield return (line, fenced);
