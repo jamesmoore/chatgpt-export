@@ -4,10 +4,11 @@
     {
         public static IEnumerable<Message> GetMessagesWithContent(this Conversation conversation)
         {
-            return conversation.mapping.Select(p => p.Value).
-                Where(p => p.message != null).
-                Select(p => p.message).
-                Where(p => p.content != null);
+            return conversation.mapping?
+                .Select(p => p.Value?.message)
+                .OfType<Message>()
+                .Where(m => m.content != null)
+                ?? [];
         }
     }
 }

@@ -19,13 +19,13 @@ namespace ChatGPTExport.Exporters.Markdown
             {
                 try
                 {
-                    var (messageContent, suffix, hasImage) = message.Accept(visitor);
+                    var visitResult = message.Accept(visitor);
 
-                    if (messageContent.Any())
+                    if (message.author != null && visitResult != null && visitResult.Lines.Any())
                     {
                         var authorname = string.IsNullOrWhiteSpace(message.author.name) ? "" : $" ({message.author.name})";
-                        strings.Add($"**{message.author.role}{authorname}{suffix}**:  "); // double space for line break
-                        strings.Add(string.Join(LineBreak, messageContent));
+                        strings.Add($"**{message.author.role}{authorname}{visitResult.Suffix}**:  "); // double space for line break
+                        strings.Add(string.Join(LineBreak, visitResult.Lines));
                         strings.Add(LineBreak);
                     }
                 }

@@ -22,11 +22,11 @@ namespace ChatGPTExport.Exporters.Html
             {
                 try
                 {
-                    var (messageContent, suffix, hasImage) = message.Accept(visitor);
+                    var visitResult = message.Accept(visitor);
 
-                    if (messageContent.Any())
+                    if (message.author != null && visitResult != null && visitResult.Lines.Any())
                     {
-                        strings.Add((message.author, string.Join(LineBreak, messageContent), hasImage));
+                        strings.Add((message.author, string.Join(LineBreak, visitResult.Lines), visitResult.HasImage));
                     }
                 }
                 catch (Exception ex)
@@ -38,7 +38,7 @@ namespace ChatGPTExport.Exporters.Html
             var markdownPipeline = GetPipeline();
             var bodyHtml = strings.Select(p => GetHtmlFragment(p.Author, p.Content, p.HasImage, markdownPipeline));
 
-            var titleString = WebUtility.HtmlEncode(conversation.title);
+            var titleString = WebUtility.HtmlEncode(conversation.title ?? "No title");
             string html = formatter.FormatHtmlPage(
                 new HtmlPage(titleString, bodyHtml));
 
@@ -47,7 +47,7 @@ namespace ChatGPTExport.Exporters.Html
 
         [GeneratedRegex("```(.*)")]
         private static partial Regex MarkdownCodeBlockRegex();
-        private (bool HasCode, List<string> Languages) GetLanguages(string markdown)
+        private static (bool HasCode, List<string> Languages) GetLanguages(string markdown)
         {
             var codeBlockRegex = MarkdownCodeBlockRegex().Matches(markdown);
             var languages = codeBlockRegex.Where(p => p.Groups.Count > 1).
@@ -76,16 +76,14 @@ namespace ChatGPTExport.Exporters.Html
 
             var html = Markdig.Markdown.ToHtml(markdown, markdownPipeline);
 
-            var lanugages = GetLanguages(markdown);
+            var (HasCode, Languages) = GetLanguages(markdown);
 
-            var fragment = new HtmlFragment()
-            {
-                Html = author.role == "user" ? formatter.FormatUserInput(html) : html,
-                HasCode = lanugages.HasCode,
-                Languages = lanugages.Languages,
-                HasMath = hasMath,
-                HasImage = hasImage,
-            };
+            var fragment = new HtmlFragment(
+                author.role == "user" ? formatter.FormatUserInput(html) : html,
+                HasCode,
+                hasMath,
+                hasImage,
+                Languages);
             return fragment;
         }
 
