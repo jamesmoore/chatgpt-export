@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
+﻿using ChatGPTExport.Exporters;
+using System.Text.Json;
 using System.Text.Json.Serialization;
-using ChatGPTExport.Exporters;
 
 namespace ChatGPTExport.Models
 {
@@ -70,18 +70,18 @@ namespace ChatGPTExport.Models
 
             var temp = new List<MessageContainer>();
             var currentId = GetLastLeaf();
-            do
+            while (currentId != null)
             {
                 var messageContainer = this.mapping[currentId];
                 temp.Insert(0, messageContainer);
                 currentId = messageContainer.parent;
-            } while (currentId != null);
-            return temp.ToDictionary(p => p.id, p => p);
+            }
+            return temp.Where(p => p.id != null).ToDictionary(p => p.id!, p => p);
         }
 
         public Conversation GetLastestConversation()
         {
-            var clone = this.MemberwiseClone() as Conversation;
+            var clone = (Conversation)this.MemberwiseClone();
             clone.mapping = GetLatestBranch();
             return clone;
         }
