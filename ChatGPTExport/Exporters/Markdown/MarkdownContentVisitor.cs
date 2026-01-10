@@ -334,7 +334,7 @@ namespace ChatGPTExport.Exporters
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Could not deserialize text to prompt {0}", ex);
+                    Console.WriteLine("Could not deserialize text to prompt: {0}", ex.Message);
                 }
 
                 if (pf != null)
