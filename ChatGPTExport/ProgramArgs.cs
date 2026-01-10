@@ -4,8 +4,8 @@ using ChatGPTExport.Exporters.Html;
 namespace ChatGPTExport
 {
     internal record ProgramArgs(
-        DirectoryInfo[]? SourceDirectory, 
-        DirectoryInfo? DestinationDirectory, 
+        DirectoryInfo[] SourceDirectory, 
+        DirectoryInfo DestinationDirectory, 
         ExportMode ExportMode, 
         bool Validate, 
         bool Json, 

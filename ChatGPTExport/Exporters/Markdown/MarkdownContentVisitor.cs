@@ -436,8 +436,11 @@ namespace ChatGPTExport.Exporters
                 {
                     return new MarkdownContentResult();
                 }
-                string v = content.result.Replace("\n", "  \n");
-                return new MarkdownContentResult([v, content.summary]);
+                var lines = new string?[] {
+                    content.result.Replace("\n", "  \n"),
+                    content.summary
+                }.OfType<string>();
+                return new MarkdownContentResult(lines);
             });
         }
 
