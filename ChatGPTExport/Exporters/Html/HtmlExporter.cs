@@ -42,8 +42,8 @@ namespace ChatGPTExport.Exporters.Html
 
             var metaHeaders = new Dictionary<string, string>();
             metaHeaders.Add("title", titleString);
-            if(conversation.id != null)
-                metaHeaders.Add("chatgpt_conversation_id", conversation.id);
+            if(conversation.conversation_id != null)
+                metaHeaders.Add("chatgpt_conversation_id", conversation.conversation_id);
             if(conversation.gizmo_id != null)
             metaHeaders.Add("chatgpt_gizmo_id", conversation.gizmo_id);
             metaHeaders.Add("chatgpt_created", conversation.GetCreateTime().ToString("s"));
