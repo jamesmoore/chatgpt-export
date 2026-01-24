@@ -15,6 +15,8 @@ namespace ChatGPTExport.Exporters.Markdown
 
             var visitor = new MarkdownContentVisitor(assetLocator, showHidden);
 
+            strings.AddRange(GetYamlHeader(conversation));
+
             foreach (var message in messages)
             {
                 try
@@ -38,7 +40,19 @@ namespace ChatGPTExport.Exporters.Markdown
             return strings;
         }
 
-
+        private static IEnumerable<string> GetYamlHeader(Conversation conversation)
+        {
+            return [
+                "---",
+                "chatgpt:",
+                "  conversation_id: " + conversation.conversation_id,
+                "  gizmo_id: " + conversation.gizmo_id,
+                "  created: " + conversation.GetCreateTime().ToString("s"),
+                "  updated: " + conversation.GetUpdateTime().ToString("s"),
+                "title: " + conversation.title,
+                "---",
+            ];
+        }
 
         public string GetExtension() => ".md";
     }

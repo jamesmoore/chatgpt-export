@@ -20,7 +20,7 @@ namespace ChatGPTExport.Models
         public object? plugin_ids { get; set; }
         public string? conversation_id { get; set; }
         public object? conversation_template_id { get; set; }
-        public object? gizmo_id { get; set; }
+        public string? gizmo_id { get; set; }
         public object? gizmo_type { get; set; }
         public bool is_archived { get; set; }
         public object? is_starred { get; set; }
