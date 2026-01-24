@@ -39,8 +39,18 @@ namespace ChatGPTExport.Exporters.Html
             var bodyHtml = strings.Select(p => GetHtmlFragment(p.Author, p.Content, p.HasImage, markdownPipeline));
 
             var titleString = WebUtility.HtmlEncode(conversation.title ?? "No title");
+
+            var metaHeaders = new Dictionary<string, string>();
+            metaHeaders.Add("title", titleString);
+            if(conversation.id != null)
+                metaHeaders.Add("chatgpt_conversation_id", conversation.id);
+            if(conversation.gizmo_id != null)
+            metaHeaders.Add("chatgpt_gizmo_id", conversation.gizmo_id);
+            metaHeaders.Add("chatgpt_created", conversation.GetCreateTime().ToString("s"));
+            metaHeaders.Add("chatgpt_updated", conversation.GetUpdateTime().ToString("s"));
+
             string html = formatter.FormatHtmlPage(
-                new HtmlPage(titleString, bodyHtml));
+                new HtmlPage(titleString, bodyHtml, metaHeaders));
 
             return [html];
         }

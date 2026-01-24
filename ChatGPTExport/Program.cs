@@ -260,6 +260,7 @@ static IEnumerable<IExporter> GetExporters(ProgramArgs programArgs)
     {
         var headerProvider = new CompositeHeaderProvider(
             [
+                new MetaHeaderProvider(),
                 new HighlightHeaderProvider(),
                 new MathjaxHeaderProvider(),
                 new GlightboxHeaderProvider(),

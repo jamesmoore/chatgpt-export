@@ -1,6 +1,6 @@
 ﻿namespace ChatGPTExport.Exporters.Html
 {
-    public record HtmlPage(string Title, IEnumerable<HtmlFragment> Body)
+    public record HtmlPage(string Title, IEnumerable<HtmlFragment> Body, Dictionary<string, string> MetaHeaders)
     {
         public string GetBodyString() => string.Join(Environment.NewLine, Body);
         public bool HasCode => Body.Any(p => p.HasCode);
