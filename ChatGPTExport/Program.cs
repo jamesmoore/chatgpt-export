@@ -1,17 +1,9 @@
-﻿using System.CommandLine;
+﻿using ChatGPTExport;
+using ChatGPTExport.Exporters.Html;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.IO.Abstractions;
-using ChatGPTExport;
-using ChatGPTExport.Assets;
-using ChatGPTExport.Exporters;
-using ChatGPTExport.Exporters.Html;
-using ChatGPTExport.Exporters.Html.Headers;
-using ChatGPTExport.Exporters.Html.Template;
-using ChatGPTExport.Exporters.Json;
-using ChatGPTExport.Exporters.Markdown;
-using ChatGPTExport.Models;
-using ChatGPTExport.Validators;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
@@ -21,8 +13,6 @@ Console.CancelKeyPress += (sender, args) =>
     ConsoleFeatures.ClearState();
     Environment.Exit(0);
 };
-
-const string searchPattern = "conversations.json";
 
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
 {
@@ -43,7 +33,7 @@ sourceDirectoryOption.Validators.Add(result =>
         {
             foreach (var directoryInfo in directoryInfos)
             {
-                if (directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories).Length == 0)
+                if (directoryInfo.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories).Length == 0)
                 {
                     result.AddError($"Source directory does not have a conversations.json file.");
                 }
@@ -125,7 +115,6 @@ var rootCommand = new RootCommand("ChatGPT export reformatter")
     showHiddenOption,
 };
 
-
 rootCommand.SetAction(parseResult =>
 {
     try
@@ -137,18 +126,44 @@ rootCommand.SetAction(parseResult =>
 
         ConsoleFeatures.StartIndeterminate();
 
-        var programArgs = new ProgramArgs(
-            parseResult.GetRequiredValue(sourceDirectoryOption),
-            parseResult.GetRequiredValue(destinationDirectoryOption),
-            parseResult.GetRequiredValue(exportModeOption),
-            parseResult.GetRequiredValue(validateOption),
-            parseResult.GetRequiredValue(jsonOption),
-            parseResult.GetRequiredValue(markdownOption),
-            parseResult.GetRequiredValue(htmlOption),
-            parseResult.GetRequiredValue(htmlFormatOption),
-            parseResult.GetRequiredValue(showHiddenOption));
+        var sourceDirs = parseResult.GetRequiredValue(sourceDirectoryOption);
+        var destinationDir = parseResult.GetRequiredValue(destinationDirectoryOption);
+        var exportMode = parseResult.GetRequiredValue(exportModeOption);
+        var validate = parseResult.GetRequiredValue(validateOption);
+        var json = parseResult.GetRequiredValue(jsonOption);
+        var markdown = parseResult.GetRequiredValue(markdownOption);
+        var html = parseResult.GetRequiredValue(htmlOption);
+        var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
+        var showHidden = parseResult.GetRequiredValue(showHiddenOption);
 
-        var result = RunExport(programArgs);
+        FileSystem fileSystem = new();
+        var destination = fileSystem.DirectoryInfo.Wrap(destinationDir);
+        var sources = sourceDirs.Select(p => fileSystem.DirectoryInfo.Wrap(p)).ToArray();
+
+        // check that destination is not the same as the source, or one of the source subdirectories
+        foreach (var source in sources)
+        {
+            var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
+            if (isSameOrSubdirectory)
+            {
+                Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
+                return 1;
+            }
+        }
+
+        var exportTypes = new List<ExportType>();
+        if (html) exportTypes.Add(ExportType.Html);
+        if (json) exportTypes.Add(ExportType.Json);
+        if (markdown) exportTypes.Add(ExportType.Markdown);
+
+        var result = new ExportBootstrap(fileSystem).RunExport(new ExportArgs(
+            sources,
+            destination,
+            exportMode,
+            validate,
+            exportTypes,
+            htmlFormat,
+            showHidden));
         return result;
     }
     catch (Exception ex)
@@ -165,111 +180,3 @@ rootCommand.SetAction(parseResult =>
 var parseResult = rootCommand.Parse(args);
 return parseResult.Invoke();
 
-static int RunExport(ProgramArgs programArgs)
-{
-    var fileSystem = new FileSystem();
-
-    var destination = fileSystem.DirectoryInfo.Wrap(programArgs.DestinationDirectory);
-    var sources = programArgs.SourceDirectory.Select(p => fileSystem.DirectoryInfo.Wrap(p));
-
-    // check that destination is not the same as the source, or one of the source subdirectories
-    foreach (var source in sources)
-    {
-        var isSameOrSubdirectory = source.IsSameOrSubdirectory(destination);
-        if (isSameOrSubdirectory)
-        {
-            Console.Error.WriteLine($"Destination {destination} is the same or a subdirectory of the source {source}");
-            return 1;
-        }
-    }
-
-    var conversationsFactory = new ConversationsParser(fileSystem, programArgs.Validate);
-    var exporters = GetExporters(programArgs);
-
-    var exporter = new Exporter(fileSystem, exporters, programArgs.ExportMode);
-
-    bool validationFail = false;
-
-    Conversations? GetConversations(IFileInfo p)
-    {
-        try
-        {
-            Console.WriteLine($"Loading conversation " + p.FullName);
-            return conversationsFactory.GetConversations(p);
-        }
-        catch (ValidationException)
-        {
-            validationFail = true;
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error parsing file: {p.FullName}{Environment.NewLine}\t{ex.Message}");
-            return null;
-        }
-    }
-
-    var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-    var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(searchPattern, SearchOption.AllDirectories)).
-        SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirecory = file.Directory }).ToList();
-
-    var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirecory != null)
-        .Select(file => new
-        {
-            AssetLocator = new AssetLocator(fileSystem, file.ParentDirecory!, destination, existingAssetLocator) as IAssetLocator,
-            Conversations = GetConversations(file.File)
-        })
-        .Where(x => x.Conversations != null)
-        .OrderBy(x => x.Conversations!.GetUpdateTime())
-        .ToList();
-
-    if (validationFail)
-    {
-        throw new ApplicationException("Validation errors found");
-    }
-
-    var groupedByConversationId = directoryConversationsMap.Where(p => p.Conversations != null)
-        .SelectMany(entry => entry.Conversations!, (entry, Conversation) => (entry.AssetLocator, Conversation))
-        .GroupBy(x => x.Conversation.conversation_id)
-        .OrderBy(p => p.Key).ToList();
-
-    var count = groupedByConversationId.Count;
-    var position = 0;
-    foreach (var group in groupedByConversationId)
-    {
-        var percent = (int)(position++ * 100.0 / count);
-        ConsoleFeatures.SetProgress(percent);
-        exporter.Process(group, destination);
-    }
-
-    return 0;
-}
-
-static IEnumerable<IExporter> GetExporters(ProgramArgs programArgs)
-{
-    var exporters = new List<IExporter>();
-    if (programArgs.Json)
-    {
-        exporters.Add(new JsonExporter());
-    }
-    if (programArgs.Markdown)
-    {
-        exporters.Add(new MarkdownExporter(programArgs.ShowHidden));
-    }
-    if (programArgs.Html)
-    {
-        var headerProvider = new CompositeHeaderProvider(
-            [
-                new MetaHeaderProvider(),
-                new HighlightHeaderProvider(),
-                new MathjaxHeaderProvider(),
-                new GlightboxHeaderProvider(),
-            ]
-        );
-
-        var formatter = programArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-        exporters.Add(new HtmlExporter(formatter, programArgs.ShowHidden));
-    }
-
-    return exporters;
-}
