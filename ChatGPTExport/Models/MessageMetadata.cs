@@ -173,6 +173,8 @@ namespace ChatGPTExport.Models
             public class ExtraParams
             {
                 public string? disambiguation { get; set; }
+                [JsonExtensionData]
+                public Dictionary<string, JsonElement>? ExtraData { get; set; }
             }
         }
 
