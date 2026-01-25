@@ -52,7 +52,6 @@ namespace ChatGPTExport
                 {
                     Console.Error.WriteLine($"  - {conversationFile.File.FullName}");
                 }
-                return 1;
             }
 
             var successfulConversations = directoryConversationsMap
