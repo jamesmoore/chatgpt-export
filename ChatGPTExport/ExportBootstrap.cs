@@ -6,13 +6,11 @@ using ChatGPTExport.Exporters.Html.Template;
 using ChatGPTExport.Exporters.Json;
 using ChatGPTExport.Exporters.Markdown;
 using ChatGPTExport.Models;
-using ChatGPTExport.Validators;
 using System.IO;
 using System.IO.Abstractions;
 
 namespace ChatGPTExport
 {
-
     internal class ExportBootstrap(IFileSystem fileSystem)
     {
         public int RunExport(ExportArgs exportArgs)
@@ -24,27 +22,6 @@ namespace ChatGPTExport
 
             var exporter = new Exporter(fileSystem, exporters, exportArgs.ExportMode);
 
-            bool validationFail = false;
-
-            Conversations? GetConversations(IFileInfo p)
-            {
-                try
-                {
-                    Console.WriteLine($"Loading conversation " + p.FullName);
-                    return conversationsFactory.GetConversations(p);
-                }
-                catch (ValidationException)
-                {
-                    validationFail = true;
-                    return null;
-                }
-                catch (Exception ex)
-                {
-                    Console.Error.WriteLine($"Error parsing file: {p.FullName}{Environment.NewLine}\t{ex.Message}");
-                    return null;
-                }
-            }
-
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
             var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
                 SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirectory = file.Directory }).ToList();
@@ -52,19 +29,43 @@ namespace ChatGPTExport
             var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirectory != null)
                 .Select(file => new
                 {
-                    AssetLocator = new AssetLocator(fileSystem, file.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
-                    Conversations = GetConversations(file.File)
+                    file.File,
+                    file.ParentDirectory,
+                    Conversations = conversationsFactory.GetConversations(file.File),
+                }).ToList();
+
+            var failedValidation = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.ValidationFail).ToList();
+            if (failedValidation.Count != 0)
+            {
+                foreach (var conversationFile in failedValidation)
+                {
+                    Console.Error.WriteLine("Invalid conversation json in " + conversationFile.File.FullName);
+                }
+                return 1;
+            }
+
+            var failedToParse = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.Error).ToList();
+            if (failedToParse.Count != 0)
+            {
+                Console.Error.WriteLine($"Failed to parse {failedToParse.Count} file(s) due to errors:");
+                foreach (var conversationFile in failedToParse)
+                {
+                    Console.Error.WriteLine($"  - {conversationFile.File.FullName}");
+                }
+            }
+
+            var successfulConversations = directoryConversationsMap
+                .Where(p => p.Conversations.Status == ConversationParseResult.Success)
+                .Select(p => new {
+                    AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
+                    p.Conversations.Conversations,
+                    p.File,
+                    p.ParentDirectory,
                 })
-                .Where(x => x.Conversations != null)
                 .OrderBy(x => x.Conversations!.GetUpdateTime())
                 .ToList();
 
-            if (validationFail)
-            {
-                throw new ApplicationException("Validation errors found");
-            }
-
-            var groupedByConversationId = directoryConversationsMap.Where(p => p.Conversations != null)
+            var groupedByConversationId = successfulConversations
                 .SelectMany(entry => entry.Conversations!, (entry, Conversation) => (entry.AssetLocator, Conversation))
                 .GroupBy(x => x.Conversation.conversation_id)
                 .OrderBy(p => p.Key).ToList();
