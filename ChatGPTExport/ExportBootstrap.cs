@@ -44,14 +44,24 @@ namespace ChatGPTExport
                 return 1;
             }
 
+            var failedToParse = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.Error).ToList();
+            if (failedToParse.Count != 0)
+            {
+                Console.Error.WriteLine($"Failed to parse {failedToParse.Count} file(s) due to errors:");
+                foreach (var conversationFile in failedToParse)
+                {
+                    Console.Error.WriteLine($"  - {conversationFile.File.FullName}");
+                }
+            }
+
             var successfulConversations = directoryConversationsMap
+                .Where(p => p.Conversations.Status == ConversationParseResult.Success)
                 .Select(p => new {
                     AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
                     p.Conversations.Conversations,
                     p.File,
                     p.ParentDirectory,
                 })
-                .Where(x => x.Conversations != null)
                 .OrderBy(x => x.Conversations!.GetUpdateTime())
                 .ToList();
 
