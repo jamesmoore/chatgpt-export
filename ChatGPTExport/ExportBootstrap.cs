@@ -15,16 +15,14 @@ namespace ChatGPTExport
 
     internal class ExportBootstrap(IFileSystem fileSystem)
     {
-        const string searchPattern = "conversations.json";
-
-        public int RunExport(ExportArgs programArgs)
+        public int RunExport(ExportArgs exportArgs)
         {
-            var destination = programArgs.DestinationDirectory;
-            var sources = programArgs.SourceDirectory;
-            var conversationsFactory = new ConversationsParser(fileSystem, programArgs.Validate);
-            var exporters = GetExporters(programArgs);
+            var destination = exportArgs.DestinationDirectory;
+            var sources = exportArgs.SourceDirectory;
+            var conversationsFactory = new ConversationsParser(fileSystem, exportArgs.Validate);
+            var exporters = GetExporters(exportArgs);
 
-            var exporter = new Exporter(fileSystem, exporters, programArgs.ExportMode);
+            var exporter = new Exporter(fileSystem, exporters, exportArgs.ExportMode);
 
             bool validationFail = false;
 
@@ -48,13 +46,13 @@ namespace ChatGPTExport
             }
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-            var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(searchPattern, SearchOption.AllDirectories)).
-                SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirecory = file.Directory }).ToList();
+            var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
+                SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirectory = file.Directory }).ToList();
 
-            var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirecory != null)
+            var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirectory != null)
                 .Select(file => new
                 {
-                    AssetLocator = new AssetLocator(fileSystem, file.ParentDirecory!, destination, existingAssetLocator) as IAssetLocator,
+                    AssetLocator = new AssetLocator(fileSystem, file.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
                     Conversations = GetConversations(file.File)
                 })
                 .Where(x => x.Conversations != null)
@@ -83,18 +81,18 @@ namespace ChatGPTExport
             return 0;
         }
 
-        static IEnumerable<IExporter> GetExporters(ExportArgs programArgs)
+        static IEnumerable<IExporter> GetExporters(ExportArgs exportArgs)
         {
             var exporters = new List<IExporter>();
-            if (programArgs.ExportTypes.Contains(ExportType.Json))
+            if (exportArgs.ExportTypes.Contains(ExportType.Json))
             {
                 exporters.Add(new JsonExporter());
             }
-            if (programArgs.ExportTypes.Contains(ExportType.Markdown))
+            if (exportArgs.ExportTypes.Contains(ExportType.Markdown))
             {
-                exporters.Add(new MarkdownExporter(programArgs.ShowHidden));
+                exporters.Add(new MarkdownExporter(exportArgs.ShowHidden));
             }
-            if (programArgs.ExportTypes.Contains(ExportType.Html))
+            if (exportArgs.ExportTypes.Contains(ExportType.Html))
             {
                 var headerProvider = new CompositeHeaderProvider(
                     [
@@ -105,8 +103,8 @@ namespace ChatGPTExport
                     ]
                 );
 
-                var formatter = programArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-                exporters.Add(new HtmlExporter(formatter, programArgs.ShowHidden));
+                var formatter = exportArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
+                exporters.Add(new HtmlExporter(formatter, exportArgs.ShowHidden));
             }
 
             return exporters;

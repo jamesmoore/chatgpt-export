@@ -3,6 +3,11 @@ using ChatGPTExport.Exporters.Html;
 
 namespace ChatGPTExport
 {
+    internal static class Constants
+    {
+        public const string SearchPattern = "conversations.json";
+    }
+
     internal record ExportArgs(
         IEnumerable<IDirectoryInfo> SourceDirectory, 
         IDirectoryInfo DestinationDirectory, 
@@ -12,7 +17,7 @@ namespace ChatGPTExport
         HtmlFormat HtmlFormat, 
         bool ShowHidden);
 
-    public enum ExportType
+    internal enum ExportType
     {
         None = 0,
         Json = 1,

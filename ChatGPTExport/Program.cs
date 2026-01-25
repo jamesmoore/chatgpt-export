@@ -14,8 +14,6 @@ Console.CancelKeyPress += (sender, args) =>
     Environment.Exit(0);
 };
 
-const string searchPattern = "conversations.json";
-
 var sourceDirectoryOption = new Option<DirectoryInfo[]>("--source", "-s")
 {
     Description = """
@@ -35,7 +33,7 @@ sourceDirectoryOption.Validators.Add(result =>
         {
             foreach (var directoryInfo in directoryInfos)
             {
-                if (directoryInfo.GetFiles(searchPattern, SearchOption.AllDirectories).Length == 0)
+                if (directoryInfo.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories).Length == 0)
                 {
                     result.AddError($"Source directory does not have a conversations.json file.");
                 }
