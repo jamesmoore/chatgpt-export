@@ -45,7 +45,7 @@ namespace ChatGPTExport
             }
 
             var successfulConversations = directoryConversationsMap
-                .Select(p => new{
+                .Select(p => new {
                     AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
                     p.Conversations.Conversations,
                     p.File,
