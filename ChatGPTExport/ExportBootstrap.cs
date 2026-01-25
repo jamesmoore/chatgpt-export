@@ -37,7 +37,7 @@ namespace ChatGPTExport
             var failedValidation = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.ValidationFail).ToList();
             if (failedValidation.Count != 0)
             {
-                foreach(var conversationFile in failedValidation)
+                foreach (var conversationFile in failedValidation)
                 {
                     Console.Error.WriteLine("Invalid conversation json in " + conversationFile.File.FullName);
                 }
