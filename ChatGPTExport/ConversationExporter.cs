@@ -5,7 +5,7 @@ using ChatGPTExport.Models;
 
 namespace ChatGPTExport
 {
-    public class Exporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters, ExportMode exportMode)
+    public class ConversationExporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters, ExportMode exportMode)
     {
         /// <summary>
         /// Processes multiple instances of the same conversation.
@@ -22,7 +22,7 @@ namespace ChatGPTExport
             {
                 if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
                 {
-                    throw new ApplicationException("Unable to export multiple conversations at once");
+                    throw new ApplicationException("Unable to export instances of multiple different conversations at once");
                 }
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();

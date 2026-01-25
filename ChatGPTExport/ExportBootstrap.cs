@@ -20,7 +20,7 @@ namespace ChatGPTExport
             var conversationsFactory = new ConversationsParser(fileSystem, exportArgs.Validate);
             var exporters = GetExporters(exportArgs);
 
-            var exporter = new Exporter(fileSystem, exporters, exportArgs.ExportMode);
+            var exporter = new ConversationExporter(fileSystem, exporters, exportArgs.ExportMode);
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
             var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
