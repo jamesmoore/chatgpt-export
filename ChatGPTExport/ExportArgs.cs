@@ -3,11 +3,6 @@ using ChatGPTExport.Exporters.Html;
 
 namespace ChatGPTExport
 {
-    internal static class Constants
-    {
-        public const string SearchPattern = "conversations.json";
-    }
-
     internal record ExportArgs(
         IEnumerable<IDirectoryInfo> SourceDirectory, 
         IDirectoryInfo DestinationDirectory, 

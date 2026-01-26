@@ -1,11 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.IO;
+using System.Text.Json;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport.Validators
 {
     public class ContentTypeValidator
     {
-        public IEnumerable<(string? Title, IEnumerable<string> UnhandledContentTypes)> GetUnhandledContentTypes(string json)
+        public IEnumerable<(string? Title, IEnumerable<string> UnhandledContentTypes)> GetUnhandledContentTypes(Stream json)
         {
             var deserialized = JsonSerializer.Deserialize<Conversations>(json);
 

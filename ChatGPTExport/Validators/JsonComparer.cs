@@ -1,10 +1,11 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.IO;
+using System.Text.Json.Nodes;
 
 namespace ChatGPTExport.Validators
 {
     public static class JsonComparer
     {
-        public static List<string> CompareJson(string json1, string json2)
+        public static List<string> CompareJson(Stream json1, string json2)
         {
             var differences = new List<string>();
 

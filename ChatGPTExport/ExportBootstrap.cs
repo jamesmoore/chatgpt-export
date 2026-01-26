@@ -5,7 +5,6 @@ using ChatGPTExport.Exporters.Html.Headers;
 using ChatGPTExport.Exporters.Html.Template;
 using ChatGPTExport.Exporters.Json;
 using ChatGPTExport.Exporters.Markdown;
-using ChatGPTExport.Models;
 using System.IO;
 using System.IO.Abstractions;
 
@@ -17,10 +16,10 @@ namespace ChatGPTExport
         {
             var destination = exportArgs.DestinationDirectory;
             var sources = exportArgs.SourceDirectory;
-            var conversationsFactory = new ConversationsParser(fileSystem, exportArgs.Validate);
+            var conversationsFactory = new ConversationsParser(exportArgs.Validate);
             var exporters = GetExporters(exportArgs);
 
-            var exporter = new Exporter(fileSystem, exporters, exportArgs.ExportMode);
+            var exporter = new ConversationExporter(fileSystem, exporters, exportArgs.ExportMode);
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
             var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
