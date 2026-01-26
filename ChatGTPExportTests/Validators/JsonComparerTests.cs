@@ -1,4 +1,5 @@
 ﻿using ChatGPTExport.Validators;
+using System.Text;
 
 namespace ChatGTPExportTests.Validators
 {
@@ -18,7 +19,7 @@ namespace ChatGTPExportTests.Validators
             }
             """;
 
-            var diff = JsonComparer.CompareJson(json, json);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json);
 
             Assert.Empty(diff);
         }
@@ -48,7 +49,7 @@ namespace ChatGTPExportTests.Validators
             }
             """;
 
-            var diff = JsonComparer.CompareJson(json, json2);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json2);
 
             Assert.NotEmpty(diff);
         }
@@ -79,7 +80,7 @@ namespace ChatGTPExportTests.Validators
             }
             """;
 
-            var diff = JsonComparer.CompareJson(json, json2);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json2);
 
             Assert.NotEmpty(diff);
         }
@@ -112,7 +113,7 @@ namespace ChatGTPExportTests.Validators
             }
             """;
 
-            var diff = JsonComparer.CompareJson(json, json2);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json2);
 
             Assert.NotEmpty(diff);
         }
@@ -130,7 +131,7 @@ namespace ChatGTPExportTests.Validators
             ]
             """;
 
-            var diff = JsonComparer.CompareJson(json, json);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json);
 
             Assert.Empty(diff);
         }
@@ -155,9 +156,14 @@ namespace ChatGTPExportTests.Validators
             ]
             """;
 
-            var diff = JsonComparer.CompareJson(json, json2);
+            var diff = JsonComparer.CompareJson(GenerateStreamFromString(json), json2);
             Assert.NotEmpty(diff);
             Assert.Contains("Array length differs", diff[0]);
+        }
+
+        public static MemoryStream GenerateStreamFromString(string value)
+        {
+            return new MemoryStream(Encoding.UTF8.GetBytes(value ?? ""));
         }
     }
 }

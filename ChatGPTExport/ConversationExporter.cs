@@ -1,4 +1,7 @@
-﻿using System.IO.Abstractions;
+using System.Buffers;
+using System.IO;
+using System.IO.Abstractions;
+using System.Text;
 using ChatGPTExport.Assets;
 using ChatGPTExport.Exporters;
 using ChatGPTExport.Models;
@@ -61,7 +64,7 @@ namespace ChatGPTExport
                     var destinationFilename = fileSystem.Path.Join(destination.FullName, kv.Key);
                     var contents = string.Join(Environment.NewLine, kv.Value);
                     var destinationExists = fileSystem.File.Exists(destinationFilename);
-                    if (destinationExists == false || destinationExists && fileSystem.File.ReadAllText(destinationFilename) != contents)
+                    if (destinationExists == false || destinationExists && FileStringMismatch(destinationFilename, contents))
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
                         var lastConversation = conversations.Last().conversation;
@@ -78,6 +81,46 @@ namespace ChatGPTExport
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.ToString());
+            }
+        }
+
+
+        private bool FileStringMismatch(string destinationFilename, string contents)
+        {
+            var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+            var fileInfo = fileSystem.FileInfo.New(destinationFilename);
+            if (fileInfo.Length != encoding.GetByteCount(contents))
+            {
+                return true;
+            }
+
+            using var stream = fileSystem.File.OpenRead(destinationFilename);
+            using var reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 4096);
+            var buffer = ArrayPool<char>.Shared.Rent(4096);
+            try
+            {
+                var offset = 0;
+                int read;
+                while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    if (offset + read > contents.Length)
+                    {
+                        return true;
+                    }
+
+                    if (!contents.AsSpan(offset, read).SequenceEqual(buffer.AsSpan(0, read)))
+                    {
+                        return true;
+                    }
+
+                    offset += read;
+                }
+
+                return offset != contents.Length;
+            }
+            finally
+            {
+                ArrayPool<char>.Shared.Return(buffer);
             }
         }
 
@@ -102,3 +145,4 @@ namespace ChatGPTExport
         }
     }
 }
+

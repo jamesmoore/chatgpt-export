@@ -1,9 +1,11 @@
-﻿using System.IO.Abstractions;
+﻿using ChatGPTExport.Models;
+using ChatGPTExport.Validators;
+using System.IO;
+using System.IO.Abstractions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ChatGPTExport.Validators;
 
-namespace ChatGPTExport.Models
+namespace ChatGPTExport
 {
     public enum ConversationParseResult
     {
@@ -12,7 +14,7 @@ namespace ChatGPTExport.Models
         Error,
     }
 
-    internal class ConversationsParser(IFileSystem fileSystem, bool validate)
+    internal class ConversationsParser(bool validate)
     {
         public (Conversations? Conversations, ConversationParseResult Status) GetConversations(IFileInfo p)
         {
@@ -34,9 +36,10 @@ namespace ChatGPTExport.Models
 
         private Conversations GetConversationsForFile(IFileInfo sourceFile)
         {
-            var conversationsJson = fileSystem.File.ReadAllText(sourceFile.FullName);
+            var conversationsJsonStream = sourceFile.FileSystem.File.OpenRead(sourceFile.FullName);
 
-            var conversations = JsonSerializer.Deserialize<Conversations>(conversationsJson);
+            var conversations = JsonSerializer.Deserialize<Conversations>(conversationsJsonStream);
+
             if (conversations == null)
             {
                 throw new ApplicationException($"Conversations file {sourceFile.FullName} could not be deserialized");
@@ -44,9 +47,10 @@ namespace ChatGPTExport.Models
 
             if (validate)
             {
+
                 Console.WriteLine($"Validating: {sourceFile.FullName}");
-                var validateContentTypeResult = ValidateContentTypes(conversationsJson);
-                var validateResult = ValidateJsonSerialization(conversationsJson, conversations);
+                var validateContentTypeResult = ValidateContentTypes(conversationsJsonStream);
+                var validateResult = ValidateJsonSerialization(conversationsJsonStream, conversations);
 
                 if (validateContentTypeResult == false || validateResult == false)
                 {
@@ -56,8 +60,9 @@ namespace ChatGPTExport.Models
             return conversations;
         }
 
-        private static bool ValidateContentTypes(string text)
+        private static bool ValidateContentTypes(Stream text)
         {
+            text.Position = 0;
             var validator = new ContentTypeValidator();
             var unhandled = validator.GetUnhandledContentTypes(text);
 
@@ -87,8 +92,9 @@ namespace ChatGPTExport.Models
         /// </summary>
         /// <param name="originalJson"></param>
         /// <param name="conversations"></param>
-        private static bool ValidateJsonSerialization(string originalJson, Conversations conversations)
+        private static bool ValidateJsonSerialization(Stream originalJson, Conversations conversations)
         {
+            originalJson.Position = 0;
             // for round trip validation of the json schema
             var reserialized = JsonSerializer.Serialize(conversations, options);
 
