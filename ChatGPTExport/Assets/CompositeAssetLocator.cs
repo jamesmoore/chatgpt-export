@@ -4,15 +4,9 @@
     {
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
-            foreach (var assetLocator in assetLocators)
-            {
-                var result = assetLocator.GetMarkdownMediaAsset(assetRequest);
-                if (result != null)
-                {
-                    return result;
-                }
-            }
-            return null;
+            return assetLocators
+                .Select(assetLocator => assetLocator.GetMarkdownMediaAsset(assetRequest))
+                .FirstOrDefault(result => result != null);
         }
     }
 }
