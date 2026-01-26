@@ -3,12 +3,12 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Text;
 using ChatGPTExport.Assets;
-using ChatGPTExport.Exporters;
+using ChatGPTExport.Formatters;
 using ChatGPTExport.Models;
 
 namespace ChatGPTExport
 {
-    public class ConversationExporter(IFileSystem fileSystem, IEnumerable<IExporter> exporters, ExportMode exportMode)
+    public class ConversationExporter(IFileSystem fileSystem, IEnumerable<IConversationFormatter> exporters, ExportMode exportMode)
     {
         /// <summary>
         /// Processes multiple instances of the same conversation.
@@ -125,11 +125,11 @@ namespace ChatGPTExport
             }
         }
 
-        private static void ExportConversation(Dictionary<string, IEnumerable<string>> fileContentsMap, IAssetLocator assetLocator, IExporter exporter, Conversation conversation, string filename)
+        private static void ExportConversation(Dictionary<string, IEnumerable<string>> fileContentsMap, IAssetLocator assetLocator, IConversationFormatter exporter, Conversation conversation, string filename)
         {
             try
             {
-                fileContentsMap[filename] = exporter.Export(assetLocator, conversation);
+                fileContentsMap[filename] = exporter.Format(assetLocator, conversation);
             }
             catch (Exception ex)
             {

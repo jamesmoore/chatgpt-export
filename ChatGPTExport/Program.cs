@@ -1,5 +1,5 @@
 ﻿using ChatGPTExport;
-using ChatGPTExport.Exporters.Html;
+using ChatGPTExport.Formatters.Html;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
@@ -156,14 +156,16 @@ rootCommand.SetAction(parseResult =>
         if (json) exportTypes.Add(ExportType.Json);
         if (markdown) exportTypes.Add(ExportType.Markdown);
 
-        var result = new ExportBootstrap(fileSystem).RunExport(new ExportArgs(
+        ExportArgs exportArgs = new(
             sources,
             destination,
             exportMode,
             validate,
             exportTypes,
             htmlFormat,
-            showHidden));
+            showHidden);
+        var formatters = new ConversationFormatterFactory().GetFormatters(exportArgs);
+        var result = new ExportBootstrap(fileSystem, formatters).RunExport(exportArgs);
         return result;
     }
     catch (Exception ex)
