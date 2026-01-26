@@ -30,34 +30,30 @@ namespace ChatGPTExport
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var conversationsInDateOrder = conversations.OrderBy(p => p.conversation.update_time).ToList();
+                var conversationsInDateOrder = conversations.Where(p => p.conversation.mapping != null).OrderBy(p => p.conversation.update_time).ToList();
                 var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.conversation.title).Distinct().ToArray());
                 Console.WriteLine(titles);
 
-                foreach (var (assetLocator, conversation) in conversationsInDateOrder)
+                var conversation = conversationsInDateOrder.Last().conversation;
+                var assetLocator = new CompositeAssetLocator(conversationsInDateOrder.Select(p => p.AssetLocator).Reverse().ToList()); // use most recent available assets
+                Console.WriteLine($"\tMessages: {conversation.mapping!.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+                foreach (var exporter in exporters)
                 {
-                    if (conversation.mapping != null)
+                    Console.Write($"\t\t{exporter.GetType().Name}");
+
+                    if (exportMode == ExportMode.Complete)
                     {
-                        Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
-                        foreach (var exporter in exporters)
-                        {
-                            Console.Write($"\t\t{exporter.GetType().Name}");
-
-                            if (exportMode == ExportMode.Complete)
-                            {
-                                var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
-                                ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
-                            }
-                            else if (exportMode == ExportMode.Latest)
-                            {
-                                var latest = conversation.GetLastestConversation();
-                                var filename = GetFilename(latest, "", exporter.GetExtension());
-                                ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
-                            }
-
-                            Console.WriteLine($"...Done");
-                        }
+                        var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
+                        ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
                     }
+                    else if (exportMode == ExportMode.Latest)
+                    {
+                        var latest = conversation.GetLastestConversation();
+                        var filename = GetFilename(latest, "", exporter.GetExtension());
+                        ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
+                    }
+
+                    Console.WriteLine($"...Done");
                 }
 
                 foreach (var kv in fileContentsMap)
