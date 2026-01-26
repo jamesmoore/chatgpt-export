@@ -29,7 +29,7 @@ namespace ChatGPTExport
                 .Select(file => new
                 {
                     file.File,
-                    file.ParentDirectory,
+                    ParentDirectory = file.ParentDirectory!,
                     Conversations = conversationsFactory.GetConversations(file.File),
                 }).ToList();
 
@@ -56,10 +56,8 @@ namespace ChatGPTExport
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.Conversations.Status == ConversationParseResult.Success)
                 .Select(p => new {
-                    AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory!, destination, existingAssetLocator) as IAssetLocator,
+                    AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator,
                     p.Conversations.Conversations,
-                    p.File,
-                    p.ParentDirectory,
                 })
                 .OrderBy(x => x.Conversations!.GetUpdateTime())
                 .ToList();

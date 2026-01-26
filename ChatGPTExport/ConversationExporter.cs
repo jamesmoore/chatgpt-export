@@ -30,10 +30,11 @@ namespace ChatGPTExport
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var titles = string.Join(Environment.NewLine, conversations.Select(p => p.conversation.title).Distinct().ToArray());
+                var conversationsInDateOrder = conversations.OrderBy(p => p.conversation.update_time).ToList();
+                var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.conversation.title).Distinct().ToArray());
                 Console.WriteLine(titles);
 
-                foreach (var (assetLocator, conversation) in conversations)
+                foreach (var (assetLocator, conversation) in conversationsInDateOrder)
                 {
                     if (conversation.mapping != null)
                     {
@@ -67,7 +68,7 @@ namespace ChatGPTExport
                     if (destinationExists == false || destinationExists && FileStringMismatch(destinationFilename, contents))
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
-                        var lastConversation = conversations.Last().conversation;
+                        var lastConversation = conversationsInDateOrder.Last().conversation;
                         fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, lastConversation.GetCreateTime().DateTime);
                         fileSystem.File.SetLastWriteTimeUtc(destinationFilename, lastConversation.GetUpdateTime().DateTime);
                         Console.WriteLine($"\t{kv.Key}...Saved");
