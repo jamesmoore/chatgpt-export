@@ -5,8 +5,8 @@
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
             return assetLocators
-                .Select(assetLocator => assetLocator.GetMarkdownMediaAsset(assetRequest))
-                .FirstOrDefault(result => result != null);
+                .Select(locator => locator.GetMarkdownMediaAsset(assetRequest))
+                .FirstOrDefault(asset => asset != null);
         }
     }
 }
