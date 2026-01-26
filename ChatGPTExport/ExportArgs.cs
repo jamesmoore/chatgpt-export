@@ -1,5 +1,5 @@
 ﻿using System.IO.Abstractions;
-using ChatGPTExport.Exporters.Html;
+using ChatGPTExport.Formatters.Html;
 
 namespace ChatGPTExport
 {

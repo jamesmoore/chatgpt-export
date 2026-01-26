@@ -1,0 +1,60 @@
+﻿using ChatGPTExport.Assets;
+using ChatGPTExport.Exporters;
+using ChatGPTExport.Models;
+
+namespace ChatGPTExport.Formatters.Markdown
+{
+    internal class MarkdownFormatter(bool showHidden) : IConversationFormatter
+    {
+        private readonly string LineBreak = Environment.NewLine;
+
+        public IEnumerable<string> Format(IAssetLocator assetLocator, Conversation conversation)
+        {
+            var messages = conversation.GetMessagesWithContent();
+
+            var strings = new List<string>();
+
+            var visitor = new MarkdownContentVisitor(assetLocator, showHidden);
+
+            strings.AddRange(GetYamlHeader(conversation));
+
+            foreach (var message in messages)
+            {
+                try
+                {
+                    var visitResult = message.Accept(visitor);
+
+                    if (message.author != null && visitResult != null && visitResult.Lines.Any())
+                    {
+                        var authorname = string.IsNullOrWhiteSpace(message.author.name) ? "" : $" ({message.author.name})";
+                        strings.Add($"**{message.author.role}{authorname}{visitResult.Suffix}**:  "); // double space for line break
+                        strings.Add(string.Join(LineBreak, visitResult.Lines));
+                        strings.Add(LineBreak);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex.Message);
+                }
+            }
+
+            return strings;
+        }
+
+        private static IEnumerable<string> GetYamlHeader(Conversation conversation)
+        {
+            return [
+                "---",
+                "chatgpt:",
+                "  conversation_id: " + conversation.conversation_id,
+                "  gizmo_id: " + conversation.gizmo_id,
+                "  created: " + conversation.GetCreateTime().ToString("s"),
+                "  updated: " + conversation.GetUpdateTime().ToString("s"),
+                "title: " + conversation.title,
+                "---",
+            ];
+        }
+
+        public string GetExtension() => ".md";
+    }
+}

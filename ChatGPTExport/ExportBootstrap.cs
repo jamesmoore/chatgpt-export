@@ -1,25 +1,19 @@
 ﻿using ChatGPTExport.Assets;
-using ChatGPTExport.Exporters;
-using ChatGPTExport.Exporters.Html;
-using ChatGPTExport.Exporters.Html.Headers;
-using ChatGPTExport.Exporters.Html.Template;
-using ChatGPTExport.Exporters.Json;
-using ChatGPTExport.Exporters.Markdown;
+using ChatGPTExport.Formatters;
 using System.IO;
 using System.IO.Abstractions;
 
 namespace ChatGPTExport
 {
-    internal class ExportBootstrap(IFileSystem fileSystem)
+    internal class ExportBootstrap(IFileSystem fileSystem, IEnumerable<IConversationFormatter> conversationFormatters)
     {
         public int RunExport(ExportArgs exportArgs)
         {
             var destination = exportArgs.DestinationDirectory;
             var sources = exportArgs.SourceDirectory;
             var conversationsFactory = new ConversationsParser(exportArgs.Validate);
-            var exporters = GetExporters(exportArgs);
 
-            var exporter = new ConversationExporter(fileSystem, exporters, exportArgs.ExportMode);
+            var exporter = new ConversationExporter(fileSystem, conversationFormatters, exportArgs.ExportMode);
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
             var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
@@ -79,35 +73,6 @@ namespace ChatGPTExport
             }
 
             return 0;
-        }
-
-        static IEnumerable<IExporter> GetExporters(ExportArgs exportArgs)
-        {
-            var exporters = new List<IExporter>();
-            if (exportArgs.ExportTypes.Contains(ExportType.Json))
-            {
-                exporters.Add(new JsonExporter());
-            }
-            if (exportArgs.ExportTypes.Contains(ExportType.Markdown))
-            {
-                exporters.Add(new MarkdownExporter(exportArgs.ShowHidden));
-            }
-            if (exportArgs.ExportTypes.Contains(ExportType.Html))
-            {
-                var headerProvider = new CompositeHeaderProvider(
-                    [
-                        new MetaHeaderProvider(),
-                        new HighlightHeaderProvider(),
-                        new MathjaxHeaderProvider(),
-                        new GlightboxHeaderProvider(),
-                    ]
-                );
-
-                var formatter = exportArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-                exporters.Add(new HtmlExporter(formatter, exportArgs.ShowHidden));
-            }
-
-            return exporters;
         }
     }
 }
