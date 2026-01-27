@@ -5,13 +5,16 @@ using System.IO.Abstractions;
 
 namespace ChatGPTExport
 {
-    internal class ExportBootstrap(IFileSystem fileSystem, IEnumerable<IConversationFormatter> conversationFormatters)
+    internal class ExportBootstrap(
+        IFileSystem fileSystem, 
+        IEnumerable<IConversationFormatter> conversationFormatters,
+        ConversationsParser conversationsParser
+        )
     {
         public int RunExport(ExportArgs exportArgs)
         {
             var destination = exportArgs.DestinationDirectory;
             var sources = exportArgs.SourceDirectory;
-            var conversationsFactory = new ConversationsParser(exportArgs.Validate);
 
             var exporter = new ConversationExporter(fileSystem, conversationFormatters, exportArgs.ExportMode);
 
@@ -24,7 +27,7 @@ namespace ChatGPTExport
                 {
                     file.File,
                     ParentDirectory = file.ParentDirectory!,
-                    Conversations = conversationsFactory.GetConversations(file.File),
+                    Conversations = conversationsParser.GetConversations(file.File),
                 }).ToList();
 
             var failedValidation = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.ValidationFail).ToList();
