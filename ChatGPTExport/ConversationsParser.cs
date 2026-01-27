@@ -47,7 +47,7 @@ namespace ChatGPTExport
             {
                 Console.WriteLine($"Validating: {sourceFile.FullName}");
                 var results = validators.Select(p => p.Validate(conversationsJsonStream, conversations)).ToList();
-                if(results.Any(p => p == false))
+                if (results.Any(p => p == false))
                 {
                     throw new ValidationException();
                 }

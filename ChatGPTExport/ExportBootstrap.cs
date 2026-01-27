@@ -6,7 +6,7 @@ using System.IO.Abstractions;
 namespace ChatGPTExport
 {
     internal class ExportBootstrap(
-        IFileSystem fileSystem, 
+        IFileSystem fileSystem,
         IEnumerable<IConversationFormatter> conversationFormatters,
         ConversationsParser conversationsParser
         )
@@ -52,7 +52,8 @@ namespace ChatGPTExport
 
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.Conversations.Status == ConversationParseResult.Success)
-                .Select(p => new {
+                .Select(p => new
+                {
                     AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator,
                     p.Conversations.Conversations,
                 })
