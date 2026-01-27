@@ -5,6 +5,6 @@ namespace ChatGPTExport.Validators
 {
     internal interface IConversationsValidator
     {
-        bool Validate(Stream text, Conversations conversations);
+        bool Validate(Stream stream, Conversations conversations);
     }
 }

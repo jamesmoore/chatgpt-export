@@ -5,11 +5,11 @@ namespace ChatGPTExport.Validators
 {
     internal class ConversationsContentTypeValidator : IConversationsValidator
     {
-        public bool Validate(Stream text, Conversations conversations)
+        public bool Validate(Stream stream, Conversations conversations)
         {
-            text.Position = 0;
+            stream.Position = 0;
             var validator = new ContentTypeValidator();
-            var unhandled = validator.GetUnhandledContentTypes(text);
+            var unhandled = validator.GetUnhandledContentTypes(stream);
 
             if (unhandled.Any())
             {

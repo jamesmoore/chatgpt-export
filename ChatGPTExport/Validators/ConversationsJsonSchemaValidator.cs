@@ -15,15 +15,15 @@ namespace ChatGPTExport.Validators
         /// <summary>
         /// Reserialize the deserialized json and compare it to the original, to check everything matches.
         /// </summary>
-        /// <param name="originalJson"></param>
+        /// <param name="stream"></param>
         /// <param name="conversations"></param>
-        public bool Validate(Stream originalJson, Conversations conversations)
+        public bool Validate(Stream stream, Conversations conversations)
         {
-            originalJson.Position = 0;
+            stream.Position = 0;
             // for round trip validation of the json schema
             var reserialized = JsonSerializer.Serialize(conversations, options);
 
-            var differences = JsonComparer.CompareJson(originalJson, reserialized);
+            var differences = JsonComparer.CompareJson(stream, reserialized);
 
             if (differences.Count != 0)
             {
