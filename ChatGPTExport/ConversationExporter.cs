@@ -30,33 +30,21 @@ namespace ChatGPTExport
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var titles = string.Join(Environment.NewLine, conversations.Select(p => p.conversation.title).Distinct().ToArray());
+                var conversationsInDateOrder = conversations.Where(p => p.conversation.mapping != null).OrderBy(p => p.conversation.update_time).ToList();
+                var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.conversation.title).Distinct().ToArray());
                 Console.WriteLine(titles);
 
-                foreach (var (assetLocator, conversation) in conversations)
+                var conversation = conversationsInDateOrder.Last().conversation;
+                var assetLocator = new CompositeAssetLocator(conversationsInDateOrder.Select(p => p.AssetLocator).Reverse().ToList()); // use most recent available assets
+                Console.WriteLine($"\tMessages: {conversation.mapping!.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+
+                var conversationToExport = exportMode == ExportMode.Complete ? conversation : conversation.GetLastestConversation();
+                foreach (var exporter in exporters)
                 {
-                    if (conversation.mapping != null)
-                    {
-                        Console.WriteLine($"\tMessages: {conversation.mapping.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
-                        foreach (var exporter in exporters)
-                        {
-                            Console.Write($"\t\t{exporter.GetType().Name}");
-
-                            if (exportMode == ExportMode.Complete)
-                            {
-                                var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
-                                ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
-                            }
-                            else if (exportMode == ExportMode.Latest)
-                            {
-                                var latest = conversation.GetLastestConversation();
-                                var filename = GetFilename(latest, "", exporter.GetExtension());
-                                ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
-                            }
-
-                            Console.WriteLine($"...Done");
-                        }
-                    }
+                    Console.Write($"\t\t{exporter.GetType().Name}");
+                    var exportFilename = GetFilename(conversationToExport, "", exporter.GetExtension());
+                    ExportConversation(fileContentsMap, assetLocator, exporter, conversationToExport, exportFilename);
+                    Console.WriteLine($"...Done");
                 }
 
                 foreach (var kv in fileContentsMap)
@@ -67,7 +55,7 @@ namespace ChatGPTExport
                     if (destinationExists == false || destinationExists && FileStringMismatch(destinationFilename, contents))
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
-                        var lastConversation = conversations.Last().conversation;
+                        var lastConversation = conversationsInDateOrder.Last().conversation;
                         fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, lastConversation.GetCreateTime().DateTime);
                         fileSystem.File.SetLastWriteTimeUtc(destinationFilename, lastConversation.GetUpdateTime().DateTime);
                         Console.WriteLine($"\t{kv.Key}...Saved");
