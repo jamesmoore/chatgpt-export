@@ -37,22 +37,13 @@ namespace ChatGPTExport
                 var conversation = conversationsInDateOrder.Last().conversation;
                 var assetLocator = new CompositeAssetLocator(conversationsInDateOrder.Select(p => p.AssetLocator).Reverse().ToList()); // use most recent available assets
                 Console.WriteLine($"\tMessages: {conversation.mapping!.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
+
+                var conversationToExport = exportMode == ExportMode.Complete ? conversation : conversation.GetLastestConversation();
                 foreach (var exporter in exporters)
                 {
                     Console.Write($"\t\t{exporter.GetType().Name}");
-
-                    if (exportMode == ExportMode.Complete)
-                    {
-                        var completeFilename = GetFilename(conversation, "", exporter.GetExtension());
-                        ExportConversation(fileContentsMap, assetLocator, exporter, conversation, completeFilename);
-                    }
-                    else if (exportMode == ExportMode.Latest)
-                    {
-                        var latest = conversation.GetLastestConversation();
-                        var filename = GetFilename(latest, "", exporter.GetExtension());
-                        ExportConversation(fileContentsMap, assetLocator, exporter, latest, filename);
-                    }
-
+                    var exportFilename = GetFilename(conversationToExport, "", exporter.GetExtension());
+                    ExportConversation(fileContentsMap, assetLocator, exporter, conversationToExport, exportFilename);
                     Console.WriteLine($"...Done");
                 }
 
