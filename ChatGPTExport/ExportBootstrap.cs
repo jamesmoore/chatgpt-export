@@ -1,6 +1,5 @@
 ﻿using ChatGPTExport.Assets;
 using ChatGPTExport.Formatters;
-using System.IO;
 using System.IO.Abstractions;
 
 namespace ChatGPTExport
@@ -11,23 +10,20 @@ namespace ChatGPTExport
         ConversationsParser conversationsParser
         )
     {
-        public int RunExport(ExportArgs exportArgs)
+        public int RunExport(ExportArgs exportArgs, IEnumerable<IFileInfo> conversationFiles)
         {
             var destination = exportArgs.DestinationDirectory;
-            var sources = exportArgs.SourceDirectory;
 
             var exporter = new ConversationExporter(fileSystem, conversationFormatters, exportArgs.ExportMode);
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-            var conversationFiles = sources.Select(sourceDir => sourceDir.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories)).
-                SelectMany(fileInfo => fileInfo, (fileInfo, file) => new { File = file, ParentDirectory = file.Directory }).ToList();
 
-            var directoryConversationsMap = conversationFiles.Where(p => p.ParentDirectory != null)
+            var directoryConversationsMap = conversationFiles.Where(p => p.Directory != null)
                 .Select(file => new
                 {
-                    file.File,
-                    ParentDirectory = file.ParentDirectory!,
-                    Conversations = conversationsParser.GetConversations(file.File),
+                    File = file,
+                    ParentDirectory = file.Directory!,
+                    Conversations = conversationsParser.GetConversations(file),
                 }).ToList();
 
             var failedValidation = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.ValidationFail).ToList();

@@ -6,6 +6,9 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.IO.Abstractions;
 
+FileSystem fileSystem = new();
+ConversationFinder conversationFinder = new ConversationFinder();
+
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 Console.CancelKeyPress += (sender, args) =>
@@ -34,7 +37,8 @@ sourceDirectoryOption.Validators.Add(result =>
         {
             foreach (var directoryInfo in directoryInfos)
             {
-                if (directoryInfo.GetFiles(Constants.SearchPattern, SearchOption.AllDirectories).Length == 0)
+                var conversations = conversationFinder.GetConversationFiles(fileSystem.DirectoryInfo.Wrap(directoryInfo));
+                if (conversations.Any() == false)
                 {
                     result.AddError($"Source directory does not have a conversations.json file.");
                 }
@@ -137,7 +141,7 @@ rootCommand.SetAction(parseResult =>
         var htmlFormat = parseResult.GetRequiredValue(htmlFormatOption);
         var showHidden = parseResult.GetRequiredValue(showHiddenOption);
 
-        FileSystem fileSystem = new();
+
         var destination = fileSystem.DirectoryInfo.Wrap(destinationDir);
         var sources = sourceDirs.Select(p => fileSystem.DirectoryInfo.Wrap(p)).ToArray();
 
@@ -172,11 +176,11 @@ rootCommand.SetAction(parseResult =>
             validators.Add(new ConversationsJsonSchemaValidator());
             validators.Add(new ConversationsContentTypeValidator());
         }
-
+        var conversationFiles = conversationFinder.GetConversationFiles(sources);
         var result = new ExportBootstrap(
             fileSystem,
             formatters,
-            new ConversationsParser(validators)).RunExport(exportArgs);
+            new ConversationsParser(validators)).RunExport(exportArgs, conversationFiles);
         return result;
     }
     catch (Exception ex)
