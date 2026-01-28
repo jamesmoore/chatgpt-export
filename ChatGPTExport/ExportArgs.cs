@@ -7,7 +7,6 @@ namespace ChatGPTExport
         IEnumerable<IDirectoryInfo> SourceDirectory, 
         IDirectoryInfo DestinationDirectory, 
         ExportMode ExportMode, 
-        bool Validate,
         IEnumerable<ExportType> ExportTypes, 
         HtmlFormat HtmlFormat, 
         bool ShowHidden);

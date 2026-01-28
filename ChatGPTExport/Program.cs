@@ -1,5 +1,6 @@
 ﻿using ChatGPTExport;
 using ChatGPTExport.Formatters.Html;
+using ChatGPTExport.Validators;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
@@ -160,12 +161,22 @@ rootCommand.SetAction(parseResult =>
             sources,
             destination,
             exportMode,
-            validate,
             exportTypes,
             htmlFormat,
             showHidden);
         var formatters = new ConversationFormatterFactory().GetFormatters(exportArgs);
-        var result = new ExportBootstrap(fileSystem, formatters).RunExport(exportArgs);
+
+        var validators = new List<IConversationsValidator>();
+        if (validate)
+        {
+            validators.Add(new ConversationsJsonSchemaValidator());
+            validators.Add(new ConversationsContentTypeValidator());
+        }
+
+        var result = new ExportBootstrap(
+            fileSystem,
+            formatters,
+            new ConversationsParser(validators)).RunExport(exportArgs);
         return result;
     }
     catch (Exception ex)
