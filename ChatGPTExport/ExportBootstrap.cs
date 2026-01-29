@@ -16,17 +16,15 @@ namespace ChatGPTExport
 
             var exporter = new ConversationExporter(fileSystem, conversationFormatters, exportArgs.ExportMode);
 
-            var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-
             var directoryConversationsMap = conversationFiles.Where(p => p.Directory != null)
                 .Select(file => new
                 {
                     File = file,
                     ParentDirectory = file.Directory!,
-                    Conversations = conversationsParser.GetConversations(file),
+                    ConversationParseResult = conversationsParser.GetConversations(file),
                 }).ToList();
 
-            var failedValidation = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.ValidationFail).ToList();
+            var failedValidation = directoryConversationsMap.Where(p => p.ConversationParseResult.Status == ConversationParseResult.ValidationFail).ToList();
             if (failedValidation.Count != 0)
             {
                 foreach (var conversationFile in failedValidation)
@@ -36,7 +34,7 @@ namespace ChatGPTExport
                 return 1;
             }
 
-            var failedToParse = directoryConversationsMap.Where(p => p.Conversations.Status == ConversationParseResult.Error).ToList();
+            var failedToParse = directoryConversationsMap.Where(p => p.ConversationParseResult.Status == ConversationParseResult.Error).ToList();
             if (failedToParse.Count != 0)
             {
                 Console.Error.WriteLine($"Failed to parse {failedToParse.Count} file(s) due to errors:");
@@ -47,18 +45,19 @@ namespace ChatGPTExport
             }
 
             var successfulConversations = directoryConversationsMap
-                .Where(p => p.Conversations.Status == ConversationParseResult.Success)
-                .Select(p => new
-                {
-                    AssetLocator = new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator,
-                    p.Conversations.Conversations,
-                })
-                .OrderBy(x => x.Conversations!.GetUpdateTime())
+                .Where(p => p.ConversationParseResult.Status == ConversationParseResult.Success)
+                .OrderBy(x => x.ConversationParseResult.Conversations!.GetUpdateTime())
                 .ToList();
 
+            var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
+            var assetLocators = successfulConversations.OrderByDescending(p => p.ConversationParseResult.Conversations!.GetUpdateTime()).Select(p => new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator).ToList();
+            assetLocators.Insert(0, existingAssetLocator);
+
+            var compositeAssetLocator = new CompositeAssetLocator(assetLocators);
+
             var groupedByConversationId = successfulConversations
-                .SelectMany(entry => entry.Conversations!, (entry, Conversation) => (entry.AssetLocator, Conversation))
-                .GroupBy(x => x.Conversation.conversation_id)
+                .SelectMany(p => p.ConversationParseResult.Conversations!, (entry, conversation) => conversation)
+                .GroupBy(x => x.conversation_id)
                 .OrderBy(p => p.Key).ToList();
 
             var count = groupedByConversationId.Count;
@@ -67,7 +66,7 @@ namespace ChatGPTExport
             {
                 var percent = (int)(position++ * 100.0 / count);
                 ConsoleFeatures.SetProgress(percent);
-                exporter.Process(group, destination);
+                exporter.Process(group, destination, compositeAssetLocator);
             }
 
             return 0;

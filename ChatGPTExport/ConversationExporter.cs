@@ -19,23 +19,22 @@ namespace ChatGPTExport
         /// <param name="conversations">Enumerable tuple of asset locator and corresponding conversation (Must be in date order).</param>
         /// <param name="destination">Destination directory.</param>
         /// <exception cref="ApplicationException"></exception>
-        public void Process(IEnumerable<(IAssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
+        public void Process(IEnumerable<Conversation> conversations, IDirectoryInfo destination, IAssetLocator assetLocator)
         {
             try
             {
-                if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
+                if (conversations.Select(p => p.conversation_id).Distinct().Count() > 1)
                 {
                     throw new ApplicationException("Unable to export instances of multiple different conversations at once");
                 }
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var conversationsInDateOrder = conversations.Where(p => p.conversation.mapping != null).OrderBy(p => p.conversation.update_time).ToList();
-                var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.conversation.title).Distinct().ToArray());
+                var conversationsInDateOrder = conversations.Where(p => p.mapping != null).OrderBy(p => p.update_time).ToList();
+                var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.title).Distinct().ToArray());
                 Console.WriteLine(titles);
 
-                var conversation = conversationsInDateOrder.Last().conversation;
-                var assetLocator = new CompositeAssetLocator(conversationsInDateOrder.Select(p => p.AssetLocator).Reverse().ToList()); // use most recent available assets
+                var conversation = conversationsInDateOrder.Last();
                 Console.WriteLine($"\tMessages: {conversation.mapping!.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
 
                 var conversationToExport = exportMode == ExportMode.Complete ? conversation : conversation.GetLastestConversation();
@@ -55,7 +54,7 @@ namespace ChatGPTExport
                     if (destinationExists == false || destinationExists && FileStringMismatch(destinationFilename, contents))
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
-                        var lastConversation = conversationsInDateOrder.Last().conversation;
+                        var lastConversation = conversationsInDateOrder.Last();
                         fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, lastConversation.GetCreateTime().DateTime);
                         fileSystem.File.SetLastWriteTimeUtc(destinationFilename, lastConversation.GetUpdateTime().DateTime);
                         Console.WriteLine($"\t{kv.Key}...Saved");
