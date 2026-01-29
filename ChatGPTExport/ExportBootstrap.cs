@@ -46,29 +46,27 @@ namespace ChatGPTExport
 
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.ConversationParseResult.Status == ConversationParseResult.Success)
-                .Select(p => new { Conversations = p.ConversationParseResult.Conversations!, p.ParentDirectory, p.File } )
+                .Select(p => new { Conversations = p.ConversationParseResult.Conversations!, p.ParentDirectory, p.File })
                 .OrderBy(x => x.Conversations.GetUpdateTime())
                 .ToList();
 
-            var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-            var assetLocators = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator).ToList();
-            assetLocators.Insert(0, existingAssetLocator);
-
-            var compositeAssetLocator = new CompositeAssetLocator(assetLocators);
-
-            var groupedByConversationId = successfulConversations
-                .SelectMany(p => p.Conversations, (entry, conversation) => conversation)
+            var conversations = successfulConversations
+                .SelectMany(p => p.Conversations)
                 .GroupBy(x => x.conversation_id)
-                .OrderBy(p => p.Key).ToList();
+                .OrderBy(p => p.Key)
+                .Select(p => p.Where(p => p.mapping != null).OrderBy(p => p.update_time).Last())
+                .ToList();
 
-            var count = groupedByConversationId.Count;
+            var parentDirectories = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => p.ParentDirectory);
+            var assetLocator = new ExportAssetLocatorFactory(fileSystem).GetAssetLocator(parentDirectories, destination);
+
+            var count = conversations.Count;
             var position = 0;
-            foreach (var group in groupedByConversationId)
+            foreach (var conversation in conversations)
             {
-                var chosenConversation = group.Where(p => p.mapping != null).OrderBy(p => p.update_time).Last();
                 var percent = (int)(position++ * 100.0 / count);
                 ConsoleFeatures.SetProgress(percent);
-                exporter.Process(chosenConversation, destination, compositeAssetLocator);
+                exporter.Process(conversation, destination, assetLocator);
             }
 
             return 0;
