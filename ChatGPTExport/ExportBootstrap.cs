@@ -47,7 +47,6 @@ namespace ChatGPTExport
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.ConversationParseResult.Status == ConversationParseResult.Success)
                 .Select(p => new { Conversations = p.ConversationParseResult.Conversations!, p.ParentDirectory, p.File })
-                .OrderBy(x => x.Conversations.GetUpdateTime())
                 .ToList();
 
             var conversations = successfulConversations
