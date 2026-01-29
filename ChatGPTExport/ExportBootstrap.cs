@@ -52,8 +52,8 @@ namespace ChatGPTExport
             var conversations = successfulConversations
                 .SelectMany(p => p.Conversations)
                 .GroupBy(x => x.conversation_id)
-                .OrderBy(p => p.Key)
-                .Select(p => p.Where(p => p.mapping != null).OrderBy(p => p.update_time).Last())
+                .OrderBy(group => group.Key)
+                .Select(group => group.Where(conv => conv.mapping != null).OrderBy(conv => conv.update_time).Last())
                 .ToList();
 
             var parentDirectories = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => p.ParentDirectory);
