@@ -13,7 +13,7 @@ namespace ChatGPTExport
         /// <summary>
         /// Processes an instance of a conversation.
         /// </summary>
-        /// <param name="conversations">Conversation.</param>
+        /// <param name="conversation">Conversation.</param>
         /// <param name="destination">Destination directory.</param>
         /// <param name="assetLocator">The asset locator.</param>
         /// <exception cref="ApplicationException"></exception>
