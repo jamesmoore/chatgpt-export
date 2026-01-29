@@ -30,7 +30,7 @@ namespace ChatGPTExport
 
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var conversationsInDateOrder = conversations.Where(p => p.mapping != null).OrderBy(p => p.update_time).ToList();
+                var conversationsInDateOrder = conversations.OrderBy(p => p.update_time).ToList();
                 var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.title).Distinct().ToArray());
                 Console.WriteLine(titles);
 

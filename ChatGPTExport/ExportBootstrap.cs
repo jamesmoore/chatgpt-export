@@ -65,9 +65,10 @@ namespace ChatGPTExport
             var position = 0;
             foreach (var group in groupedByConversationId)
             {
+                var chosenConversation = group.Where(p => p.mapping != null).ToList();
                 var percent = (int)(position++ * 100.0 / count);
                 ConsoleFeatures.SetProgress(percent);
-                exporter.Process(group, destination, compositeAssetLocator);
+                exporter.Process(chosenConversation, destination, compositeAssetLocator);
             }
 
             return 0;
