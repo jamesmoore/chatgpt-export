@@ -22,8 +22,7 @@ namespace ChatGPTExport.Assets
 
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
-            return FindAssetInSourceDirectory(assetRequest) ??
-                existingAssetLocator.GetMarkdownMediaAsset(assetRequest);
+            return FindAssetInSourceDirectory(assetRequest);
         }
 
         private IEnumerable<string> GetCachedSourceFiles(string searchPattern)

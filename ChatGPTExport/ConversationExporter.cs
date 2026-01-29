@@ -11,31 +11,20 @@ namespace ChatGPTExport
     public class ConversationExporter(IFileSystem fileSystem, IEnumerable<IConversationFormatter> exporters, ExportMode exportMode)
     {
         /// <summary>
-        /// Processes multiple instances of the same conversation.
-        /// Why do we process all conversations instead of just the latest instance? 
-        ///     There may be assets in older exports that are absent in newer ones. 
-        ///     Processing the older ones enables them to be transferred to the destination directory.
+        /// Processes an instance of a conversation.
         /// </summary>
-        /// <param name="conversations">Enumerable tuple of asset locator and corresponding conversation (Must be in date order).</param>
+        /// <param name="conversation">Conversation.</param>
         /// <param name="destination">Destination directory.</param>
+        /// <param name="assetLocator">The asset locator.</param>
         /// <exception cref="ApplicationException"></exception>
-        public void Process(IEnumerable<(IAssetLocator AssetLocator, Conversation conversation)> conversations, IDirectoryInfo destination)
+        public void Process(Conversation conversation, IDirectoryInfo destination, IAssetLocator assetLocator)
         {
             try
             {
-                if (conversations.Select(p => p.conversation.conversation_id).Distinct().Count() > 1)
-                {
-                    throw new ApplicationException("Unable to export instances of multiple different conversations at once");
-                }
-
                 var fileContentsMap = new Dictionary<string, IEnumerable<string>>();
 
-                var conversationsInDateOrder = conversations.Where(p => p.conversation.mapping != null).OrderBy(p => p.conversation.update_time).ToList();
-                var titles = string.Join(Environment.NewLine, conversationsInDateOrder.Select(p => p.conversation.title).Distinct().ToArray());
-                Console.WriteLine(titles);
+                Console.WriteLine(conversation.title);
 
-                var conversation = conversationsInDateOrder.Last().conversation;
-                var assetLocator = new CompositeAssetLocator(conversationsInDateOrder.Select(p => p.AssetLocator).Reverse().ToList()); // use most recent available assets
                 Console.WriteLine($"\tMessages: {conversation.mapping!.Count}\tLeaves: {conversation.mapping.Count(p => p.Value.IsLeaf())}");
 
                 var conversationToExport = exportMode == ExportMode.Complete ? conversation : conversation.GetLastestConversation();
@@ -55,9 +44,8 @@ namespace ChatGPTExport
                     if (destinationExists == false || destinationExists && FileStringMismatch(destinationFilename, contents))
                     {
                         fileSystem.File.WriteAllText(destinationFilename, contents);
-                        var lastConversation = conversationsInDateOrder.Last().conversation;
-                        fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, lastConversation.GetCreateTime().DateTime);
-                        fileSystem.File.SetLastWriteTimeUtc(destinationFilename, lastConversation.GetUpdateTime().DateTime);
+                        fileSystem.File.SetCreationTimeUtcIfPossible(destinationFilename, conversation.GetCreateTime().DateTime);
+                        fileSystem.File.SetLastWriteTimeUtc(destinationFilename, conversation.GetUpdateTime().DateTime);
                         Console.WriteLine($"\t{kv.Key}...Saved");
                     }
                     else
