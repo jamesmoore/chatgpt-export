@@ -46,17 +46,18 @@ namespace ChatGPTExport
 
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.ConversationParseResult.Status == ConversationParseResult.Success)
-                .OrderBy(x => x.ConversationParseResult.Conversations!.GetUpdateTime())
+                .Select(p => new { Conversations = p.ConversationParseResult.Conversations!, p.ParentDirectory, p.File } )
+                .OrderBy(x => x.Conversations.GetUpdateTime())
                 .ToList();
 
             var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-            var assetLocators = successfulConversations.OrderByDescending(p => p.ConversationParseResult.Conversations!.GetUpdateTime()).Select(p => new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator).ToList();
+            var assetLocators = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => new AssetLocator(fileSystem, p.ParentDirectory, destination, existingAssetLocator) as IAssetLocator).ToList();
             assetLocators.Insert(0, existingAssetLocator);
 
             var compositeAssetLocator = new CompositeAssetLocator(assetLocators);
 
             var groupedByConversationId = successfulConversations
-                .SelectMany(p => p.ConversationParseResult.Conversations!, (entry, conversation) => conversation)
+                .SelectMany(p => p.Conversations, (entry, conversation) => conversation)
                 .GroupBy(x => x.conversation_id)
                 .OrderBy(p => p.Key).ToList();
 
