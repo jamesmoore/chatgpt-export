@@ -1,4 +1,5 @@
 ﻿using ChatGPTExport;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Formatters.Html;
 using ChatGPTExport.Validators;
 using System.CommandLine;
@@ -177,10 +178,14 @@ rootCommand.SetAction(parseResult =>
             validators.Add(new ConversationsContentTypeValidator());
         }
         var conversationFiles = conversationFinder.GetConversationFiles(sources);
+
+        var exporter = new ConversationExporter(fileSystem, formatters, exportMode);
+
         var result = new ExportBootstrap(
-            fileSystem,
-            formatters,
-            new ConversationsParser(validators)).RunExport(exportArgs, conversationFiles);
+            new ConversationsParser(validators),
+            new ExportAssetLocatorFactory(fileSystem),
+            exporter
+            ).RunExport(conversationFiles, destination);
         return result;
     }
     catch (Exception ex)
