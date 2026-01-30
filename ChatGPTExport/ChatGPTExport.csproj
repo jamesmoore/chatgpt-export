@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ChatGTPExportTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Markdig" Version="0.44.0" />
     <PackageReference Include="System.IO.Abstractions" Version="22.1.0" />
     <PackageReference Include="System.CommandLine" Version="2.0.2" />
