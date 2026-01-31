@@ -1,8 +1,20 @@
+using ChatGpt.Archive.Api;
+using ChatGpt.Archive.Api.Services;
+using System.IO.Abstractions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services
+    .AddOptions<ArchiveSourcesOptions>()
+    .Bind(builder.Configuration.GetSection("ArchiveSources"))
+    .Validate(options => options.SourceDirectories.Count > 0,
+              "At least one source directory must be configured");
+
 builder.Services.AddControllers();
+builder.Services.AddSingleton<IFileSystem, FileSystem>();
+builder.Services.AddSingleton<IConversationsService, ConversationsService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

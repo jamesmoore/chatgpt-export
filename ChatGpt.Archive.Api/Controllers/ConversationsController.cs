@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ChatGpt.Archive.Api.Services;
+using ChatGPTExport;
+using ChatGPTExport.Formatters.Html;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ChatGpt.Archive.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ConversationsController : ControllerBase
+    public class ConversationsController(IConversationsService conversationsService) : ControllerBase
     {
+
         /// <summary>
         /// Returns the latest conversation details for each instance.
         /// </summary>
@@ -13,17 +17,18 @@ namespace ChatGpt.Archive.Api.Controllers
         [HttpGet()]
         public ActionResult<IEnumerable<ConversationSummary>> Get()
         {
-            List<ConversationSummary> value = [
-                new ConversationSummary()
-                {
-                    Created = DateTime.Now.AddDays(-365),
-                    GizmoId = "12345",
-                    Id = "1092348203948",
-                    Title = "Conversation 123",
-                    Updated = DateTime.Now.AddDays(-364),
-                },
-            ];
-            return Ok(value);
+            var latestConversations = conversationsService.GetLatestConversations();
+
+            var result = latestConversations.Select(p => new ConversationSummary()
+            {
+                Created = p.GetCreateTime(),
+                GizmoId = p.gizmo_id,
+                Id = p.id,
+                Title = p.title,
+                Updated = p.GetUpdateTime(),
+            });
+
+            return Ok(result);
         }
 
         /// <summary>
@@ -36,7 +41,8 @@ namespace ChatGpt.Archive.Api.Controllers
         [Produces("text/html")]
         public IActionResult GetConversationHtml(string id)
         {
-            return Content("SOME HTML FORMATTED CONTENT", "text/html");
+            var content = GetContent(id, ExportType.Html);
+            return Content(content, "text/html");
         }
 
         /// <summary>
@@ -49,7 +55,8 @@ namespace ChatGpt.Archive.Api.Controllers
         [Produces("text/markdown")]
         public IActionResult GetConversationMarkdown(string id)
         {
-            return Content("SOME MD FORMATTED CONTENT", "text/markdown");
+            var content = GetContent(id, ExportType.Markdown);
+            return Content(content, "text/markdown");
         }
 
         /// <summary>
@@ -62,7 +69,17 @@ namespace ChatGpt.Archive.Api.Controllers
         [Produces("application/json")]
         public IActionResult GetConversationJson(string id)
         {
-            return Content("SOME JSON", "application/json");
+            var content = GetContent(id, ExportType.Json);
+            return Content(content, "application/json");
+        }
+
+        private string GetContent(string id, ExportType exportType)
+        {
+            var formatter = new ConversationFormatterFactory().GetFormatters([exportType], HtmlFormat.Tailwind, false);
+            var conversation = conversationsService.GetConversation(id);
+            var formatted = formatter.First().Format(new TempAssetLocator(), conversation.GetLastestConversation());
+            string content = string.Join(Environment.NewLine, formatted);
+            return content;
         }
     }
 
@@ -71,8 +88,8 @@ namespace ChatGpt.Archive.Api.Controllers
         public string Id { get; set; }
         public string Title { get; set; }
         public string GizmoId { get; set; }
-        public DateTime Created { get; set; }
-        public DateTime Updated { get; set; }
+        public DateTimeOffset Created { get; set; }
+        public DateTimeOffset Updated { get; set; }
     }
 }
 

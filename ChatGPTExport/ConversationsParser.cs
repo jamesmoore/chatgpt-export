@@ -12,7 +12,7 @@ namespace ChatGPTExport
         Error,
     }
 
-    internal class ConversationsParser(IEnumerable<IConversationsValidator> validators)
+    public class ConversationsParser(IEnumerable<IConversationsValidator> validators)
     {
         public (Conversations? Conversations, ConversationParseResult Status) GetConversations(IFileInfo p)
         {

@@ -169,7 +169,7 @@ rootCommand.SetAction(parseResult =>
             exportTypes,
             htmlFormat,
             showHidden);
-        var formatters = new ConversationFormatterFactory().GetFormatters(exportArgs);
+        var formatters = new ConversationFormatterFactory().GetFormatters(exportArgs.ExportTypes, exportArgs.HtmlFormat, exportArgs.ShowHidden);
 
         var validators = new List<IConversationsValidator>();
         if (validate)

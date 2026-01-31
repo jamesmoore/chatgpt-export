@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
+	<PackageReference Include="System.IO.Abstractions" Version="22.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChatGPTExport\ChatGPTExport.csproj" />
   </ItemGroup>
 
 </Project>
