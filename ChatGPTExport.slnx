@@ -2,6 +2,7 @@
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
   </Folder>
+  <Project Path="ChatGpt.Archive.Api/ChatGpt.Archive.Api.csproj" Id="73607b1e-3687-4887-a3a3-e133ef22129f" />
   <Project Path="ChatGPTExport/ChatGPTExport.csproj" />
   <Project Path="ChatGTPExportTests/ChatGTPExportTests.csproj" />
 </Solution>
