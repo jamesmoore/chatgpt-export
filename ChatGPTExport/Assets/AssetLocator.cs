@@ -1,16 +1,15 @@
-﻿using System.Diagnostics;
-using System.IO.Abstractions;
+﻿using System.IO.Abstractions;
 
 namespace ChatGPTExport.Assets
 {
     public class AssetLocator(
-        IFileSystem fileSystem,
-        IDirectoryInfo sourceDirectory,
+        ConversationAssets sourceDirectory,
         IDirectoryInfo destinationDirectory,
         ExistingAssetLocator existingAssetLocator
         ) : IAssetLocator
     {
-        private List<string>? cachedSourceList = null;
+        private readonly IFileSystem fileSystem = destinationDirectory.FileSystem;
+
         private static readonly HashSet<string> AllowedRoles = new(StringComparer.OrdinalIgnoreCase)
         {
             "system",
@@ -25,21 +24,12 @@ namespace ChatGPTExport.Assets
             return FindAssetInSourceDirectory(assetRequest);
         }
 
-        private IEnumerable<string> GetCachedSourceFiles(string searchPattern)
-        {
-            cachedSourceList ??= fileSystem.Directory.GetFiles(sourceDirectory.FullName, "*", System.IO.SearchOption.AllDirectories).ToList();
-            var match = cachedSourceList.Where(p => p.Contains(searchPattern));
-            return match;
-        }
-
         private Asset? FindAssetInSourceDirectory(AssetRequest assetRequest)
         {
-            var files = GetCachedSourceFiles(assetRequest.SearchPattern).ToList();
-            Debug.Assert(files.Count <= 1); // There shouldn't be more than one file.
-            var file = files.FirstOrDefault();
-            if (file != null)
+            var sourceFile = sourceDirectory.GetAsset(assetRequest.SearchPattern);
+            if (sourceFile != null)
             {
-                var withoutPath = fileSystem.Path.GetFileName(file);
+                var withoutPath = fileSystem.Path.GetFileName(sourceFile);
                 var sanitizedRole = SanitizeRole(assetRequest.Role);
                 var assetsPath = $"{sanitizedRole}-assets";
                 var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
@@ -48,21 +38,21 @@ namespace ChatGPTExport.Assets
                     fileSystem.Directory.CreateDirectory(assetsDir);
                 }
 
-                var fullAssetPath = fileSystem.Path.Combine(assetsDir, withoutPath);
+                var fullDestinationAssetPath = fileSystem.Path.Combine(assetsDir, withoutPath);
 
-                if (fileSystem.File.Exists(fullAssetPath) == false)
+                if (fileSystem.File.Exists(fullDestinationAssetPath) == false)
                 {
-                    fileSystem.File.Copy(file, fullAssetPath, true);
-                    existingAssetLocator.Add(fullAssetPath);
+                    fileSystem.File.Copy(sourceFile, fullDestinationAssetPath, true);
+                    existingAssetLocator.Add(fullDestinationAssetPath);
 
                     if (assetRequest.CreatedDate.HasValue)
                     {
-                        fileSystem.File.SetCreationTimeUtcIfPossible(fullAssetPath, assetRequest.CreatedDate.Value.DateTime);
+                        fileSystem.File.SetCreationTimeUtcIfPossible(fullDestinationAssetPath, assetRequest.CreatedDate.Value.DateTime);
                     }
 
                     if (assetRequest.UpdatedDate.HasValue)
                     {
-                        fileSystem.File.SetLastWriteTimeUtc(fullAssetPath, assetRequest.UpdatedDate.Value.DateTime);
+                        fileSystem.File.SetLastWriteTimeUtc(fullDestinationAssetPath, assetRequest.UpdatedDate.Value.DateTime);
                     }
                 }
 

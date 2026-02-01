@@ -2,9 +2,10 @@
 
 namespace ChatGPTExport.Assets
 {
-    public class ExistingAssetLocator(IFileSystem fileSystem, IDirectoryInfo destinationDirectory) : IAssetLocator
+    public class ExistingAssetLocator(IDirectoryInfo destinationDirectory) : IAssetLocator
     {
         private List<string>? cache = null;
+        private readonly IFileSystem fileSystem = destinationDirectory.FileSystem;
 
         private IEnumerable<string> GetCachedDestinationFiles(string searchPattern)
         {
