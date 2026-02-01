@@ -2,12 +2,12 @@
 
 namespace ChatGPTExport.Assets
 {
-    internal class ExportAssetLocatorFactory(IFileSystem fileSystem)
+    internal class ExportAssetLocatorFactory()
     {
-        public IAssetLocator GetAssetLocator(IEnumerable<IDirectoryInfo> parentDirectories, IDirectoryInfo destination)
+        public IAssetLocator GetAssetLocator(IEnumerable<ConversationAssets> conversationAssets, IDirectoryInfo destination)
         {
-            var existingAssetLocator = new ExistingAssetLocator(fileSystem, destination);
-            var assetLocators = parentDirectories.Select(p => new AssetLocator(fileSystem, p, destination, existingAssetLocator) as IAssetLocator).ToList();
+            var existingAssetLocator = new ExistingAssetLocator(destination);
+            var assetLocators = conversationAssets.Select(asset => new AssetLocator(asset, destination, existingAssetLocator) as IAssetLocator).ToList();
             assetLocators.Insert(0, existingAssetLocator);
 
             var compositeAssetLocator = new CompositeAssetLocator(assetLocators);

@@ -183,7 +183,7 @@ rootCommand.SetAction(parseResult =>
 
         var result = new ExportBootstrap(
             new ConversationsParser(validators),
-            new ExportAssetLocatorFactory(fileSystem),
+            new ExportAssetLocatorFactory(),
             exporter
             ).RunExport(conversationFiles, destination);
         return result;
