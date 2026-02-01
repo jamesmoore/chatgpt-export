@@ -6,7 +6,7 @@ namespace ChatGpt.Archive.Api.Services
     {
         /// <summary>
         /// Set the conversation asset paths to be used for asset resolution.
-        /// Must be in order or precedence.
+        /// Must be in order of precedence.
         /// </summary>
         /// <param name="conversationAssets"></param>
         void SetConversationAssets(IEnumerable<ConversationAssets> conversationAssets);

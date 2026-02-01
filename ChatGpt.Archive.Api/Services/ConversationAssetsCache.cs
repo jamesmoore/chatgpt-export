@@ -5,7 +5,7 @@ namespace ChatGpt.Archive.Api.Services
 {
     public class ConversationAssetsCache : IConversationAssetsCache
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private IList<ConversationAssets>? conversationAssets = null;
 
         public void SetConversationAssets(IEnumerable<ConversationAssets> directoryInfos)
