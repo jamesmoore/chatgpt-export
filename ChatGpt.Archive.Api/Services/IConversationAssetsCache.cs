@@ -11,6 +11,13 @@ namespace ChatGpt.Archive.Api.Services
         /// <param name="conversationAssets"></param>
         void SetConversationAssets(IEnumerable<ConversationAssets> conversationAssets);
         MediaAssetDefinition? FindMediaAsset(string searchPattern);
+        
+        /// <summary>
+        /// Gets the full path for a media asset.
+        /// </summary>
+        /// <param name="index">Index of the parent directory in the conversation assets list.</param>
+        /// <param name="relativePath">Relative path to the asset within the parent directory.</param>
+        /// <returns>The full path to the asset, or null if the index is invalid or the path escapes the parent directory.</returns>
         string? GetMediaAssetPath(int index, string relativePath);
     }
 
