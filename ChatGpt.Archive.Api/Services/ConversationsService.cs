@@ -9,7 +9,7 @@ namespace ChatGpt.Archive.Api.Services
     {
         private readonly ArchiveSourcesOptions _options = options.Value;
         private readonly IFileSystem fileSystem = fileSystem;
-        private IEnumerable<Conversation> storedConversations = null;
+        private IEnumerable<Conversation>? storedConversations = null;
         private readonly Lock CreationLock = new();
 
         private IEnumerable<Conversation> EnsureConversationsPresent()
@@ -36,13 +36,19 @@ namespace ChatGpt.Archive.Api.Services
             var conversationFinder = new ConversationFinder();
             var conversationFiles = conversationFinder.GetConversationFiles(directories);
             var conversationsParser = new ConversationsParser([]);
-            var conversations = conversationFiles.Select(conversationsParser.GetConversations).ToList();
-            var validConversations = conversations.Where(p => p.Status == ConversationParseResult.Success && p.Conversations != null).Select(p => p.Conversations!);
-            var latestConversations = validConversations.GetLatestConversations();
+            var conversations = conversationFiles.Select(p => new { 
+                ParsedConversations = conversationsParser.GetConversations(p), 
+                ParentDirectory = p.Directory
+            }).ToList();
+            var successfulConversations = conversations.Where(p => p.ParsedConversations.Status == ConversationParseResult.Success && p.ParsedConversations.Conversations != null).ToList();
+
+            var parentDirectories = successfulConversations.OrderByDescending(p => p.ParsedConversations.Conversations!.GetUpdateTime()).Select(p => p.ParentDirectory).ToList();
+            
+            var latestConversations = successfulConversations.Select(p => p.ParsedConversations.Conversations!).GetLatestConversations();
             return latestConversations;
         }
 
-        public Conversation GetConversation(string conversationId)
+        public Conversation? GetConversation(string conversationId)
         {
             var conversations = EnsureConversationsPresent();
             var conversation = conversations.FirstOrDefault(p => p.id == conversationId);

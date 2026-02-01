@@ -9,7 +9,6 @@ namespace ChatGpt.Archive.Api.Controllers
     [Route("[controller]")]
     public class ConversationsController(IConversationsService conversationsService) : ControllerBase
     {
-
         /// <summary>
         /// Returns the latest conversation details for each instance.
         /// </summary>
@@ -19,14 +18,7 @@ namespace ChatGpt.Archive.Api.Controllers
         {
             var latestConversations = conversationsService.GetLatestConversations();
 
-            var result = latestConversations.Select(p => new ConversationSummary()
-            {
-                Created = p.GetCreateTime(),
-                GizmoId = p.gizmo_id,
-                Id = p.id,
-                Title = p.title,
-                Updated = p.GetUpdateTime(),
-            });
+            var result = latestConversations.Select(p => new ConversationSummary(p.id, p.title, p.gizmo_id, p.GetCreateTime(), p.GetUpdateTime()));
 
             return Ok(result);
         }
@@ -39,11 +31,7 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/html")]
         [Produces("text/html")]
-        public IActionResult GetConversationHtml(string id)
-        {
-            var content = GetContent(id, ExportType.Html);
-            return Content(content, "text/html");
-        }
+        public ActionResult<string> GetConversationHtml(string id) => GetActionResult(id, ExportType.Html, "text/html");
 
         /// <summary>
         /// Returns the conversation in the Markdown format.
@@ -53,11 +41,7 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/markdown")]
         [Produces("text/markdown")]
-        public IActionResult GetConversationMarkdown(string id)
-        {
-            var content = GetContent(id, ExportType.Markdown);
-            return Content(content, "text/markdown");
-        }
+        public ActionResult<string> GetConversationMarkdown(string id) => GetActionResult(id, ExportType.Markdown, "text/markdown");
 
         /// <summary>
         /// Returns the conversation in the Markdown format.
@@ -67,29 +51,32 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/json")]
         [Produces("application/json")]
-        public IActionResult GetConversationJson(string id)
+        public ActionResult<string> GetConversationJson(string id) => GetActionResult(id, ExportType.Json, "application/json");
+
+        private ActionResult<string> GetActionResult(string id, ExportType exportType, string ContentType)
         {
-            var content = GetContent(id, ExportType.Json);
-            return Content(content, "application/json");
+            var content = GetContent(id, exportType);
+            if (content == null)
+            {
+                return NotFound();
+            }
+            return Content(content, ContentType);
         }
 
-        private string GetContent(string id, ExportType exportType)
+        private string? GetContent(string id, ExportType exportType)
         {
             var formatter = new ConversationFormatterFactory().GetFormatters([exportType], HtmlFormat.Tailwind, false);
             var conversation = conversationsService.GetConversation(id);
+            if (conversation == null)
+            {
+                return null;
+            }
             var formatted = formatter.First().Format(new TempAssetLocator(), conversation.GetLastestConversation());
             string content = string.Join(Environment.NewLine, formatted);
             return content;
         }
     }
 
-    public class ConversationSummary
-    {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string GizmoId { get; set; }
-        public DateTimeOffset Created { get; set; }
-        public DateTimeOffset Updated { get; set; }
-    }
+    public record ConversationSummary(string Id, string Title, string GizmoId, DateTimeOffset Created, DateTimeOffset Updated);
 }
 
