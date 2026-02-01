@@ -29,16 +29,16 @@ namespace ChatGPTExport.Assets
             var sourceFile = sourceDirectory.FindAsset(assetRequest.SearchPattern);
             if (sourceFile != null)
             {
-                var withoutPath = sourceFile.Name;
+                var assetWithoutPath = sourceFile.Name;
                 var sanitizedRole = SanitizeRole(assetRequest.Role);
-                var assetsPath = $"{sanitizedRole}-assets";
-                var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
-                if (fileSystem.Directory.Exists(assetsDir) == false)
+                var destinationAssetsPath = $"{sanitizedRole}-assets";
+                var destinationAssetsDir = fileSystem.Path.Join(destinationDirectory.FullName, destinationAssetsPath);
+                if (fileSystem.Directory.Exists(destinationAssetsDir) == false)
                 {
-                    fileSystem.Directory.CreateDirectory(assetsDir);
+                    fileSystem.Directory.CreateDirectory(destinationAssetsDir);
                 }
 
-                var fullDestinationAssetPath = fileSystem.Path.Combine(assetsDir, withoutPath);
+                var fullDestinationAssetPath = fileSystem.Path.Combine(destinationAssetsDir, assetWithoutPath);
 
                 if (fileSystem.File.Exists(fullDestinationAssetPath) == false)
                 {
@@ -56,7 +56,7 @@ namespace ChatGPTExport.Assets
                     }
                 }
 
-                return new Asset(withoutPath, $"./{assetsPath}/{Uri.EscapeDataString(withoutPath)}"); 
+                return new Asset(assetWithoutPath, $"./{destinationAssetsPath}/{Uri.EscapeDataString(assetWithoutPath)}"); 
             }
 
             return null;
