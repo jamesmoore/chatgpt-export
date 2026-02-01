@@ -7,7 +7,7 @@ namespace ChatGpt.Archive.Api.Services
     {
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
-            var foundAsset = directoryCache.GetMediaAsset(assetRequest.SearchPattern);
+            var foundAsset = directoryCache.FindMediaAsset(assetRequest.SearchPattern);
             if (foundAsset == null)
             {
                 return null;

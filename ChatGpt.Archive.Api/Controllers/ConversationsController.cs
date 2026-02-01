@@ -21,7 +21,7 @@ namespace ChatGpt.Archive.Api.Controllers
         {
             var latestConversations = conversationsService.GetLatestConversations();
 
-            var result = latestConversations.Select(p => new ConversationSummary(p.id, p.title, p.gizmo_id, p.GetCreateTime(), p.GetUpdateTime()));
+            var result = latestConversations.Select(p => new ConversationSummary(p.id!, p.title ?? "No title", p.gizmo_id, p.GetCreateTime(), p.GetUpdateTime()));
 
             return Ok(result);
         }
@@ -80,6 +80,6 @@ namespace ChatGpt.Archive.Api.Controllers
         }
     }
 
-    public record ConversationSummary(string Id, string Title, string GizmoId, DateTimeOffset Created, DateTimeOffset Updated);
+    public record ConversationSummary(string Id, string Title, string? GizmoId, DateTimeOffset Created, DateTimeOffset Updated);
 }
 

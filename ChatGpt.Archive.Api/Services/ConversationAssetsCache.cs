@@ -7,19 +7,19 @@ namespace ChatGpt.Archive.Api.Services
     {
         private IList<ConversationAssets>? conversationAssets = null;
 
-        public IList<ConversationAssets>? GetConversationAssets()
-        {
-            return conversationAssets;
-        }
-
         public void SetConversationAssets(IEnumerable<ConversationAssets> directoryInfos)
         {
             this.conversationAssets = directoryInfos.ToList();
         }
 
-        public MediaAssetDefinition? GetMediaAsset(string searchPattern)
+        public MediaAssetDefinition? FindMediaAsset(string searchPattern)
         {
-            var foundAsset = this.GetConversationAssets().Select((p, i) =>
+            if (conversationAssets == null)
+            {
+                return null;
+            }
+
+            var foundAsset = conversationAssets.Select((p, i) =>
             (
                 Index: i,
                 p.ParentDirectory,
@@ -36,8 +36,13 @@ namespace ChatGpt.Archive.Api.Services
             return new MediaAssetDefinition(asset.Name, foundAsset.Index, asset.GetRelativePathTo(foundAsset.ParentDirectory));
         }
 
-        public string GetMediaAssetPath(int index, string relativePath)
+        public string? GetMediaAssetPath(int index, string relativePath)
         {
+            if (conversationAssets == null || index > conversationAssets.Count)
+            {
+                return null;
+            }
+
             var parentPath = conversationAssets[index].ParentDirectory;
             return parentPath.FileSystem.Path.Combine(parentPath.FullName, relativePath);
         }

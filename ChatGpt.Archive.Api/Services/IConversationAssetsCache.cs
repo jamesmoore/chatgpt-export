@@ -4,9 +4,14 @@ namespace ChatGpt.Archive.Api.Services
 {
     public interface IConversationAssetsCache
     {
-        MediaAssetDefinition? GetMediaAsset(string searchPattern);
-        string GetMediaAssetPath(int index, string relativePath);
-        void SetConversationAssets(IEnumerable<ConversationAssets> directoryInfos);
+        /// <summary>
+        /// Set the conversation asset paths to be used for asset resolution.
+        /// Must be in order or precedence.
+        /// </summary>
+        /// <param name="conversationAssets"></param>
+        void SetConversationAssets(IEnumerable<ConversationAssets> conversationAssets);
+        MediaAssetDefinition? FindMediaAsset(string searchPattern);
+        string? GetMediaAssetPath(int index, string relativePath);
     }
 
     public record MediaAssetDefinition(string Name, int RootId, string RelativePath);
