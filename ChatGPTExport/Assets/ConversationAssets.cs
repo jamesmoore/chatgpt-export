@@ -7,22 +7,29 @@ namespace ChatGPTExport.Assets
     {
         public static ConversationAssets FromDirectory(IDirectoryInfo parentDirectory)
         {
-            var files = parentDirectory.FileSystem.Directory.GetFiles(parentDirectory.FullName, "*", SearchOption.AllDirectories);
-            return new ConversationAssets(parentDirectory, files);
+            return new ConversationAssets(parentDirectory);
         }
 
         private readonly IDirectoryInfo parentDirectory;
-        private readonly string[] files;
+        private string[]? cachedFiles;
 
-        private ConversationAssets(IDirectoryInfo parentDirectory, string[] files)
+        private ConversationAssets(IDirectoryInfo parentDirectory)
         {
             this.parentDirectory = parentDirectory;
-            this.files = files;
         }
 
         public string? GetAsset(string searchPattern)
         {
-            return files.FirstOrDefault(p => p.Contains(searchPattern));
+            // Lazy initialization: only enumerate files on first access
+            if (cachedFiles == null)
+            {
+                // Use EnumerateFiles to avoid materializing the entire list up front
+                cachedFiles = parentDirectory.FileSystem.Directory
+                    .EnumerateFiles(parentDirectory.FullName, "*", SearchOption.AllDirectories)
+                    .ToArray();
+            }
+
+            return cachedFiles.FirstOrDefault(p => p.Contains(searchPattern));
         }
     }
 }
