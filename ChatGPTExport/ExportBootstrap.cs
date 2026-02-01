@@ -41,7 +41,7 @@ namespace ChatGPTExport
 
             var successfulConversations = directoryConversationsMap
                 .Where(p => p.ConversationParseResult.Status == ConversationParseResult.Success)
-                .Select(p => (Conversations: p.ConversationParseResult.Conversations!, p.ParentDirectory, p.File))
+                .Select(p => (Conversations: p.ConversationParseResult.Conversations!, ConversationAssets: ConversationAssets.FromDirectory(p.ParentDirectory)))
                 .ToList();
 
             var conversations = successfulConversations
@@ -49,8 +49,8 @@ namespace ChatGPTExport
                 .GetLatestConversations()
                 .ToList();
 
-            var parentDirectories = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => p.ParentDirectory);
-            var assetLocator = exportAssetLocatorFactory.GetAssetLocator(parentDirectories, destination);
+            var conversationAssetsList = successfulConversations.OrderByDescending(p => p.Conversations.GetUpdateTime()).Select(p => p.ConversationAssets);
+            var assetLocator = exportAssetLocatorFactory.GetAssetLocator(conversationAssetsList, destination);
 
             var count = conversations.Count;
             var position = 0;

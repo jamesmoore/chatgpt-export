@@ -16,8 +16,8 @@ namespace ChatGTPExportTests.Assets
 
             var sourceDir = fs.DirectoryInfo.New(MockUnixSupport.Path(@"c:\source"));
             var destDir = fs.DirectoryInfo.New(MockUnixSupport.Path(@"c:\dest"));
-            var existing = new ExistingAssetLocator(fs, destDir);
-            var locator = new AssetLocator(fs, sourceDir, destDir, existing);
+            var existing = new ExistingAssetLocator(destDir);
+            var locator = new AssetLocator(ConversationAssets.FromDirectory(sourceDir), destDir, existing);
 
             var request = new AssetRequest("img.png", "../evil", null, null);
 
