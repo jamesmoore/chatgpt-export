@@ -9,7 +9,7 @@ namespace ChatGpt.Archive.Api.Controllers
     [Route("[controller]")]
     public class ConversationsController(
         IConversationsService conversationsService,
-        TempAssetLocatons tempAssetLocatons
+        TempAssetLocator tempAssetLocatons
         ) : ControllerBase
     {
         /// <summary>

@@ -29,7 +29,7 @@ namespace ChatGPTExport.Assets
             var sourceFile = sourceDirectory.GetAsset(assetRequest.SearchPattern);
             if (sourceFile != null)
             {
-                var withoutPath = fileSystem.Path.GetFileName(sourceFile);
+                var withoutPath = sourceFile.Name;
                 var sanitizedRole = SanitizeRole(assetRequest.Role);
                 var assetsPath = $"{sanitizedRole}-assets";
                 var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
@@ -42,7 +42,7 @@ namespace ChatGPTExport.Assets
 
                 if (fileSystem.File.Exists(fullDestinationAssetPath) == false)
                 {
-                    fileSystem.File.Copy(sourceFile, fullDestinationAssetPath, true);
+                    fileSystem.File.Copy(sourceFile.FullName, fullDestinationAssetPath, true);
                     existingAssetLocator.Add(fullDestinationAssetPath);
 
                     if (assetRequest.CreatedDate.HasValue)

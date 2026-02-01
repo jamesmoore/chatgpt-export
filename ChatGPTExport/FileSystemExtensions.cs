@@ -56,8 +56,9 @@ namespace ChatGPTExport
             return candidatePath.StartsWith(basePath + fileSystem.Path.DirectorySeparatorChar, comparison);
         }
 
-        public static string GetRelativePathTo(this IFileSystem fileSystem, IDirectoryInfo baseDir, IFileInfo targetFile)
+        public static string GetRelativePathTo(this IFileInfo targetFile, IDirectoryInfo baseDir)
         {
+            var fileSystem = targetFile.FileSystem;
             var basePath = fileSystem.Path.GetFullPath(baseDir.FullName + fileSystem.Path.DirectorySeparatorChar);
             var targetPath = targetFile.FullName;
 
