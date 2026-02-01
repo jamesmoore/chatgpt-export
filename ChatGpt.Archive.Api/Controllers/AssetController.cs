@@ -7,7 +7,7 @@ namespace ChatGpt.Archive.Api.Controllers
     [Route("[controller]")]
     public class AssetController(IConversationAssetsCache conversationAssets) : ControllerBase
     {
-        [HttpGet("{rootId}/{path}")]
+        [HttpGet("{rootId}/{**path}")]
         public IActionResult Index(int rootId, string path, [FromQuery(Name = "sig")] string? signature)
         {
             if (!AssetSignature.IsValid(rootId, path, signature))
