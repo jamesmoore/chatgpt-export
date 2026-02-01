@@ -49,8 +49,11 @@ namespace ChatGpt.Archive.Api.Services
             var parentFullPath = parentPath.FileSystem.Path.GetFullPath(parentPath.FullName);
 
             // Validate that the resolved path is within the parent directory to prevent path traversal attacks
-            if (!fullPath.StartsWith(parentFullPath + parentPath.FileSystem.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                !fullPath.Equals(parentFullPath, StringComparison.OrdinalIgnoreCase))
+            // Ensure parent path ends with directory separator for accurate prefix matching
+            var normalizedParent = parentFullPath.TrimEnd(parentPath.FileSystem.Path.DirectorySeparatorChar, parentPath.FileSystem.Path.AltDirectorySeparatorChar) 
+                                   + parentPath.FileSystem.Path.DirectorySeparatorChar;
+            
+            if (!fullPath.StartsWith(normalizedParent, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
