@@ -5,7 +5,10 @@ using System.IO.Abstractions;
 
 namespace ChatGpt.Archive.Api.Services
 {
-    public class ConversationsService(IFileSystem fileSystem, IOptions<ArchiveSourcesOptions> options) : IConversationsService
+    public class ConversationsService(
+        IFileSystem fileSystem, 
+        IDirectoryCache directoryCache,
+        IOptions<ArchiveSourcesOptions> options) : IConversationsService
     {
         private readonly ArchiveSourcesOptions _options = options.Value;
         private readonly IFileSystem fileSystem = fileSystem;
@@ -42,8 +45,8 @@ namespace ChatGpt.Archive.Api.Services
             }).ToList();
             var successfulConversations = conversations.Where(p => p.ParsedConversations.Status == ConversationParseResult.Success && p.ParsedConversations.Conversations != null).ToList();
 
-            var parentDirectories = successfulConversations.OrderByDescending(p => p.ParsedConversations.Conversations!.GetUpdateTime()).Select(p => p.ParentDirectory).ToList();
-            
+            var parentDirectories = successfulConversations.OrderByDescending(p => p.ParsedConversations.Conversations!.GetUpdateTime()).Select(p => p.ParentDirectory!).ToList();
+            directoryCache.SetDirectories(parentDirectories);
             var latestConversations = successfulConversations.Select(p => p.ParsedConversations.Conversations!).GetLatestConversations();
             return latestConversations;
         }

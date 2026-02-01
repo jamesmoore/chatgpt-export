@@ -7,7 +7,10 @@ namespace ChatGpt.Archive.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ConversationsController(IConversationsService conversationsService) : ControllerBase
+    public class ConversationsController(
+        IConversationsService conversationsService,
+        TempAssetLocatons tempAssetLocatons
+        ) : ControllerBase
     {
         /// <summary>
         /// Returns the latest conversation details for each instance.
@@ -71,7 +74,7 @@ namespace ChatGpt.Archive.Api.Controllers
             {
                 return null;
             }
-            var formatted = formatter.First().Format(new TempAssetLocator(), conversation.GetLastestConversation());
+            var formatted = formatter.First().Format(tempAssetLocatons, conversation.GetLastestConversation());
             string content = string.Join(Environment.NewLine, formatted);
             return content;
         }
