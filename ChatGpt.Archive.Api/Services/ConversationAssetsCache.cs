@@ -53,7 +53,11 @@ namespace ChatGpt.Archive.Api.Services
             var normalizedParent = parentFullPath.TrimEnd(parentPath.FileSystem.Path.DirectorySeparatorChar, parentPath.FileSystem.Path.AltDirectorySeparatorChar) 
                                    + parentPath.FileSystem.Path.DirectorySeparatorChar;
             
-            if (!fullPath.StartsWith(normalizedParent, StringComparison.OrdinalIgnoreCase))
+            var comparison = parentPath.FileSystem.IsFileSystemCaseSensitive()
+                ? StringComparison.Ordinal
+                : StringComparison.OrdinalIgnoreCase;
+            
+            if (!fullPath.StartsWith(normalizedParent, comparison))
             {
                 return null;
             }
