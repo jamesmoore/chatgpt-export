@@ -16,7 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<IFileSystem, FileSystem>();
 builder.Services.AddSingleton<IConversationsService, ConversationsService>();
 builder.Services.AddSingleton<IConversationAssetsCache, ConversationAssetsCache>();
-builder.Services.AddSingleton<TempAssetLocator>();
+builder.Services.AddSingleton<ApiAssetLocator>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
