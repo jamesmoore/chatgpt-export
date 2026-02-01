@@ -7,7 +7,7 @@ namespace ChatGPTExport.Assets
         public IAssetLocator GetAssetLocator(IEnumerable<ConversationAssets> conversationAssets, IDirectoryInfo destination)
         {
             var existingAssetLocator = new ExistingAssetLocator(destination);
-            var assetLocators = conversationAssets.Select(p => new AssetLocator(p, destination, existingAssetLocator) as IAssetLocator).ToList();
+            var assetLocators = conversationAssets.Select(asset => new AssetLocator(asset, destination, existingAssetLocator) as IAssetLocator).ToList();
             assetLocators.Insert(0, existingAssetLocator);
 
             var compositeAssetLocator = new CompositeAssetLocator(assetLocators);
