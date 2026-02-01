@@ -1,11 +1,12 @@
 using ChatGpt.Archive.Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.IO.Abstractions;
 
 namespace ChatGpt.Archive.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AssetController(IConversationAssetsCache conversationAssets) : ControllerBase
+    public class AssetController(IConversationAssetsCache conversationAssets, IFileSystem fileSystem) : ControllerBase
     {
         [HttpGet("{rootId}/{**path}")]
         public IActionResult Index(int rootId, string path, [FromQuery(Name = "sig")] string? signature)
@@ -15,7 +16,7 @@ namespace ChatGpt.Archive.Api.Controllers
 
             var fullPath = conversationAssets.GetMediaAssetPath(rootId, path);
 
-            if (!System.IO.File.Exists(fullPath))
+            if (fullPath == null || !fileSystem.File.Exists(fullPath))
                 return NotFound();
 
             return PhysicalFile(fullPath, GetMimeType(fullPath));
