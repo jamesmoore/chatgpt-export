@@ -36,7 +36,7 @@ namespace ChatGPTExport.Assets
             if (destinationMatches.Count != 0)
             {
                 var targetFile = fileSystem.FileInfo.New(destinationMatches.First());
-                var relativePath = fileSystem.GetRelativePathTo(destinationDirectory, targetFile);
+                var relativePath = targetFile.GetRelativePathTo(destinationDirectory);
                 if (fileSystem.Path.DirectorySeparatorChar != '/')
                 {
                     relativePath = relativePath.Replace(fileSystem.Path.DirectorySeparatorChar, '/');

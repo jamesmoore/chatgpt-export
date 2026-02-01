@@ -1,6 +1,6 @@
 ﻿namespace ChatGPTExport.Models
 {
-    internal static class ExtensionMethods
+    public static class ExtensionMethods
     {
         /// <summary>
         /// For a given conversation, return a list of messages that have content.

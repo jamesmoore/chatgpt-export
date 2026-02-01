@@ -8,20 +8,24 @@ using ChatGPTExport.Formatters.Markdown;
 
 namespace ChatGPTExport
 {
-    internal class ConversationFormatterFactory
+    public class ConversationFormatterFactory
     {
-        public IEnumerable<IConversationFormatter> GetFormatters(ExportArgs exportArgs)
+        public IEnumerable<IConversationFormatter> GetFormatters(
+            IEnumerable<ExportType> exportTypes,
+            HtmlFormat htmlFormat,
+            bool showHidden
+            )
         {
             var exporters = new List<IConversationFormatter>();
-            if (exportArgs.ExportTypes.Contains(ExportType.Json))
+            if (exportTypes.Contains(ExportType.Json))
             {
                 exporters.Add(new JsonFormatter());
             }
-            if (exportArgs.ExportTypes.Contains(ExportType.Markdown))
+            if (exportTypes.Contains(ExportType.Markdown))
             {
-                exporters.Add(new MarkdownFormatter(exportArgs.ShowHidden));
+                exporters.Add(new MarkdownFormatter(showHidden));
             }
-            if (exportArgs.ExportTypes.Contains(ExportType.Html))
+            if (exportTypes.Contains(ExportType.Html))
             {
                 var headerProvider = new CompositeHeaderProvider(
                     [
@@ -32,8 +36,8 @@ namespace ChatGPTExport
                     ]
                 );
 
-                var formatter = exportArgs.HtmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
-                exporters.Add(new HtmlFormatter(formatter, exportArgs.ShowHidden));
+                var formatter = htmlFormat == HtmlFormat.Bootstrap ? new BootstrapHtmlFormatter(headerProvider) as IHtmlFormatter : new TailwindHtmlFormatter(headerProvider);
+                exporters.Add(new HtmlFormatter(formatter, showHidden));
             }
 
             return exporters;
