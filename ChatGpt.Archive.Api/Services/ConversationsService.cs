@@ -21,7 +21,7 @@ namespace ChatGpt.Archive.Api.Services
             _fileSystem = fileSystem;
             _directoryCache = directoryCache;
             _options = options.Value;
-            _storedConversations = new Lazy<IEnumerable<Conversation>>(GetConversations);
+            _storedConversations = new Lazy<IEnumerable<Conversation>>(GetConversations, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         private IEnumerable<Conversation> EnsureConversationsPresent()
