@@ -1,4 +1,5 @@
 ﻿using ChatGPTExport;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using Microsoft.Extensions.Options;
 using System.IO.Abstractions;
@@ -7,7 +8,7 @@ namespace ChatGpt.Archive.Api.Services
 {
     public class ConversationsService(
         IFileSystem fileSystem, 
-        IDirectoryCache directoryCache,
+        IConversationAssetsCache directoryCache,
         IOptions<ArchiveSourcesOptions> options) : IConversationsService
     {
         private readonly ArchiveSourcesOptions _options = options.Value;
@@ -46,7 +47,7 @@ namespace ChatGpt.Archive.Api.Services
             var successfulConversations = conversations.Where(p => p.ParsedConversations.Status == ConversationParseResult.Success && p.ParsedConversations.Conversations != null).ToList();
 
             var parentDirectories = successfulConversations.OrderByDescending(p => p.ParsedConversations.Conversations!.GetUpdateTime()).Select(p => p.ParentDirectory!).ToList();
-            directoryCache.SetDirectories(parentDirectories);
+            directoryCache.SetConversationAssets(parentDirectories.Select(ConversationAssets.FromDirectory).ToList());
             var latestConversations = successfulConversations.Select(p => p.ParsedConversations.Conversations!).GetLatestConversations();
             return latestConversations;
         }
