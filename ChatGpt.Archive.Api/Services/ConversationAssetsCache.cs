@@ -23,7 +23,7 @@ namespace ChatGpt.Archive.Api.Services
             (
                 Index: i,
                 p.ParentDirectory,
-                Asset: p.GetAsset(searchPattern)
+                Asset: p.FindAsset(searchPattern)
             )).FirstOrDefault(p => p.Asset != null);
 
             if (foundAsset.Asset == null)

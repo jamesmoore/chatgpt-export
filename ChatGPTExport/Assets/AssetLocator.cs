@@ -26,7 +26,7 @@ namespace ChatGPTExport.Assets
 
         private Asset? FindAssetInSourceDirectory(AssetRequest assetRequest)
         {
-            var sourceFile = sourceDirectory.GetAsset(assetRequest.SearchPattern);
+            var sourceFile = sourceDirectory.FindAsset(assetRequest.SearchPattern);
             if (sourceFile != null)
             {
                 var withoutPath = sourceFile.Name;

@@ -26,7 +26,7 @@ namespace ChatGPTExport.Assets
             );
         }
 
-        public IFileInfo? GetAsset(string searchPattern)
+        public IFileInfo? FindAsset(string searchPattern)
         {
             // Lazy initialization: only enumerate files on first access
             var path = cachedFiles.Value.FirstOrDefault(p => p.Contains(searchPattern));
