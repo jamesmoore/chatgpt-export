@@ -30,7 +30,6 @@ namespace ChatGpt.Archive.Api.Controllers
         /// Returns the conversation in the HTML format.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="format"></param>
         /// <returns></returns>
         [HttpGet("{id}/html")]
         [Produces("text/html")]
@@ -40,7 +39,6 @@ namespace ChatGpt.Archive.Api.Controllers
         /// Returns the conversation in the Markdown format.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="format"></param>
         /// <returns></returns>
         [HttpGet("{id}/markdown")]
         [Produces("text/markdown")]
@@ -50,7 +48,6 @@ namespace ChatGpt.Archive.Api.Controllers
         /// Returns the conversation in JSON format.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="format"></param>
         /// <returns></returns>
         [HttpGet("{id}/json")]
         [Produces("application/json")]
