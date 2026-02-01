@@ -56,14 +56,14 @@ namespace ChatGpt.Archive.Api.Controllers
         [Produces("application/json")]
         public ActionResult<string> GetConversationJson(string id) => GetActionResult(id, ExportType.Json, "application/json");
 
-        private ActionResult<string> GetActionResult(string id, ExportType exportType, string ContentType)
+        private ActionResult<string> GetActionResult(string id, ExportType exportType, string contentType)
         {
             var content = GetContent(id, exportType);
             if (content == null)
             {
                 return NotFound();
             }
-            return Content(content, ContentType);
+            return Content(content, contentType);
         }
 
         private string? GetContent(string id, ExportType exportType)
