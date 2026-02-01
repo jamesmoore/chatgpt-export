@@ -17,20 +17,15 @@ namespace ChatGpt.Archive.Api.Services
 
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
-            var foundAsset = directoryCache.GetConversationAssets().Select(p => new
-            {
-                p.ParentDirectory,
-                Asset = p.GetAsset(assetRequest.SearchPattern)
-            }).FirstOrDefault(p => p.Asset != null);
-
+            var foundAsset = directoryCache.GetMediaAsset(assetRequest.SearchPattern);
             if (foundAsset == null)
             {
-                return null;
+                return null; 
             }
 
             // TODO recurse source directories that had a valid conversation, find matching asset, generate URL.
             // Need to devise some 2-way-encoding to relate URL to absolute location on disk.
-            return new Asset(foundAsset.Asset!.Name, "/asset/" + UrlEncoder.Default.Encode(foundAsset.Asset!.FullName));
+            return new Asset(foundAsset.Name, $"/asset/{foundAsset.RootId}/{UrlEncoder.Default.Encode(foundAsset.RelativePath)}");
         }
     }
 }
