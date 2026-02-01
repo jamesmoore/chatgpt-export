@@ -1,0 +1,21 @@
+@ChatGpt.Archive.Api_HostAddress = https://localhost:7181
+
+GET {{ChatGpt.Archive.Api_HostAddress}}/conversations
+Accept: application/json
+
+###
+
+GET {{ChatGpt.Archive.Api_HostAddress}}/conversations/1092348203948/html
+Accept: text/html
+
+###
+
+GET {{ChatGpt.Archive.Api_HostAddress}}/conversations/1092348203948/markdown
+Accept: text/markdown
+
+###
+
+GET {{ChatGpt.Archive.Api_HostAddress}}/conversations/1092348203948/json
+Accept: application/json
+
+###
