@@ -1,5 +1,6 @@
 using ChatGpt.Archive.Api;
 using ChatGpt.Archive.Api.Services;
+using ChatGPTExport;
 using System.IO.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,7 @@ builder.Services.AddSingleton<IFileSystem, FileSystem>();
 builder.Services.AddSingleton<IConversationsService, ConversationsService>();
 builder.Services.AddSingleton<IConversationAssetsCache, ConversationAssetsCache>();
 builder.Services.AddSingleton<ApiAssetLocator>();
+builder.Services.AddSingleton<ConversationFormatterFactory>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

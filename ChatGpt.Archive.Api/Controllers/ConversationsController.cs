@@ -9,7 +9,8 @@ namespace ChatGpt.Archive.Api.Controllers
     [Route("[controller]")]
     public class ConversationsController(
         IConversationsService conversationsService,
-        ApiAssetLocator apiAssetLocator
+        ApiAssetLocator apiAssetLocator,
+        ConversationFormatterFactory conversationFormatterFactory
         ) : ControllerBase
     {
         /// <summary>
@@ -33,7 +34,7 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/html")]
         [Produces("text/html")]
-        public ActionResult<string> GetConversationHtml(string id) => GetActionResult(id, ExportType.Html, "text/html");
+        public IActionResult GetConversationHtml(string id) => GetActionResult(id, ExportType.Html, "text/html");
 
         /// <summary>
         /// Returns the conversation in the Markdown format.
@@ -42,7 +43,7 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/markdown")]
         [Produces("text/markdown")]
-        public ActionResult<string> GetConversationMarkdown(string id) => GetActionResult(id, ExportType.Markdown, "text/markdown");
+        public IActionResult GetConversationMarkdown(string id) => GetActionResult(id, ExportType.Markdown, "text/markdown");
 
         /// <summary>
         /// Returns the conversation in JSON format.
@@ -51,9 +52,9 @@ namespace ChatGpt.Archive.Api.Controllers
         /// <returns></returns>
         [HttpGet("{id}/json")]
         [Produces("application/json")]
-        public ActionResult<string> GetConversationJson(string id) => GetActionResult(id, ExportType.Json, "application/json");
+        public IActionResult GetConversationJson(string id) => GetActionResult(id, ExportType.Json, "application/json");
 
-        private ActionResult<string> GetActionResult(string id, ExportType exportType, string contentType)
+        private IActionResult GetActionResult(string id, ExportType exportType, string contentType)
         {
             var content = GetContent(id, exportType);
             if (content == null)
@@ -65,7 +66,7 @@ namespace ChatGpt.Archive.Api.Controllers
 
         private string? GetContent(string id, ExportType exportType)
         {
-            var formatter = new ConversationFormatterFactory().GetFormatters([exportType], HtmlFormat.Tailwind, false);
+            var formatter = conversationFormatterFactory.GetFormatters([exportType], HtmlFormat.Tailwind, false);
             var conversation = conversationsService.GetConversation(id);
             if (conversation == null)
             {
