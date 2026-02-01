@@ -24,6 +24,9 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Initialize conversations.
+app.Services.GetRequiredService<IConversationsService>().GetLatestConversations();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
