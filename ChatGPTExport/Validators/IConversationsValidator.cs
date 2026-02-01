@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ChatGPTExport.Validators
 {
-    internal interface IConversationsValidator
+    public interface IConversationsValidator
     {
         bool Validate(Stream stream, Conversations conversations);
     }

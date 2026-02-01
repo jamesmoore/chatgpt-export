@@ -26,23 +26,23 @@ namespace ChatGPTExport.Assets
 
         private Asset? FindAssetInSourceDirectory(AssetRequest assetRequest)
         {
-            var sourceFile = sourceDirectory.GetAsset(assetRequest.SearchPattern);
+            var sourceFile = sourceDirectory.FindAsset(assetRequest.SearchPattern);
             if (sourceFile != null)
             {
-                var withoutPath = fileSystem.Path.GetFileName(sourceFile);
+                var assetWithoutPath = sourceFile.Name;
                 var sanitizedRole = SanitizeRole(assetRequest.Role);
-                var assetsPath = $"{sanitizedRole}-assets";
-                var assetsDir = fileSystem.Path.Join(destinationDirectory.FullName, assetsPath);
-                if (fileSystem.Directory.Exists(assetsDir) == false)
+                var destinationAssetsPath = $"{sanitizedRole}-assets";
+                var destinationAssetsDir = fileSystem.Path.Join(destinationDirectory.FullName, destinationAssetsPath);
+                if (fileSystem.Directory.Exists(destinationAssetsDir) == false)
                 {
-                    fileSystem.Directory.CreateDirectory(assetsDir);
+                    fileSystem.Directory.CreateDirectory(destinationAssetsDir);
                 }
 
-                var fullDestinationAssetPath = fileSystem.Path.Combine(assetsDir, withoutPath);
+                var fullDestinationAssetPath = fileSystem.Path.Combine(destinationAssetsDir, assetWithoutPath);
 
                 if (fileSystem.File.Exists(fullDestinationAssetPath) == false)
                 {
-                    fileSystem.File.Copy(sourceFile, fullDestinationAssetPath, true);
+                    fileSystem.File.Copy(sourceFile.FullName, fullDestinationAssetPath, true);
                     existingAssetLocator.Add(fullDestinationAssetPath);
 
                     if (assetRequest.CreatedDate.HasValue)
@@ -56,7 +56,7 @@ namespace ChatGPTExport.Assets
                     }
                 }
 
-                return new Asset(withoutPath, $"./{assetsPath}/{Uri.EscapeDataString(withoutPath)}"); 
+                return new Asset(assetWithoutPath, $"./{destinationAssetsPath}/{Uri.EscapeDataString(assetWithoutPath)}"); 
             }
 
             return null;

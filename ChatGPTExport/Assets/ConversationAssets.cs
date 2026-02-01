@@ -13,6 +13,8 @@ namespace ChatGPTExport.Assets
         private readonly IDirectoryInfo parentDirectory;
         private readonly Lazy<string[]> cachedFiles;
 
+        public IDirectoryInfo ParentDirectory => parentDirectory;
+
         private ConversationAssets(IDirectoryInfo parentDirectory)
         {
             this.parentDirectory = parentDirectory;
@@ -24,10 +26,11 @@ namespace ChatGPTExport.Assets
             );
         }
 
-        public string? GetAsset(string searchPattern)
+        public IFileInfo? FindAsset(string searchPattern)
         {
             // Lazy initialization: only enumerate files on first access
-            return cachedFiles.Value.FirstOrDefault(p => p.Contains(searchPattern));
+            var path = cachedFiles.Value.FirstOrDefault(p => p.Contains(searchPattern));
+            return path == null ? null : parentDirectory.FileSystem.FileInfo.New(path);
         }
     }
 }

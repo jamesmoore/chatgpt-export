@@ -11,7 +11,7 @@ namespace ChatGPTExport
         HtmlFormat HtmlFormat, 
         bool ShowHidden);
 
-    internal enum ExportType
+    public enum ExportType
     {
         None = 0,
         Json = 1,
