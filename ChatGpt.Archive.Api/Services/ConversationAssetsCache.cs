@@ -38,7 +38,7 @@ namespace ChatGpt.Archive.Api.Services
 
         public string? GetMediaAssetPath(int index, string relativePath)
         {
-            if (conversationAssets == null || index > conversationAssets.Count)
+            if (conversationAssets == null || index >= conversationAssets.Count)
             {
                 return null;
             }
