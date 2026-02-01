@@ -30,14 +30,7 @@ namespace ChatGPTExport.Assets
         {
             // Lazy initialization: only enumerate files on first access
             var path = cachedFiles.Value.FirstOrDefault(p => p.Contains(searchPattern));
-            if (path == null)
-            {
-                return null;
-            }
-            else
-            {
-                return parentDirectory.FileSystem.FileInfo.New(path);
-            }
+            return path == null ? null : parentDirectory.FileSystem.FileInfo.New(path);
         }
     }
 }
