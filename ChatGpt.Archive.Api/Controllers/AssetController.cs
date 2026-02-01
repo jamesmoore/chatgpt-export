@@ -1,4 +1,4 @@
-﻿using ChatGpt.Archive.Api.Services;
+using ChatGpt.Archive.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatGpt.Archive.Api.Controllers
@@ -8,8 +8,11 @@ namespace ChatGpt.Archive.Api.Controllers
     public class AssetController(IConversationAssetsCache conversationAssets) : ControllerBase
     {
         [HttpGet("{rootId}/{path}")]
-        public IActionResult Index(int rootId, string path)
+        public IActionResult Index(int rootId, string path, [FromQuery(Name = "sig")] string? signature)
         {
+            if (!AssetSignature.IsValid(rootId, path, signature))
+                return Unauthorized();
+
             var fullPath = conversationAssets.GetMediaAssetPath(rootId, path);
 
             if (!System.IO.File.Exists(fullPath))
