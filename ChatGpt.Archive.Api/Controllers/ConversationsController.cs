@@ -47,7 +47,7 @@ namespace ChatGpt.Archive.Api.Controllers
         public ActionResult<string> GetConversationMarkdown(string id) => GetActionResult(id, ExportType.Markdown, "text/markdown");
 
         /// <summary>
-        /// Returns the conversation in the Markdown format.
+        /// Returns the conversation in JSON format.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="format"></param>
