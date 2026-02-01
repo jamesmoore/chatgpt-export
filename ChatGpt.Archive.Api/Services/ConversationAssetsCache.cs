@@ -44,7 +44,18 @@ namespace ChatGpt.Archive.Api.Services
             }
 
             var parentPath = conversationAssets[index].ParentDirectory;
-            return parentPath.FileSystem.Path.Combine(parentPath.FullName, relativePath);
+            var combinedPath = parentPath.FileSystem.Path.Combine(parentPath.FullName, relativePath);
+            var fullPath = parentPath.FileSystem.Path.GetFullPath(combinedPath);
+            var parentFullPath = parentPath.FileSystem.Path.GetFullPath(parentPath.FullName);
+
+            // Validate that the resolved path is within the parent directory to prevent path traversal attacks
+            if (!fullPath.StartsWith(parentFullPath + parentPath.FileSystem.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                !fullPath.Equals(parentFullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return fullPath;
         }
     }
 }
