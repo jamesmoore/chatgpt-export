@@ -26,7 +26,17 @@ namespace ChatGPTExport.Assets
 
         public Asset? GetMarkdownMediaAsset(AssetRequest assetRequest)
         {
-            // it may already exist in the destination directory from a previous export 
+            var invalidChars = fileSystem.Path.GetInvalidFileNameChars()
+                .Concat(new[] { '*', '?', fileSystem.Path.DirectorySeparatorChar, fileSystem.Path.AltDirectorySeparatorChar })
+                .Distinct()
+                .ToArray();
+
+            if (assetRequest.SearchPattern.IndexOfAny(invalidChars) >= 0)
+            {
+                return null;
+            }
+
+            // it may already exist in the destination directory from a previous export
             var destinationMatches = GetCachedDestinationFiles(assetRequest.SearchPattern).ToList();
             if (destinationMatches.Count == 0)
             {
