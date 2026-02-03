@@ -1,33 +1,24 @@
-import { useState, useEffect } from 'react'
 import './App.css'
+import { useQuery } from '@tanstack/react-query'
 import { getConversations, type ConversationSummary } from './api-client'
 
 function App() {
-  const [conversations, setConversations] = useState<ConversationSummary[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    data: conversations = [],
+    isLoading,
+    error,
+  } = useQuery<ConversationSummary[], Error>({
+    queryKey: ['conversations'],
+    queryFn: getConversations,
+    select: (data) =>
+      [...data].sort(
+        (a, b) =>
+          new Date(b.created).getTime() - new Date(a.created).getTime(),
+      ),
+  })
 
-  useEffect(() => {
-    const fetchConversations = async () => {
-      try {
-        const data = await getConversations()
-        // Sort by created date descending
-        const sorted = data.sort((a, b) => 
-          new Date(b.created).getTime() - new Date(a.created).getTime()
-        )
-        setConversations(sorted)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch conversations')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchConversations()
-  }, [])
-
-  if (loading) return <div className="container"><p>Loading conversations...</p></div>
-  if (error) return <div className="container"><p style={{ color: 'red' }}>Error: {error}</p></div>
+  if (isLoading) return <div className="container"><p>Loading conversations...</p></div>
+  if (error) return <div className="container"><p style={{ color: 'red' }}>Error: {error.message}</p></div>
 
   return (
     <div className="container">
