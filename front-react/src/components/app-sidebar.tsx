@@ -17,7 +17,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { useConversations } from '../hooks/use-conversations'
 
 export function AppSidebar() {
-  const { id } = useParams();
+  const { id, format } = useParams();
   const location = useLocation();
   const { setOpenMobile } = useSidebar();
 
@@ -46,7 +46,7 @@ export function AppSidebar() {
                 <Fragment key={item.id}>
                   <SidebarMenuItem >
                     <SidebarMenuButton asChild isActive={id === item.id}>
-                      <Link to={`/conversation/${item.id}/html`}
+                      <Link to={`/conversation/${item.id}/${format || 'html'}`}
                         onClick={() => {
                           if (id === item.id) {
                             setOpenMobile(false);
