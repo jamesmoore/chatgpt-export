@@ -12,7 +12,7 @@ namespace ChatGPTExport.Formatters.Html.Template
         {
             return $$"""
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en" class="system">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -36,10 +36,10 @@ namespace ChatGPTExport.Formatters.Html.Template
 
 {{headerProvider.GetHeaders(page)}}
 </head>
-<body class="bg-neutral-900 text-neutral-100 antialiased">
+<body class="dark:bg-neutral-900 dark:text-neutral-100 antialiased">
 <div class="container mx-auto max-w-4xl px-4 py-6">
 <h1 class="text-3xl font-semibold mb-6">{{page.Title}}</h1>
-<div class="prose prose-invert leading-relaxed max-w-[80ch] md:max-w-[90ch]
+<div class="prose dark:prose-invert leading-relaxed max-w-[80ch] md:max-w-[90ch]
             prose-p:my-2 prose-li:my-1
             prose-ul:list-disc prose-ol:list-decimal
             prose-pre:overflow-x-auto
@@ -48,7 +48,8 @@ namespace ChatGPTExport.Formatters.Html.Template
 
             prose-code:before:content-none
             prose-code:after:content-none
-            prose-code:bg-gray-700
+            prose-code:bg-gray-300
+            dark:prose-code:bg-gray-700
             prose-code:rounded
             prose-code:px-[0.3rem]
             prose-code:py-[0.15rem]
@@ -66,7 +67,7 @@ namespace ChatGPTExport.Formatters.Html.Template
         {
             return $"""
 <div class="flex justify-end my-4">
-  <div class="ml-auto w-full sm:w-5/6 md:w-2/3 lg:w-2/3 rounded-xl bg-neutral-800 px-3 break-words">
+  <div class="ml-auto w-full sm:w-5/6 md:w-2/3 lg:w-2/3 rounded-xl bg-neutral-100 dark:bg-neutral-800 px-3 break-words">
       {html}
   </div>
 </div>
