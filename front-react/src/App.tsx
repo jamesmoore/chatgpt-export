@@ -1,21 +1,12 @@
 import './App.css'
-import { useQuery } from '@tanstack/react-query'
-import { getConversations, type ConversationSummary } from './api-client'
+import { useConversations } from './hooks/use-conversations'
 
 function App() {
   const {
     data: conversations = [],
     isLoading,
     error,
-  } = useQuery<ConversationSummary[], Error>({
-    queryKey: ['conversations'],
-    queryFn: getConversations,
-    select: (data) =>
-      [...data].sort(
-        (a, b) =>
-          new Date(b.created).getTime() - new Date(a.created).getTime(),
-      ),
-  })
+  } = useConversations()
 
   if (isLoading) return <div className="container"><p>Loading conversations...</p></div>
   if (error) return <div className="container"><p style={{ color: 'red' }}>Error: {error.message}</p></div>
