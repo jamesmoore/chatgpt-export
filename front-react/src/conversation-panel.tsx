@@ -12,7 +12,7 @@ export function ConversationPanel() {
     const { id, format } = useParams();
     const { data: content, error } = useConversation(id, format);
     const { theme } = useTheme();
-    
+
     const [isWrapped, setIsWrapped] = useState(() => getWrapStatus());
 
     useEffect(() => {
@@ -73,12 +73,14 @@ export function ConversationPanel() {
             : hljs.highlight(value, { language: "markdown", ignoreIllegals: true }).value;
 
         return (
-            <pre className={`max-w-full overflow-x-auto ${isWrapped ? 'whitespace-pre-wrap wrap-break-word' : ''}`}>
-                <code
-                    className={`hljs language-${format}`}
-                    dangerouslySetInnerHTML={{ __html: highlighted }}
-                />
-            </pre>
+            <div className='overflow-x-auto'>
+                <pre className={isWrapped ? 'whitespace-pre-wrap break-words' : 'min-w-max whitespace-pre'}>
+                    <code
+                        className={`hljs language-${format}`}
+                        dangerouslySetInnerHTML={{ __html: highlighted }}
+                    />
+                </pre>
+            </div>
         );
     }
 
