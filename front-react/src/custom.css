@@ -1,0 +1,25 @@
+/* Sidebar-specific scrollbar styling */
+[data-sidebar="content"] {
+  /* Firefox */
+  scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.35);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Dark mode overrides */
+.dark [data-sidebar="content"] {
+  scrollbar-color: rgba(255, 255, 255, 0.50) transparent;
+}
+
+.dark [data-sidebar="content"]::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.50);
+}

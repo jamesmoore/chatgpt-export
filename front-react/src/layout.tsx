@@ -1,44 +1,33 @@
-import { useConversations } from './hooks/use-conversations'
+import type { ReactNode } from 'react';
+import { AppSidebar } from './components/app-sidebar'
+import { SidebarProvider } from './components/ui/sidebar'
 
-function Layout() {
-  const {
-    data: conversations = [],
-    isLoading,
-    error,
-  } = useConversations()
 
-  if (isLoading) return <div className="container"><p>Loading conversations...</p></div>
-  if (error) return <div className="container"><p style={{ color: 'red' }}>Error: {error.message}</p></div>
+export interface LayoutProps {
+  children?: ReactNode;
+  topBarChildren?: ReactNode;
+}
+
+export default function Layout({ children, topBarChildren }: LayoutProps) {
 
   return (
-    <div className="container">
-      <h1>Conversations</h1>
-      {conversations.length === 0 ? (
-        <p>No conversations found</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Gizmo ID</th>
-              <th>Created</th>
-              <th>Updated</th>
-            </tr>
-          </thead>
-          <tbody>
-            {conversations.map((conv) => (
-              <tr key={conv.id}>
-                <td><a href={`/conversations/${conv.id}/html`}>{conv.title}</a></td>
-                <td>{conv.gizmoId ?? '-'}</td>
-                <td>{new Date(conv.created).toLocaleString()}</td>
-                <td>{new Date(conv.updated).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
+    <SidebarProvider >
+      <AppSidebar />
+
+      <div className="flex flex-col w-full min-w-0">
+        {topBarChildren &&
+          <div className="sticky top-0">
+            <div className="bg-sidebar p-1 pr-3">
+              {topBarChildren}
+            </div>
+            <div className="shrink-0 h-px w-full bg-sidebar-border"></div>
+          </div>
+        }
+        <div className="flex p-2 w-full flex-col gap-2 h-full" >
+          {children}
+        </div>
+      </div>
+    </SidebarProvider>
   )
 }
 
-export default Layout
