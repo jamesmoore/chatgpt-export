@@ -29,7 +29,7 @@ interface SidebarItem {
 }
 
 export function AppSidebar() {
-
+  const { id } = useParams();
   const location = useLocation();
   const { setOpenMobile } = useSidebar();
 
@@ -56,8 +56,8 @@ export function AppSidebar() {
               <SidebarSeparator />
               {conversations.map((item) => (
                 <Fragment key={item.id}>
-                  <SidebarMenuItem  >
-                    <SidebarMenuButton asChild >
+                  <SidebarMenuItem >
+                    <SidebarMenuButton asChild isActive={id === item.id}>
                       <Link to={`/conversation/${item.id}/html`}
                         onClick={() => {
                           // if (item.selected) {
