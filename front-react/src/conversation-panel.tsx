@@ -1,33 +1,10 @@
 import { useParams } from "react-router-dom";
-import { useRef, useEffect } from "react";
 import { useConversation } from "./hooks/use-conversation";
 
 export function ConversationPanel() {
 
     const { id, format } = useParams();
     const { data: content, error } = useConversation(id, format);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-
-    useEffect(() => {
-        const iframe = iframeRef.current;
-        if (!iframe) return;
-
-        const resizeIframe = () => {
-            try {
-                const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
-                if (iframeDocument) {
-                    const height = iframeDocument.documentElement.scrollHeight;
-                    // Add extra space to account for horizontal scrollbar if present
-                    iframe.style.height = `${height + 20}px`;
-                }
-            } catch (e) {
-                console.error('Failed to resize iframe:', e);
-            }
-        };
-
-        iframe.addEventListener('load', resizeIframe);
-        return () => iframe.removeEventListener('load', resizeIframe);
-    }, [content]);
 
     if (!id) {
         return <>No conversation ID provided.</>;
@@ -37,12 +14,11 @@ export function ConversationPanel() {
         return <>{error instanceof Error ? error.message : "Failed to load conversation."}</>;
     }
 
-    if (format === 'html' && content) {
+    if (format === "html" && content) {
         return (
             <iframe
-                ref={iframeRef}
                 srcDoc={content}
-                style={{ width: '100%', border: 'none', display: 'block' }}
+                className="flex-1 w-full border-none"
                 title="Conversation HTML"
             />
         );
@@ -50,7 +26,7 @@ export function ConversationPanel() {
 
     if (format === 'markdown' || format === 'json') {
         return (
-            <pre className="p-4">
+            <pre className="p-4 overflow-x-auto max-w-full">
                 <code>{content}</code>
             </pre>
         );
