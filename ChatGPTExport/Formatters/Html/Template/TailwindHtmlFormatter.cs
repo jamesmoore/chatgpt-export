@@ -48,8 +48,8 @@ namespace ChatGPTExport.Formatters.Html.Template
 
             prose-code:before:content-none
             prose-code:after:content-none
-            prose-code:bg-gray-300
-            dark:prose-code:bg-gray-700
+            prose-code:bg-neutral-300
+            dark:prose-code:bg-neutral-700
             prose-code:rounded
             prose-code:px-[0.3rem]
             prose-code:py-[0.15rem]
