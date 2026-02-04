@@ -34,6 +34,32 @@ namespace ChatGPTExport.Formatters.Html.Template
   }
   </style>
 
+<style>
+:root {
+  --scrollbar-thumb: rgb(163 163 163); /* neutral-400 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --scrollbar-thumb: rgb(82 82 82); /* neutral-600 */
+  }
+}
+
+/* WebKit */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+}
+
+/* Firefox */
+* {
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+</style>
+
 {{headerProvider.GetHeaders(page)}}
 </head>
 <body class="dark:bg-neutral-900 dark:text-neutral-100 antialiased">
