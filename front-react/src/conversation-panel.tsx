@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useRef, useEffect } from "react";
 import { useConversation } from "./hooks/use-conversation";
 
-export function ConversatrionPanel() {
+export function ConversationPanel() {
 
     const { id, format } = useParams();
     const { data: content, error } = useConversation(id, format);
