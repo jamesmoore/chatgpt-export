@@ -1,7 +1,6 @@
-import './App.css'
 import { useConversations } from './hooks/use-conversations'
 
-function App() {
+function Layout() {
   const {
     data: conversations = [],
     isLoading,
@@ -42,4 +41,4 @@ function App() {
   )
 }
 
-export default App
+export default Layout
