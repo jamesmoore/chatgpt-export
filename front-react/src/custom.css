@@ -4,30 +4,29 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  :root {
+    --scrollbar-thumb: rgb(163 163 163); /* neutral-400 */
+  }
+
+  .dark {
+    --scrollbar-thumb: rgb(82 82 82); /* neutral-600 */
+  }
 }
 
-/* Sidebar-specific scrollbar styling */
-[data-sidebar="content"] {
+/* Global scrollbar styling */
+* {
   /* Firefox */
-  scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
-[data-sidebar="content"]::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: transparent;
 }
 
-[data-sidebar="content"]::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.35);
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: padding-box;
-}
-
-/* Dark mode overrides */
-.dark [data-sidebar="content"] {
-  scrollbar-color: rgba(255, 255, 255, 0.50) transparent;
-}
-
-.dark [data-sidebar="content"]::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.50);
 }
