@@ -5,7 +5,6 @@ COPY front-react/package*.json front-react/
 RUN cd front-react && npm ci
 
 COPY front-react/ front-react/
-RUN mkdir -p /src/ChatGpt.Archive.Api/wwwroot
 RUN cd front-react && npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-env
