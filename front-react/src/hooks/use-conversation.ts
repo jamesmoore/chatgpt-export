@@ -18,6 +18,6 @@ export function useConversation(id: string | undefined, format: string | undefin
                 throw new Error(`Unsupported format: ${format}`);
             }
         },
-        enabled: !!id,
+        enabled: !!id && !!format && ['html', 'markdown', 'json'].includes(format),
     });
 }
