@@ -5,17 +5,15 @@ export function useConversation(id: string | undefined, format: string | undefin
     return useQuery({
         queryKey: ['conversation', id, format],
         queryFn: () => {
-            if (format === 'html') {
-                return getConversationHtml(id!);
-            }
-            else if (format === 'markdown') {
-                return getConversationMarkdown(id!);
-            }
-            else if (format === 'json') {
-                return getConversationJson(id!);
-            }
-            else {
-                throw new Error(`Unsupported format: ${format}`);
+            switch (format) {
+                case 'html':
+                    return getConversationHtml(id!);
+                case 'markdown':
+                    return getConversationMarkdown(id!);
+                case 'json':
+                    return getConversationJson(id!);
+                default:
+                    throw new Error(`Unsupported format: ${format}`);
             }
         },
         enabled: !!id && !!format && ['html', 'markdown', 'json'].includes(format),
