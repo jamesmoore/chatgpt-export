@@ -1,9 +1,9 @@
 ﻿using ChatGPTExport.Models;
-using System.IO;
+using ChatGPTExport.Validators;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ChatGPTExport.Validators
+namespace ChatGpt.Exporter.Cli.Validators
 {
     internal class ConversationsJsonSchemaValidator : IConversationsValidator
     {

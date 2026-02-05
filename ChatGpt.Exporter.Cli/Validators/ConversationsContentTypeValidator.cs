@@ -1,7 +1,7 @@
 ﻿using ChatGPTExport.Models;
-using System.IO;
+using ChatGPTExport.Validators;
 
-namespace ChatGPTExport.Validators
+namespace ChatGpt.Exporter.Cli.Validators
 {
     internal class ConversationsContentTypeValidator : IConversationsValidator
     {

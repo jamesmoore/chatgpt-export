@@ -54,10 +54,10 @@ jobs:
         shell: bash
         run: |
           tag=$(git describe --tags --abbrev=0)
-          release_name="ChatGPTExport-$tag-${{ matrix.target }}"
+          release_name="chatgpt-exporter-$tag-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish ChatGPTExport/ChatGPTExport.csproj \
+          dotnet publish ChatGpt.Exporter.Cli/ChatGpt.Exporter.Cli.csproj \
           --runtime "${{ matrix.target }}" \
           --configuration Release \
           --self-contained true \
@@ -84,6 +84,6 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          files: "ChatGPTExport-*"
+          files: "chatgpt-exporter-*"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

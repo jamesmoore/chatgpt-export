@@ -1,4 +1,4 @@
-﻿namespace ChatGPTExport
+﻿namespace ChatGpt.Exporter.Cli
 {
     internal static class ConsoleFeatures
     {
