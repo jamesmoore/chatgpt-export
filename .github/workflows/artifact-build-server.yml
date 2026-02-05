@@ -1,0 +1,103 @@
+name: Publish Server
+
+on:
+  release:
+    types: [published]
+  # push:
+  #   tags: [ 'v*.*.*' ]
+
+env:
+  VERSION: ${{ github.ref_name }}
+
+jobs:
+  release:
+    name: Release Server
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        kind: ['linux', 'linux-musl', 'windows', 'macOS', 'macOS-arm']
+        include:
+          - kind: linux
+            os: ubuntu-latest
+            target: linux-x64
+          - kind: linux-musl
+            os: ubuntu-latest
+            target: linux-musl-x64
+          - kind: windows
+            os: windows-latest
+            target: win-x64
+          - kind: macOS
+            os: macos-latest
+            target: osx-x64
+          - kind: macOS-arm
+            os: macos-latest
+            target: osx-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Extract clean version
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+      - name: Show version
+        shell: bash
+        run: |
+          echo "Using version: $VERSION"
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install front-react dependencies
+        shell: bash
+        run: |
+          cd front-react
+          npm ci
+      - name: Build front-react
+        shell: bash
+        run: |
+          cd front-react
+          npm run build
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Build
+        shell: bash
+        run: |
+          tag=$(git describe --tags --abbrev=0)
+          release_name="chatgpt-archive-server-$tag-${{ matrix.target }}"
+
+          # Build everything
+          dotnet publish ChatGpt.Archive.Api/ChatGpt.Archive.Api.csproj \
+          --runtime "${{ matrix.target }}" \
+          --configuration Release \
+          --self-contained true \
+          -o "$release_name" \
+          -p:Version=$VERSION \
+          -p:AssemblyVersion=$VERSION.0 \
+          -p:FileVersion=$VERSION.0 \
+          -p:PublishSingleFile=true \
+          -p:UseAppHost=true
+
+          # Pack files
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            # Pack to zip for Windows
+            7z a -tzip "${release_name}.zip" "./${release_name}/*"
+            echo "artifact_name=${release_name}.zip" >> $GITHUB_ENV
+          else
+            tar czvf "${release_name}.tar.gz" "$release_name"
+            echo "artifact_name=${release_name}.tar.gz" >> $GITHUB_ENV
+          fi
+
+          # Delete output directory
+          rm -r "$release_name"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "chatgpt-archive-server-*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
