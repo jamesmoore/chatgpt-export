@@ -18,7 +18,7 @@ createRoot(document.getElementById('root')!).render(
         <Router>
           <Routes>
             <Route path="/" element={<Layout />} />
-            <Route path="/conversation/:id/:format" element={<Layout children={<ConversationPanel />} topBarChildren={<TopBar />} />} />
+            <Route path="/conversation/:id/:format" element={<Layout topBarChildren={<TopBar />}><ConversationPanel /></Layout>} />
           </Routes>
         </Router>
       </ThemeProvider>
