@@ -32,7 +32,7 @@ export function AppSidebar() {
   }, [location.pathname, setOpenMobile]);
 
   if (isLoading) return <div className="container"><p>Loading conversations...</p></div>
-  if (error) return <div className="container"><p style={{ color: 'red' }}>Error: {error.message}</p></div>
+  if (error) return <div className="container"><p className="text-red-600">Error: {error.message}</p></div>
 
   return (
     <Sidebar className="h-full">
