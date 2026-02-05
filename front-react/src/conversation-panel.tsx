@@ -6,11 +6,12 @@ import githubDarkStyles from "highlight.js/styles/github-dark.css?inline";
 import { useConversation } from "./hooks/use-conversation";
 import { getWrapStatus } from "./getWrapStatus";
 import { useTheme } from "./components/theme-provider";
+import LoadingSpinner from "./loading-spinner";
 
 export function ConversationPanel() {
 
     const { id, format } = useParams();
-    const { data: content, error } = useConversation(id, format);
+    const { data: content, error, isLoading } = useConversation(id, format);
     const { theme } = useTheme();
 
     const [isWrapped, setIsWrapped] = useState(() => getWrapStatus());
@@ -54,6 +55,10 @@ export function ConversationPanel() {
 
     if (error) {
         return <>{error instanceof Error ? error.message : "Failed to load conversation."}</>;
+    }
+
+    if (isLoading) {
+        return <LoadingSpinner />;
     }
 
     if (format === "html" && content) {
