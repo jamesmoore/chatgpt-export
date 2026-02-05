@@ -11,7 +11,7 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Fragment, useEffect } from "react";
+import { useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useConversations } from '../hooks/use-conversations'
@@ -43,21 +43,19 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarSeparator />
               {conversations.map((item) => (
-                <Fragment key={item.id}>
-                  <SidebarMenuItem >
-                    <SidebarMenuButton asChild isActive={id === item.id}>
-                      <Link to={`/conversation/${item.id}/${format || 'html'}`}
-                        onClick={() => {
-                          if (id === item.id) {
-                            setOpenMobile(false);
-                          }
-                        }}
-                      >
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </Fragment>
+                <SidebarMenuItem key={item.id}>
+                  <SidebarMenuButton asChild isActive={id === item.id}>
+                    <Link to={`/conversation/${item.id}/${format || 'html'}`}
+                      onClick={() => {
+                        if (id === item.id) {
+                          setOpenMobile(false);
+                        }
+                      }}
+                    >
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
