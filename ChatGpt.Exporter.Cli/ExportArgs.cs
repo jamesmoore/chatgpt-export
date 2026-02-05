@@ -1,7 +1,8 @@
 ﻿using System.IO.Abstractions;
+using ChatGPTExport;
 using ChatGPTExport.Formatters.Html;
 
-namespace ChatGPTExport
+namespace ChatGpt.Exporter.Cli
 {
     internal record ExportArgs(
         IEnumerable<IDirectoryInfo> SourceDirectory, 
@@ -10,12 +11,4 @@ namespace ChatGPTExport
         IEnumerable<ExportType> ExportTypes, 
         HtmlFormat HtmlFormat, 
         bool ShowHidden);
-
-    public enum ExportType
-    {
-        None = 0,
-        Json = 1,
-        Markdown = 2,
-        Html = 4,
-    }
 }

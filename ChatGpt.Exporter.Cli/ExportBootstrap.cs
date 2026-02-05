@@ -1,8 +1,10 @@
-﻿using ChatGPTExport.Assets;
+﻿using ChatGpt.Exporter.Cli.Assets;
+using ChatGPTExport;
+using ChatGPTExport.Assets;
 using ChatGPTExport.Models;
 using System.IO.Abstractions;
 
-namespace ChatGPTExport
+namespace ChatGpt.Exporter.Cli
 {
     internal class ExportBootstrap(
         ConversationsParser conversationsParser,

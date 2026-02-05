@@ -1,6 +1,7 @@
-﻿using System.IO.Abstractions;
+﻿using ChatGPTExport.Assets;
+using System.IO.Abstractions;
 
-namespace ChatGPTExport.Assets
+namespace ChatGpt.Exporter.Cli.Assets
 {
     internal class ExportAssetLocatorFactory()
     {

@@ -1,4 +1,4 @@
-# ChatGPT Export²
+# ChatGPT Archive Tools
 
 <img width="1024" height="183" alt="ChatGPT Export Export" src="https://github.com/user-attachments/assets/3cf24bdf-df3e-48c8-97aa-c10e8d72bff0" />
 
@@ -29,7 +29,7 @@ This tool enables you to extract and reformat your conversations from the offici
 
 ## Quick‑Start (Bare metal)
 
-1. Download the latest binary from the [Releases page](https://github.com/jamesmoore/chatgpt-export/releases) and unpack it.
+1. Download the latest binary from the [Releases page](../../releases) and unpack it.
 2. On unix systems you may need to `chmod +x` it.
 3. (Optional) Add it to your `PATH`.
 4. Unzip your ChatGPT export ZIP somewhere - **Important - keep an eye out for any ZIP errors**:
@@ -43,7 +43,7 @@ mkdir ~/chatgpt-markdown
 ```
 6. Run the tool
 ```sh
-./ChatGPTExport -s ~/chatgpt-export -d ~/chatgpt-markdown
+./chatgpt-exporter -s ~/chatgpt-export -d ~/chatgpt-markdown
 ```
 7. Open `~/chatgpt-markdown` - you’ll see an html and markdown file for each conversation.
 
@@ -62,7 +62,7 @@ mkdir ~/chatgpt-markdown
 docker run --rm \
   -v ~/chatgpt-export:/source:ro \
   -v ~/chatgpt-markdown:/destination \
-  ghcr.io/jamesmoore/chatgpt-export:latest \
+  ghcr.io/jamesmoore/chatgpt-exporter:latest \
   -s /source \
   -d /destination
 ```
@@ -86,7 +86,7 @@ services:
       -s /source
       -d /destination
     # append any other parameters as needed
-    image: ghcr.io/jamesmoore/chatgpt-export:latest
+    image: ghcr.io/jamesmoore/chatgpt-exporter:latest
     volumes:
       - ~/chatgpt-export:/source:ro
       - ~/chatgpt-markdown:/destination

@@ -1,10 +1,11 @@
-﻿using ChatGPTExport;
-using ChatGPTExport.Assets;
+﻿using ChatGpt.Exporter.Cli;
+using ChatGpt.Exporter.Cli.Assets;
+using ChatGpt.Exporter.Cli.Validators;
+using ChatGPTExport;
 using ChatGPTExport.Formatters.Html;
 using ChatGPTExport.Validators;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.IO;
 using System.IO.Abstractions;
 
 FileSystem fileSystem = new();
@@ -62,7 +63,7 @@ var exportModeOption = new Option<ExportMode>("-e", "--export")
 
 var destinationDirectoryOption = new Option<DirectoryInfo>("--destination", "-d")
 {
-    Description = "The the destination directory where markdown files and assets are to be created.",
+    Description = "The destination directory where markdown files and assets are to be created.",
     Required = true,
 }.AcceptExistingOnly();
 
@@ -103,7 +104,7 @@ var validateOption = new Option<bool>("--validate")
 
 var showHiddenOption = new Option<bool>("--showhidden")
 {
-    Description = "Inclues hidden content (thinking, web searches etc.) in markdown and html.",
+    Description = "Includes hidden content (thinking, web searches etc.) in markdown and html.",
     Required = false,
     DefaultValueFactory = (ArgumentResult ar) => false,
 };

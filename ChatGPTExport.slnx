@@ -3,6 +3,8 @@
     <File Path="README.md" />
   </Folder>
   <Project Path="ChatGpt.Archive.Api/ChatGpt.Archive.Api.csproj" Id="73607b1e-3687-4887-a3a3-e133ef22129f" />
+  <Project Path="ChatGpt.Exporter.Cli.Tests/ChatGpt.Exporter.Cli.Tests.csproj" Id="a9d1016f-6594-4188-95b2-3979abcbc246" />
+  <Project Path="ChatGpt.Exporter.Cli/ChatGpt.Exporter.Cli.csproj" Id="b46421df-ddc5-46c9-94f8-8731f87b19a2" />
   <Project Path="ChatGPTExport/ChatGPTExport.csproj" />
   <Project Path="ChatGTPExportTests/ChatGTPExportTests.csproj" />
 </Solution>
