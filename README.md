@@ -12,7 +12,7 @@ This tool enables you to extract and reformat your conversations from the offici
 * **Create a readable archive** - Convert your ChatGPT conversations into clean Markdown or HTML files that can be read offline, shared, or backed up.
 * **Selective cleanup** - Keep a local copy of the chats you want to delete from the web interface, preserving only the chats you need.
 * **Knowledge‑base ingestion** - Import your conversations into a wiki, knowledge base, or documentation system with minimal effort.
-* **Account migration** - Export all conversations before closing your ChatGPT account, so you retain a viewable copy of your data in case you need it later.
+* **Account migration** - Export all conversations before switching your ChatGPT account, so you retain a viewable copy of your data in case you need it later.
 
 ## Features
 * Convert ChatGPT exports into smaller, viewable: 

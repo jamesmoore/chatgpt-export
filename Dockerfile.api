@@ -1,0 +1,27 @@
+FROM node:24-alpine AS frontend
+WORKDIR /src
+
+COPY front-react/package*.json front-react/
+RUN cd front-react && npm ci
+
+COPY front-react/ front-react/
+RUN mkdir -p /src/ChatGpt.Archive.Api/wwwroot
+RUN cd front-react && npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-env
+ARG VERSION
+LABEL version=$VERSION
+WORKDIR /src
+
+COPY . ./
+COPY --from=frontend /src/ChatGpt.Archive.Api/wwwroot ./ChatGpt.Archive.Api/wwwroot
+
+RUN dotnet restore
+RUN dotnet publish ./ChatGpt.Archive.Api -c Release -o /app/out
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine
+WORKDIR /app
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+COPY --from=build-env /app/out .
+ENTRYPOINT ["dotnet", "ChatGpt.Archive.Api.dll"]
