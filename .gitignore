@@ -159,3 +159,7 @@ $RECYCLE.BIN/
 
 results/
 launchsettings.json
+
+# Front-react build output in wwwroot
+ChatGpt.Archive.Api/wwwroot/*
+!ChatGpt.Archive.Api/wwwroot/.gitkeep
