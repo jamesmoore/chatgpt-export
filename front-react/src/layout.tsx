@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AppSidebar } from './components/app-sidebar'
 import { SidebarProvider } from './components/ui/sidebar'
 import { DocumentTitle } from './document-title';
+import { useSystemThemeListener } from './hooks/use-system-theme-listener';
 
 export interface LayoutProps {
   children?: ReactNode;
@@ -9,7 +10,7 @@ export interface LayoutProps {
 }
 
 export default function Layout({ children, topBarChildren }: LayoutProps) {
-
+  useSystemThemeListener();
   return (
     <>
       <DocumentTitle />
