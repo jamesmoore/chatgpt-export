@@ -159,6 +159,3 @@ $RECYCLE.BIN/
 
 results/
 launchsettings.json
-# Node.js
-node_modules/
-front-react/dist/
