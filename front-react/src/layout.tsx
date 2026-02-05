@@ -15,7 +15,7 @@ export default function Layout({ children, topBarChildren }: LayoutProps) {
     <>
       <DocumentTitle />
       <SidebarProvider >
-        <div className="flex flex-1 h-screen overflow-hidden">
+        <div className="flex flex-1 h-screen overflow-hidden bg-neutral-100 dark:bg-neutral-900">
           <AppSidebar />
           <div className="flex-1 min-w-0 overflow-auto flex flex-col">
             {topBarChildren &&
