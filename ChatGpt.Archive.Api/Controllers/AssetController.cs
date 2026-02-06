@@ -6,13 +6,20 @@ namespace ChatGpt.Archive.Api.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AssetController(IConversationAssetsCache conversationAssets, IFileSystem fileSystem) : ControllerBase
+    public class AssetController(
+        IConversationAssetsCache conversationAssets, 
+        IFileSystem fileSystem,
+        ILogger<AssetController> logger
+        ) : ControllerBase
     {
         [HttpGet("{rootId}/{**path}")]
         public IActionResult Index(int rootId, string path, [FromQuery(Name = "sig")] string? signature)
         {
             if (!AssetSignature.IsValid(rootId, path, signature))
+            {
+                logger.LogWarning("Asset request denied: {rootId}, {path}, {sig}", rootId, path, signature);
                 return Unauthorized();
+            }
 
             var fullPath = conversationAssets.GetMediaAssetPath(rootId, path);
 
