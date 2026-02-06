@@ -1,6 +1,7 @@
 using ChatGpt.Archive.Api;
 using ChatGpt.Archive.Api.Services;
 using ChatGPTExport;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.IO.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,12 +34,19 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto
+});
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.UseAuthorization();
 app.MapControllers();
+
+// Fallback for React Router (must be after MapControllers)
+app.MapFallbackToFile("index.html");
 
 app.Run();
