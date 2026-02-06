@@ -41,4 +41,7 @@ app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 
+// Fallback for React Router (must be after MapControllers)
+app.MapFallbackToFile("index.html");
+
 app.Run();
