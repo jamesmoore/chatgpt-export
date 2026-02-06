@@ -17,7 +17,9 @@ namespace ChatGpt.Archive.Api.Controllers
         {
             if (!AssetSignature.IsValid(rootId, path, signature))
             {
-                logger.LogWarning("Asset request denied: {rootId}, {path}, {sig}", rootId, path, signature);
+                var safePath = path?.Replace("\r", string.Empty).Replace("\n", string.Empty);
+                var safeSignature = signature?.Replace("\r", string.Empty).Replace("\n", string.Empty);
+                logger.LogWarning("Asset request denied: {rootId}, {path}, {sig}", rootId, safePath, safeSignature);
                 return Unauthorized();
             }
 
