@@ -7,7 +7,13 @@ namespace ChatGpt.Archive.Api.Services
     internal static class AssetSignature
     {
         private const int HashHexLength = 64;
-        private static readonly byte[] SigningKeyBytes = RandomNumberGenerator.GetBytes(32);
+        private static readonly byte[] SigningKeyBytes = GetSigningKeyBytes();
+
+        private static byte[] GetSigningKeyBytes()
+        {
+            Console.WriteLine("Generating private signature key.");
+            return RandomNumberGenerator.GetBytes(32);
+        }
 
         internal static string Create(int rootId, string path)
         {
