@@ -50,11 +50,15 @@ export function ConversationPanel() {
     }, [theme]);
 
     if (!id) {
-        return <>No conversation ID provided.</>;
+        return <div className="flex-1 flex justify-center items-center text-red-600">
+            No conversation ID provided.
+        </div>;
     }
 
     if (error) {
-        return <>{error instanceof Error ? error.message : "Failed to load conversation."}</>;
+        return <div className="flex-1 flex justify-center items-center text-red-600">
+            {error instanceof Error ? error.message : "Failed to load conversation."}
+        </div>;
     }
 
     if (isLoading) {
