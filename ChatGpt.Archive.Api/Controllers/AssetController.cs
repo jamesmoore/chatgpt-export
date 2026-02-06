@@ -15,16 +15,17 @@ namespace ChatGpt.Archive.Api.Controllers
         [HttpGet("{rootId}/{**path}")]
         public IActionResult Index(int rootId, string path, [FromQuery(Name = "sig")] string? signature)
         {
-            if (!AssetSignature.IsValid(rootId, path, signature))
+            var decodedPath = Uri.UnescapeDataString(path);
+
+            if (!AssetSignature.IsValid(rootId, decodedPath, signature))
             {
-                var safePath = path?.Replace("\r", string.Empty).Replace("\n", string.Empty);
+                var safePath = decodedPath?.Replace("\r", string.Empty).Replace("\n", string.Empty);
                 var safeSignature = signature?.Replace("\r", string.Empty).Replace("\n", string.Empty);
                 logger.LogWarning("Asset request denied: {rootId}, {path}, {sig}", rootId, safePath, safeSignature);
                 return Unauthorized();
             }
 
-            var fullPath = conversationAssets.GetMediaAssetPath(rootId, path);
-
+            var fullPath = conversationAssets.GetMediaAssetPath(rootId, decodedPath);
             if (fullPath == null || !fileSystem.File.Exists(fullPath))
                 return NotFound();
 
